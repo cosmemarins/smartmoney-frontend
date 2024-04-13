@@ -45,7 +45,7 @@ export const authOptions: NextAuthOptions = {
             throw new Error(JSON.stringify({ message: ['Email ou senha inválidos'] }))
           }
 
-          if (res.status === 200) {
+          if (res.status === 200 || res.status === 201) {
             /*
              * Please unset all the sensitive information of the user either from API response or before returning
              * user data below. Below return statement will set the user object in the token and the same is set in

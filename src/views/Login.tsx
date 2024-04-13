@@ -16,7 +16,6 @@ import InputAdornment from '@mui/material/InputAdornment'
 import Checkbox from '@mui/material/Checkbox'
 import Button from '@mui/material/Button'
 import FormControlLabel from '@mui/material/FormControlLabel'
-import Alert from '@mui/material/Alert'
 
 // Third-party Imports
 import { signIn } from 'next-auth/react'
@@ -114,8 +113,8 @@ const Login = ({ mode }: { mode: SystemMode }) => {
   } = useForm<FormData>({
     resolver: valibotResolver(schema),
     defaultValues: {
-      email: 'admin@vuexy.com',
-      password: 'admin'
+      email: 'cosme.marins@gmail.com',
+      password: 'sardinha00'
     }
   })
 
@@ -136,6 +135,8 @@ const Login = ({ mode }: { mode: SystemMode }) => {
       redirect: false,
       rememberMe: true
     })
+
+    console.log('LOGIN res', res)
 
     if (res && res.ok && res.error === null) {
       // Vars
@@ -172,15 +173,9 @@ const Login = ({ mode }: { mode: SystemMode }) => {
         </div>
         <div className='flex flex-col gap-6 is-full sm:is-auto md:is-full sm:max-is-[400px] md:max-is-[unset] mbs-8 sm:mbs-11 md:mbs-0'>
           <div className='flex flex-col gap-1'>
-            <Typography variant='h4'>{`Welcome to ${themeConfig.templateName}! 👋🏻`}</Typography>
-            <Typography>Please sign-in to your account and start the adventure</Typography>
+            <Typography variant='h4'>{`Bem vindo a ${themeConfig.templateName}! 👋🏻`}</Typography>
+            <Typography>Informe seu login e senha para entrar no sistema</Typography>
           </div>
-          <Alert icon={false} className='bg-[var(--mui-palette-primary-lightOpacity)]'>
-            <Typography variant='body2' color='primary'>
-              Email: <span className='font-medium'>admin@vuexy.com</span> / Pass:{' '}
-              <span className='font-medium'>admin</span>
-            </Typography>
-          </Alert>
           <form noValidate autoComplete='off' onSubmit={handleSubmit(onSubmit)} className='flex flex-col gap-6'>
             <Controller
               name='email'
@@ -193,7 +188,7 @@ const Login = ({ mode }: { mode: SystemMode }) => {
                   fullWidth
                   type='email'
                   label='Email'
-                  placeholder='Enter your email'
+                  placeholder='email'
                   onChange={e => {
                     field.onChange(e.target.value)
                     errorState !== null && setErrorState(null)
@@ -213,7 +208,7 @@ const Login = ({ mode }: { mode: SystemMode }) => {
                 <CustomTextField
                   {...field}
                   fullWidth
-                  label='Password'
+                  label='Senha'
                   placeholder='············'
                   id='login-password'
                   type={isPasswordShown ? 'text' : 'password'}
@@ -235,20 +230,14 @@ const Login = ({ mode }: { mode: SystemMode }) => {
               )}
             />
             <div className='flex justify-between items-center gap-x-3 gap-y-1 flex-wrap'>
-              <FormControlLabel control={<Checkbox defaultChecked />} label='Remember me' />
+              <FormControlLabel control={<Checkbox defaultChecked />} label='Lembrar' />
               <Typography className='text-end' color='primary' component={Link} href={'/forgot-password'}>
-                Forgot password?
+                Esqueceu sua senha?
               </Typography>
             </div>
             <Button fullWidth variant='contained' type='submit'>
-              Login
+              Entrar
             </Button>
-            <div className='flex justify-center items-center flex-wrap gap-2'>
-              <Typography>New on our platform?</Typography>
-              <Typography component={Link} href={'/register'} color='primary'>
-                Create an account
-              </Typography>
-            </div>
           </form>
         </div>
       </div>
