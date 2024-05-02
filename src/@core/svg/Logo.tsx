@@ -1,8 +1,11 @@
 // React Imports
-import type { SVGAttributes } from 'react'
+//import type { SVGAttributes } from 'react'
 
-const Logo = (props: SVGAttributes<SVGElement>) => {
+const Logo = () => {
   return (
+    <img src='/images/logo2.png' width='30' />
+
+    /*
     <svg width='1.4583em' height='1em' viewBox='0 0 35 24' fill='none' xmlns='http://www.w3.org/2000/svg' {...props}>
       <path
         fillRule='evenodd'
@@ -31,6 +34,7 @@ const Logo = (props: SVGAttributes<SVGElement>) => {
         fill='currentColor'
       />
     </svg>
+    */
   )
 }
 

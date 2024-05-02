@@ -45,17 +45,12 @@ const NotFound = ({ mode }: { mode: SystemMode }) => {
           <Typography className='font-medium text-8xl' color='text.primary'>
             404
           </Typography>
-          <Typography variant='h4'>Page Not Found ⚠️</Typography>
-          <Typography>we couldn&#39;t find the page you are looking for.</Typography>
+          <Typography variant='h4'>Página não localizada ⚠️</Typography>
+          <Typography>Esta página que você tentou acessar não existe no servidor, verifique a url.</Typography>
         </div>
         <Button href='/' component={Link} variant='contained'>
-          Back To Home
+          Voltar para o dashboard
         </Button>
-        <img
-          alt='error-404-illustration'
-          src='/images/illustrations/characters/1.png'
-          className='object-cover bs-[400px] md:bs-[450px] lg:bs-[500px] mbs-10 md:mbs-14 lg:mbs-20'
-        />
       </div>
       {!hidden && (
         <MaskImg

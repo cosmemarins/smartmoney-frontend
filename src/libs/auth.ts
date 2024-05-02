@@ -1,4 +1,6 @@
 // Third-party Imports
+import { cookies } from 'next/headers'
+
 import CredentialProvider from 'next-auth/providers/credentials'
 import type { NextAuthOptions } from 'next-auth'
 
@@ -51,6 +53,9 @@ export const authOptions: NextAuthOptions = {
              * user data below. Below return statement will set the user object in the token and the same is set in
              * the session which will be accessible all over the app.
              */
+            cookies().set('token', data.accessToken)
+            console.log(data)
+
             return data
           }
 
