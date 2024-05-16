@@ -55,3 +55,8 @@ export const telefoleMask = (value: string | undefined) => {
 
   return ret
 }
+
+//  const optionsValues = { style: 'currency', currency: 'BRL' }
+export const valorEmReal = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
+
+export const valorBr = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })

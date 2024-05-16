@@ -3,7 +3,8 @@
 import type { BancoType } from './BancoType'
 
 export type DadosBancariosType = {
-  idCliente?: number
+  id?: number //id do cliente
+  token?: string
   banco?: BancoType
   agencia?: string
   conta?: string
@@ -14,6 +15,8 @@ export type DadosBancariosType = {
 }
 
 export const dadosBancariosInit = {
+  id: 0,
+  token: '',
   banco: {
     codigo: '',
     nome: '',
@@ -29,4 +32,4 @@ export const dadosBancariosInit = {
 
 export const tiposContaBancaria = ['Conta Corrente', 'Poupança']
 
-export const tiposPix = ['CPF', 'CNPJ', 'Email', 'Celular', 'Chave aleatória']
+export const tiposPix = ['CPF', 'CNPJ', 'Email', 'Celular', 'Random']

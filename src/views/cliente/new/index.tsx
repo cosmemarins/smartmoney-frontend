@@ -1,19 +1,26 @@
 'use client'
 
+import { useState } from 'react'
+
 import Grid from '@mui/material/Grid'
 
 // Component Imports
-import ClienteProfileHeader from '../components/ClienteProfileHeader'
-import { ClienteInit, type ClienteProfileHeaderType } from '@/types/ClienteType'
-import DadosPrincipais from '../components/identificacao/DadosPrincipais'
+import ClienteProfileHeader from '@/views/cliente/components/ClientePageHeader'
+import { clienteInit, clientePageHeaderInit, type ClientePageHeaderType } from '@/types/ClienteType'
+import Identificacao from '@/views/cliente/components/identificacao'
 
 const NewClienteProfile = () => {
-  const clienteProfileHeader = {
-    nome: 'Novo Cliente',
-    foto: '/images/avatars/nobody.png',
-    imagemCapa: '/images/pages/profile-banner.png',
-    status: undefined
-  } as ClienteProfileHeaderType
+  const [clienteProfileHeader, setClienteProfileHeader] = useState<ClienteProfileHeaderType>({
+    ...clienteProfileHeaderInit,
+    nome: 'Novo Cliente'
+  })
+
+  const updateClienteHeader = (nome: string) => {
+    setClienteProfileHeader({
+      ...clienteProfileHeader,
+      nome
+    })
+  }
 
   return (
     <Grid container spacing={6}>
@@ -21,7 +28,7 @@ const NewClienteProfile = () => {
         <ClienteProfileHeader data={clienteProfileHeader} />
       </Grid>
       <Grid item xs={12}>
-        <DadosPrincipais clienteData={ClienteInit} />
+        <Identificacao updateClienteHeader={updateClienteHeader} clienteData={clienteInit} />
       </Grid>
     </Grid>
   )

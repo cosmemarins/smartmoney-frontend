@@ -14,3 +14,15 @@ export type DataOptionsType = {
 }
 
 export type TipoContaType = (typeof TipoContaEnum)[keyof typeof TipoContaEnum]
+
+export type erroType = {
+  msg?: string
+  field?: string
+}
+
+export type ArquivoUploadType = {
+  token?: string
+  titulo?: string
+  nomeArquivo?: string
+  tipoUpload?: string
+}

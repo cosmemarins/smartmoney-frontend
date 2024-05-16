@@ -4,7 +4,8 @@ import type { BancoType } from './BancoType'
 import type { UsuarioType } from './UsuarioType'
 
 export type ClienteType = {
-  id: number
+  id?: number
+  token?: string
   nome?: string
   dataNascimento?: string
   identidade?: string
@@ -26,6 +27,10 @@ export type ClienteType = {
   tipoPoupanca?: string
   tipoPix?: string
   chavePix?: string
+  docIdentidade?: string
+  compResidencia?: string
+  compFinanceiro?: string
+  foto?: string
   status?: string
   data?: Date
   dataUltimaModificacao?: Date
@@ -48,8 +53,8 @@ export type IdentificacaoType = {
   status?: string
 }
 
-export type ClienteProfileHeaderType = {
-  nome: string
+export type ClientePageHeaderType = {
+  nome?: string
   local?: string
   foto?: string
   imagemCapa?: string
@@ -57,8 +62,14 @@ export type ClienteProfileHeaderType = {
   status?: string
 }
 
-export const ClienteInit = {
+export const clientePageHeaderInit = {
+  foto: '/images/avatars/nobody.png',
+  imagemCapa: '/images/pages/profile-banner.png'
+}
+
+export const clienteInit = {
   id: 0,
+  token: '',
   nome: '',
   dataNascimento: '',
   identidade: '',
@@ -72,5 +83,19 @@ export const ClienteInit = {
   bairro: '',
   cidade: '',
   estado: '',
-  status: ''
+  status: 'ATIVO'
+}
+
+export type ClienteDocumentacaoType = {
+  token: string
+  docIdentidade?: string
+  compResidencia?: string
+  compFinanceiro?: string
+}
+
+export const clienteDocumentacaoInit = {
+  token: '',
+  docIdentidade: '',
+  compResidencia: '',
+  compFinanceiro: ''
 }

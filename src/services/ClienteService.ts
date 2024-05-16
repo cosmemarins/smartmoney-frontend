@@ -1,5 +1,8 @@
+'use client'
+
 import api from './api'
 import type { ClienteType } from '@/types/ClienteType'
+import type { DadosBancariosType } from '@/types/DadosBancariosType'
 import type { DataOptionsType } from '@/types/utilTypes'
 
 const path = 'clientes'
@@ -13,26 +16,46 @@ async function getList(cliente: ClienteType, dataOptions?: DataOptionsType): Pro
 
   const { data } = await api.get<ClienteType[]>(`${path}/?${queryString.toString()}`)
 
-  console.log('getdata', data)
+  console.log('getList', data)
 
   return data
 }
 
-async function incluir(cliente: ClienteType): Promise<ClienteType> {
-  const { data } = await api.post<ClienteType>(path, cliente)
+async function getCliente(token: string): Promise<ClienteType> {
+  const { data } = await api.get<ClienteType>(`${path}/${token}`)
 
   return data
 }
 
-async function editar(cliente: ClienteType, isProfile = false): Promise<ClienteType> {
-  console.log(`${path}${isProfile ? '/profile' : ''}`)
-  const { data } = await api.put<ClienteType>(`${path}${isProfile ? '/profile' : ''}`, cliente)
+async function salvarCliente(cliente: ClienteType): Promise<ClienteType> {
+  console.log('incluirCliente', cliente)
+
+  const { data } =
+    cliente.token && cliente.token != ''
+      ? await api.put<ClienteType>(path, cliente)
+      : await api.post<ClienteType>(path, cliente)
 
   return data
 }
 
-async function excluir(id: number): Promise<void | undefined> {
-  await api.delete(`${path}/${id}`)
+async function salvarDadosBancarios(dadosBancarios: DadosBancariosType): Promise<DadosBancariosType> {
+  console.log('salvarDadosBancarios', dadosBancarios)
+
+  const { data } = await api.put<DadosBancariosType>(path, dadosBancarios)
+
+  return data
 }
 
-export { getList, incluir, editar, excluir }
+async function excluir(token: string): Promise<void | undefined> {
+  await api.delete(`${path}/${token}`)
+}
+
+async function uploadDocumento(formData: any): Promise<ClienteType> {
+  console.log('uploadDocumento', formData)
+
+  const { data } = await api.post<ClienteType>(`${path}/upload`, formData)
+
+  return data
+}
+
+export { getList, getCliente, salvarCliente, salvarDadosBancarios, excluir, uploadDocumento }

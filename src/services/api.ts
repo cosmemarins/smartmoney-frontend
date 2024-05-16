@@ -6,7 +6,7 @@ import { getCookie } from 'cookies-next'
 import { signOut } from 'next-auth/react'
 
 const onRequestError = (error: AxiosError): Promise<AxiosError> => {
-  console.error(error.toJSON())
+  console.error('onRequestError:', `${error.response?.status} - ${error.response?.statusText}`)
 
   return Promise.reject(error)
 }
@@ -20,7 +20,7 @@ const onResponse = (response: AxiosResponse): AxiosResponse => {
 }
 
 const onResponseError = (error: AxiosError): Promise<AxiosError> => {
-  console.error(error.toJSON())
+  console.error('onResponseError:', `${error.response?.status} - ${error.response?.statusText}`)
 
   return Promise.reject(error)
 }
@@ -33,7 +33,16 @@ const api = axios.create({
 api.interceptors.request.use(function (config) {
   const storedToken = getCookie('token')
 
-  console.log('storedToken', storedToken)
+  //console.log('interceptors.storedToken', storedToken)
+
+  if (!storedToken) {
+    console.log('storedToken vazio, precisa logar novamente')
+
+    signOut({ redirect: false })
+
+    //TODO: implementar metode de refresh token
+    window.location.href = `${process.env.NEXT_PUBLIC_APP_URL}/login`
+  }
 
   config.headers.Authorization = `Bearer ${storedToken}`
 
