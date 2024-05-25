@@ -1,34 +1,17 @@
-'use client'
+// React Imports
+import { Grid } from '@mui/material'
 
-// MUI Imports
-import Grid from '@mui/material/Grid'
+import UsuarioListTable from './UsuarioListTable'
 
-import api from '@/services/api'
-
-// Accessing user data with the role field
-const getList = async () => {
-  // Vars
-
-  const { data } = await api.get('/usuarios')
-
-  console.log('DATA', data)
-
-  return data
-}
-
-const EquipeList = () => {
-  // Inside your component...
-  const data = getList()
-
-  console.log('DATA', data)
-
+const UsuarioList = () => {
+  // States
   return (
     <Grid container spacing={6}>
       <Grid item xs={12}>
-        1
+        <UsuarioListTable />
       </Grid>
     </Grid>
   )
 }
 
-export default EquipeList
+export default UsuarioList

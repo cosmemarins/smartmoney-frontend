@@ -1,17 +1,13 @@
-// MUI Imports
-import Grid from '@mui/material/Grid'
+'use client'
 
-// Component Imports
-import ClienteProfile from '@views/cliente/new'
+import ClientePage from '@/views/cliente'
+import { ClienteProvider } from '@/contexts/ClienteContext'
 
-const ClienteProfilePage = async () => {
+//export default async function ClienteApp({ params }: Props) {
+export default function ClienteApp() {
   return (
-    <Grid container spacing={6}>
-      <Grid item xs={12} lg={12} md={12}>
-        <ClienteProfile />
-      </Grid>
-    </Grid>
+    <ClienteProvider>
+      <ClientePage token={undefined} />
+    </ClienteProvider>
   )
 }
-
-export default ClienteProfilePage

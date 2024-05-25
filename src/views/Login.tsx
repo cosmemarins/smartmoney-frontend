@@ -136,7 +136,7 @@ const Login = ({ mode }: { mode: SystemMode }) => {
       rememberMe: true
     })
 
-    console.log('LOGIN res', res)
+    //console.log('LOGIN res', res)
 
     if (res && res.ok && res.error === null) {
       // Vars

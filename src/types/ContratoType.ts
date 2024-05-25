@@ -3,14 +3,17 @@
 import type { ClienteType } from './ClienteType'
 
 export type ContratoType = {
+  id?: number
   token?: string
   cliente?: ClienteType
+  contratoPai?: ContratoType
   data?: Date
   valor?: number
   prazo?: number
   taxa?: number
   status?: string
   observacao?: string
+  dataEnvio?: Date
 }
 
 export const contratoInit = {

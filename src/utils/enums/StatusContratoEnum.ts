@@ -7,7 +7,7 @@ export enum StatusContratoEnum {
   FINALIZADO = 'FINALIZADO'
 }
 
-export function getStatusContratoEnumDesc(item: string) {
+export function getStatusContratoEnumDesc(item: string | undefined) {
   switch (item) {
     case StatusContratoEnum.NOVO:
       return 'novo'

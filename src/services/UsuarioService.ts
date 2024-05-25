@@ -1,55 +1,96 @@
-import type { DataOptionsType } from 'src/types/UtilTypes'
+'use client'
 
-import api from './api'
-import type { UsuarioType } from '../types/UsuarioType'
+import api from '@/services/api'
+import type { UsuarioType } from '@/types/UsuarioType'
+import type { DadosBancariosType } from '@/types/DadosBancariosType'
+import type { DataOptionsType } from '@/types/utilTypes'
+import { TipoDocumentoEnum } from '@/utils/enums/TipoDocumentoEnum'
 
 const path = 'usuarios'
 
-async function getList(usuario: UsuarioType, dataOptions?: DataOptionsType): Promise<UsuarioType[]> {
+async function getListUsuario(dataOptions?: DataOptionsType): Promise<UsuarioType[]> {
   const queryString = new URLSearchParams()
 
-  Object.entries(usuario ?? {}).map(prop => queryString.append(prop[0], `${prop[1]}`))
+  //Object.entries(usuario ?? {}).map(prop => queryString.append(prop[0], `${prop[1]}`))
 
   Object.entries(dataOptions ?? {}).map(prop => queryString.append(prop[0], `${prop[1]}`))
 
   const { data } = await api.get<UsuarioType[]>(`${path}/?${queryString.toString()}`)
 
-  console.log('getdata', data)
+  //console.log('getList', data)
 
   return data
 }
 
-async function incluirUsuario(usuario: UsuarioType): Promise<UsuarioType> {
-  const { data } = await api.post<UsuarioType>(path, usuario)
+async function getUsuario(token: string): Promise<UsuarioType> {
+  const { data } = await api.get<UsuarioType>(`${path}/${token}`)
 
   return data
 }
 
-async function editarUsuario(usuario: UsuarioType, isProfile = false): Promise<UsuarioType> {
-  console.log(`${path}${isProfile ? '/profile' : ''}`)
-  const { data } = await api.put<UsuarioType>(`${path}${isProfile ? '/profile' : ''}`, usuario)
+async function salvarUsuario(usuario: UsuarioType): Promise<UsuarioType> {
+  //console.log('incluirUsuario', usuario)
+
+  const { data } =
+    usuario.token && usuario.token != ''
+      ? await api.put<UsuarioType>(path, usuario)
+      : await api.post<UsuarioType>(path, usuario)
 
   return data
 }
 
-async function excluirUsuario(id: number): Promise<void | undefined> {
-  await api.delete(`${path}/${id}`)
-}
+async function salvarDadosBancarios(dadosBancarios: DadosBancariosType): Promise<DadosBancariosType> {
+  console.log('salvarDadosBancarios', dadosBancarios)
 
-interface UserData {
-  email: string
-  company: string
-  billing: string
-  country: string
-  contact: number
-  fullName: string
-  username: string
-}
-
-async function convidarCliente(usuario: UserData): Promise<UsuarioType> {
-  const { data } = await api.post<UsuarioType>(path, usuario)
+  const { data } = await api.put<DadosBancariosType>(path, dadosBancarios)
 
   return data
 }
 
-export default { getList, incluirUsuario, editarUsuario, excluirUsuario, convidarCliente }
+async function excluirUsuario(token: string): Promise<void | undefined> {
+  await api.delete(`${path}/${token}`)
+}
+
+async function uploadDocumento(formData: any): Promise<UsuarioType> {
+  const { data } = await api.post<UsuarioType>(`${path}/upload`, formData)
+
+  //console.log('return data', data)
+
+  return data
+}
+
+async function getThumbnailUsuario(token: string, tipoDocumento: TipoDocumentoEnum) {
+  //console.log('Excluindo o extrato: ', token)
+  let tipo
+
+  switch (tipoDocumento) {
+    case TipoDocumentoEnum.IDENTIDADE:
+      tipo = 'identidade'
+      break
+    case TipoDocumentoEnum.COMPROVANTE_FINANCEIRO:
+      tipo = 'comp-financeiro'
+      break
+    case TipoDocumentoEnum.COMPROVANTE_RESIDENCIA:
+      tipo = 'comp-residencia'
+      break
+  }
+
+  const response = await api.get(`${path}/thumb/${tipo}/${token}`, {
+    responseType: 'arraybuffer'
+  })
+
+  //.then(response => {
+  //  return Buffer.from(response.data, 'binary').toString('base64')
+  //})
+  return Buffer.from(response.data, 'binary').toString('base64')
+}
+
+export {
+  getListUsuario,
+  getUsuario,
+  salvarUsuario,
+  salvarDadosBancarios,
+  excluirUsuario,
+  uploadDocumento,
+  getThumbnailUsuario
+}

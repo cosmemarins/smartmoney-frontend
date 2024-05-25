@@ -5,13 +5,15 @@ import Card from '@mui/material/Card'
 import CardMedia from '@mui/material/CardMedia'
 import CardContent from '@mui/material/CardContent'
 import Typography from '@mui/material/Typography'
-import Button from '@mui/material/Button'
 
 import moment, { locale } from 'moment'
 import 'moment/locale/pt-br'
 
 // Type Imports
+import { Chip } from '@mui/material'
+
 import { useClienteContext } from '@/contexts/ClienteContext'
+import { clienteStatusColors } from '@/types/ClienteType'
 
 locale('pt-br')
 
@@ -56,10 +58,13 @@ const ClientePageHeader = () => {
             </div>
           </div>
           {cliente?.status && (
-            <Button variant='contained' className='flex gap-2' style={{ textTransform: 'capitalize' }}>
-              <i className='tabler-user-check !text-base'></i>
-              <span>{cliente?.status}</span>
-            </Button>
+            <Chip
+              icon={<i className='tabler-user-check' />}
+              variant='filled'
+              className='flex gap-2 capitalize'
+              label={cliente?.status}
+              color={clienteStatusColors[cliente?.status || 'primary']}
+            />
           )}
         </div>
       </CardContent>

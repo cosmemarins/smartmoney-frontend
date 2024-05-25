@@ -43,7 +43,6 @@ export const authOptions: NextAuthOptions = {
           const data = await res.json()
 
           if (res.status === 400 || res.status === 401) {
-            console.log(data)
             throw new Error(JSON.stringify({ message: ['Email ou senha inválidos'] }))
           }
 
@@ -54,9 +53,21 @@ export const authOptions: NextAuthOptions = {
              * the session which will be accessible all over the app.
              */
             cookies().set('token', data.accessToken)
-            console.log(data)
 
-            return data
+            // cookies().set('userData', data.userData)
+            const user = {
+              ...data.userData,
+              id: data.userData.id,
+              email: data.userData.email
+
+              //name: data.userData.nome,
+              //image: data.userData.foto,
+              //role: data.userData.roles
+            }
+
+            console.log('return user', user)
+
+            return user
           }
 
           return null
@@ -100,27 +111,66 @@ export const authOptions: NextAuthOptions = {
      * via `jwt()` callback to make them accessible in the `session()` callback
      */
     async jwt({ token, user }) {
+      console.log('callback jwt entrada: ', 'token: ', token, 'user: ', user)
+
       if (user) {
         /*
          * For adding custom parameters to user in session, we first need to add those parameters
          * in token which then will be available in the `session()` callback
          */
+
         //id: string
         //name?: string | null
         //email?: string | null
         //image?: string | null
-        token.name = user.name
-        token.role = user.role
+        //token.name = user.name
+        //token.role = user.role
+
+        token.id = Number(user.id)
+        token.token = user.token
+        token.nome = user.nome
+        token.email = user.email
+        token.isAdmin = user.isAdmin
+        token.roles = user.roles
+        token.foto = user.foto
+        token.rememberMe = user.rememberMe
+        token.dataUltimoAcesso = user.dataUltimoAcesso
+
+        //propriedades default do objeto user
+        //token.email = user.email
+        //token.name = user.nome
+        //token.image = user.foto
+        //token.role = user.roles
       }
+
+      console.log('callback jwt saida: ', 'token: ', token)
 
       return token
     },
     async session({ session, token }) {
+      console.log('callback session entrada', 'token: ', token, 'session: ', session)
+
       if (session.user) {
         // ** Add custom params to user in session which are added in `jwt()` callback via `token` parameter
-        session.user.name = token.name
-        session.user.role = token.role
+
+        session.user.id = token.id
+        session.user.token = token.token
+        session.user.nome = token.nome
+        session.user.email = token.email
+        session.user.isAdmin = token.isAdmin
+        session.user.roles = token.roles
+        session.user.foto = token.foto
+        session.user.rememberMe = token.rememberMe
+        session.user.dataUltimoAcesso = token.dataUltimoAcesso
+
+        //propriedades default do objeto user
+        //session.user.email = token.email
+        //session.user.name = token.nome
+        //session.user.image = token.foto
+        //session.user.role = token.roles
       }
+
+      console.log('callback session saida', 'token: ', token, 'session: ', session)
 
       return session
     }

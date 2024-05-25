@@ -1,7 +1,7 @@
-import EquipeList from '@views/equipe/list'
+import UsuarioList from '@views/equipe/list'
 
 const EquipeListApp = async () => {
-  return <EquipeList />
+  return <UsuarioList />
 }
 
 export default EquipeListApp

@@ -2,6 +2,7 @@
 
 import type { BancoType } from './BancoType'
 import type { UsuarioType } from './UsuarioType'
+import type { StatusColorType } from './utilTypes'
 
 export type ClienteType = {
   id?: number
@@ -36,6 +37,10 @@ export type ClienteType = {
   dataUltimaModificacao?: Date
 }
 
+export type ClienteTypeWithAction = ClienteType & {
+  action?: string
+}
+
 export type IdentificacaoType = {
   nome?: string
   dataNascimento?: string
@@ -53,39 +58,6 @@ export type IdentificacaoType = {
   status?: string
 }
 
-export type ClientePageHeaderType = {
-  nome?: string
-  local?: string
-  foto?: string
-  imagemCapa?: string
-  clienteDesde?: string
-  status?: string
-}
-
-export const clientePageHeaderInit = {
-  foto: '/images/avatars/nobody.png',
-  imagemCapa: '/images/pages/profile-banner.png'
-}
-
-export const clienteInit = {
-  id: 0,
-  token: '',
-  nome: '',
-  dataNascimento: '',
-  identidade: '',
-  cpfCnpj: '',
-  email: '',
-  telefone: '',
-  cep: '',
-  endereco: '',
-  numero: '',
-  complemento: '',
-  bairro: '',
-  cidade: '',
-  estado: '',
-  status: 'ATIVO'
-}
-
 export type ClienteDocumentacaoType = {
   token: string
   docIdentidade?: string
@@ -98,4 +70,10 @@ export const clienteDocumentacaoInit = {
   docIdentidade: '',
   compResidencia: '',
   compFinanceiro: ''
+}
+
+export const clienteStatusColors: StatusColorType = {
+  ATIVO: 'success',
+  PENDENTE: 'warning',
+  INATIVO: 'secondary'
 }
