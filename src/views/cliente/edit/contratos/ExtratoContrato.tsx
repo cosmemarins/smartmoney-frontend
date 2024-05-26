@@ -28,7 +28,6 @@ import {
 
 import { toast } from 'react-toastify'
 
-import type { ContratoType } from '@/types/ContratoType'
 import ContratoService from '@/services/ContratoService'
 import type { ExtratoType } from '@/types/ExtratoType'
 import { valorBr, valorEmReal } from '@/utils/string'
@@ -36,7 +35,9 @@ import { getStatusContratoEnumColor, getStatusContratoEnumDesc } from '@/utils/e
 import { getTipoExtratoEnumColor, getTipoExtratoEnumDesc } from '@/utils/enums/TipoExtratoEnum'
 import ExtratoEdit from './ExtratoEdit'
 import OptionMenu from '@/components/option-menu'
+import { useContratoContext } from '@/contexts/ContratoContext'
 import ContratoEdit from './ContratoEdit'
+import { trataErro } from '@/utils/erro'
 
 locale('pt-br')
 
@@ -51,16 +52,8 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   }
 }))
 
-interface props {
-  contrato: ContratoType
-  refreshContratoList?: any
-}
-
-export default function ExtratoContrato({ contrato, refreshContratoList }: props) {
-  console.log('Renderizando ExtratoContrato', contrato)
-
+export default function ExtratoContrato() {
   // States
-  const [contratoEdit, setContratoEdit] = useState<ContratoType>(contrato)
   const [extratoEdit, setExtratoEdit] = useState<ExtratoType>({} as ExtratoType)
   const [extratoList, setExtratoList] = useState<ExtratoType[]>([])
   const [reload, setReload] = useState(false)
@@ -69,13 +62,18 @@ export default function ExtratoContrato({ contrato, refreshContratoList }: props
   const [openDlgDeleteExtrato, setOpenDlgDeleteExtrato] = useState<boolean>(false)
   const [itemSelect, setItemSelect] = useState<string | undefined>()
 
+  const { contrato, setContratoContext, setRefreshContext } = useContratoContext()
+
+  console.log('Renderizando ExtratoContrato', contrato)
+
   const menuOptions = [
     {
       text: 'Refresh',
       icon: 'tabler-refresh text-[22px]',
       menuItemProps: {
         onClick: () => {
-          refreshListExtrato(contratoEdit.token)
+          refreshListExtrato(contrato?.token)
+          setRefreshContext(true)
         },
         className: 'flex items-center gap-2 text-textSecondary'
       }
@@ -111,22 +109,29 @@ export default function ExtratoContrato({ contrato, refreshContratoList }: props
     setOpenDlgContrato(false)
 
     if (refresh) {
-      refreshContrato(contratoEdit.token)
-      refreshContratoList()
+      refreshContrato(contrato?.token)
+      setRefreshContext(true)
     }
   }
 
   const handleNovoExtrato = () => {
-    setExtratoEdit({
-      data: new Date(),
-      contrato: { id: contrato.id, token: contrato.token }
-    })
-    setOpenDlgExtrato(true)
+    if (contrato) {
+      setExtratoEdit({
+        data: new Date(),
+        contrato: { id: contrato.id, token: contrato.token }
+      })
+      setOpenDlgExtrato(true)
+    }
   }
 
   const handleCloseDlgExtrato = (refresh: boolean) => {
     setOpenDlgExtrato(false)
-    if (refresh) refreshListExtrato(contratoEdit.token)
+
+    if (refresh) {
+      refreshContrato(contrato?.token)
+      refreshListExtrato(contrato?.token)
+      setRefreshContext(true)
+    }
   }
 
   const handleOnEditExtrato = (extrato: ExtratoType) => {
@@ -144,11 +149,13 @@ export default function ExtratoContrato({ contrato, refreshContratoList }: props
   }
 
   const confirmDeleteExtrato = () => {
-    if (itemSelect) {
+    if (contrato && itemSelect) {
       setReload(true)
       ContratoService.excluirExtrato(itemSelect)
         .then(() => {
-          refreshListExtrato(contratoEdit.token)
+          refreshContrato(contrato?.token)
+          refreshListExtrato(contrato?.token)
+          setRefreshContext(true)
           setOpenDlgDeleteExtrato(false)
           toast.success(`Lançamento ${itemSelect} excluído com sucesso!`)
         })
@@ -162,14 +169,16 @@ export default function ExtratoContrato({ contrato, refreshContratoList }: props
   }
 
   const refreshContrato = (token: string | undefined) => {
+    console.log('refreshContrato', token)
+
     if (token) {
       setReload(true)
       ContratoService.get(token)
         .then(respContrato => {
-          setContratoEdit(respContrato)
+          setContratoContext(respContrato)
         })
         .catch(err => {
-          console.log('ERRO RESP', err)
+          trataErro(err)
         })
         .finally(() => {
           setReload(false)
@@ -185,7 +194,7 @@ export default function ExtratoContrato({ contrato, refreshContratoList }: props
           setExtratoList(respExtratoList)
         })
         .catch(err => {
-          console.log('ERRO RESP', err)
+          trataErro(err)
         })
         .finally(() => {
           setReload(false)
@@ -195,23 +204,29 @@ export default function ExtratoContrato({ contrato, refreshContratoList }: props
 
   //componenteInit
   useEffect(() => {
-    console.log('useEffect [contrato] ')
-    setContratoEdit(contrato)
-    refreshListExtrato(contrato.token)
+    console.log('useEffect ExtratoContrato, []')
+    refreshListExtrato(contrato?.token)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    console.log('useEffect ExtratoContrato, [contrato] ')
+    setRefreshContext(true)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contrato])
 
   return (
-    contratoEdit.token && (
+    contrato?.token && (
       <>
         <Card sx={{ mb: 2.5 }}>
           <CardHeader
             title={
               <>
                 <span>
-                  {moment(contratoEdit?.data).format('DD/MM/YYYY')} - {contratoEdit.token}
+                  {moment(contrato?.data).format('DD/MM/YYYY')} - {contrato.token}
                 </span>
                 <span style={{ float: 'right', paddingRight: '10px' }}>
-                  {contratoEdit.valor ? valorEmReal.format(contratoEdit.valor) : ''}
+                  {contrato.saldo ? valorEmReal.format(contrato.saldo) : '0,00'}
                 </span>
               </>
             }
@@ -221,7 +236,7 @@ export default function ExtratoContrato({ contrato, refreshContratoList }: props
             <Chip
               size='small'
               variant='tonal'
-              label={`${contratoEdit.prazo} meses`}
+              label={`${contrato.prazo} meses`}
               color='primary'
               icon={<i className='tabler-calendar-repeat' />}
               sx={{ mr: 2.5 }}
@@ -229,7 +244,7 @@ export default function ExtratoContrato({ contrato, refreshContratoList }: props
             <Chip
               size='small'
               variant='tonal'
-              label={contratoEdit?.taxa ? valorBr.format(contratoEdit?.taxa) : ''}
+              label={contrato?.taxa ? valorBr.format(contrato?.taxa) : ''}
               color='primary'
               icon={<i className='tabler-percentage' />}
               sx={{ mr: 2.5 }}
@@ -237,7 +252,7 @@ export default function ExtratoContrato({ contrato, refreshContratoList }: props
             <Chip
               size='small'
               variant='tonal'
-              label={contratoEdit?.valor ? valorBr.format(contratoEdit?.valor) : ''}
+              label={contrato?.valor ? valorBr.format(contrato?.valor) : ''}
               color='primary'
               icon={<i className='tabler-currency-dollar' />}
               sx={{ mr: 2.5 }}
@@ -245,8 +260,8 @@ export default function ExtratoContrato({ contrato, refreshContratoList }: props
             <Chip
               size='small'
               variant='tonal'
-              label={contratoEdit.status ? getStatusContratoEnumDesc(contratoEdit.status) : ''}
-              color={contratoEdit.status ? getStatusContratoEnumColor(contratoEdit.status) : 'default'}
+              label={contrato.status ? getStatusContratoEnumDesc(contrato.status) : ''}
+              color={contrato.status ? getStatusContratoEnumColor(contrato.status) : 'default'}
               sx={{ float: 'right' }}
             />
           </CardContent>
@@ -330,7 +345,7 @@ export default function ExtratoContrato({ contrato, refreshContratoList }: props
         >
           <DialogTitle id='form-dialog-title'>Editar Contrato</DialogTitle>
           <DialogContent>
-            <ContratoEdit contratoData={contratoEdit} handleClose={handleCloseDlgContrato} />
+            <ContratoEdit contrato={contrato} handleClose={handleCloseDlgContrato} />
           </DialogContent>
         </Dialog>
 

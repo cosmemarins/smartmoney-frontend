@@ -9,6 +9,7 @@ export type ContratoType = {
   contratoPai?: ContratoType
   data?: Date
   valor?: number
+  saldo?: number
   prazo?: number
   taxa?: number
   status?: string
@@ -19,6 +20,7 @@ export type ContratoType = {
 export const contratoInit = {
   data: new Date(),
   valor: 0,
+  saldo: 0,
   prazo: 12,
   taxa: 0,
   observacao: ''

@@ -5,6 +5,7 @@ import type { UsuarioType } from '@/types/UsuarioType'
 import type { DadosBancariosType } from '@/types/DadosBancariosType'
 import type { DataOptionsType } from '@/types/utilTypes'
 import { TipoDocumentoEnum } from '@/utils/enums/TipoDocumentoEnum'
+import type UsuarioSenhaDTO from '@/types/UsuarioSenha.dto'
 
 const path = 'usuarios'
 
@@ -85,6 +86,18 @@ async function getThumbnailUsuario(token: string, tipoDocumento: TipoDocumentoEn
   return Buffer.from(response.data, 'binary').toString('base64')
 }
 
+async function salvarSenha(token: string, usuarioSenha: UsuarioSenhaDTO): Promise<DadosBancariosType> {
+  const { data } = await api.post<DadosBancariosType>(`${path}/salvar-senha/${token}`, usuarioSenha)
+
+  return data
+}
+
+async function resetarSenha(token: string, usuarioSenha: UsuarioSenhaDTO): Promise<DadosBancariosType> {
+  const { data } = await api.put<DadosBancariosType>(`${path}/resetar-senha/${token}`, usuarioSenha)
+
+  return data
+}
+
 export {
   getListUsuario,
   getUsuario,
@@ -92,5 +105,7 @@ export {
   salvarDadosBancarios,
   excluirUsuario,
   uploadDocumento,
-  getThumbnailUsuario
+  getThumbnailUsuario,
+  salvarSenha,
+  resetarSenha
 }

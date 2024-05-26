@@ -18,6 +18,7 @@ import Identificacao from './identificacao'
 import DocumentacaoTab from './documentacao'
 import DadosBancarios from './dadosBancarios'
 import { useUsuarioContext } from '@/contexts/UsuarioContext'
+import SegurancaTab from './seguranca'
 
 const UsuarioEdit = () => {
   // States
@@ -61,6 +62,9 @@ const UsuarioEdit = () => {
                     iconPosition='start'
                   />
                 )}
+                {usuario?.token && (
+                  <Tab icon={<i className='tabler-lock' />} value='seguranca' label='Segurança' iconPosition='start' />
+                )}
               </CustomTabList>
             </Grid>
             <Grid item xs={12}>
@@ -75,6 +79,11 @@ const UsuarioEdit = () => {
               {usuario?.token && (
                 <TabPanel value='documentacao' className='p-0'>
                   <DocumentacaoTab />
+                </TabPanel>
+              )}
+              {usuario?.token && (
+                <TabPanel value='seguranca' className='p-0'>
+                  <SegurancaTab />
                 </TabPanel>
               )}
             </Grid>

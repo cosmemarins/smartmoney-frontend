@@ -18,7 +18,7 @@ const ContratoService = {
   },
 
   salvarContrato: async function salvarContrato(contrato: ContratoType, trocaContrato: boolean): Promise<ContratoType> {
-    console.log('incluirContrato', contrato)
+    //console.log('salvarContrato', contrato)
 
     if (!trocaContrato) {
       const { data } =

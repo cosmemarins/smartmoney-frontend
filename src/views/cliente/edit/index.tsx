@@ -19,6 +19,7 @@ import DocumentacaoTab from '@/views/cliente/edit/documentacao'
 import ContratosTab from '@/views/cliente/edit/contratos'
 import DadosBancarios from './dadosBancarios'
 import { useClienteContext } from '@/contexts/ClienteContext'
+import { ContratoProvider } from '@/contexts/ContratoContext'
 
 const ClienteEdit = () => {
   // States
@@ -88,7 +89,9 @@ const ClienteEdit = () => {
               )}
               {cliente?.token && (
                 <TabPanel value='contratos' className='p-0'>
-                  <ContratosTab />
+                  <ContratoProvider>
+                    <ContratosTab />
+                  </ContratoProvider>
                 </TabPanel>
               )}
             </Grid>

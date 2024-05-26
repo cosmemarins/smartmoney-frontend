@@ -11,12 +11,15 @@ import 'moment/locale/pt-br'
 
 import { toast } from 'react-toastify'
 
+import axios from 'axios'
+
 import CustomTextField from '@core/components/mui/TextField'
 import type { ExtratoType } from '@/types/ExtratoType'
 import type { ArquivoUploadType, erroType } from '@/types/utilTypes'
 import ContratoService from '@/services/ContratoService'
 import { TipoExtratoEnumList } from '@/utils/enums/TipoExtratoEnum'
 import ComprovanteUpload from '@/components/DocumentoUpload'
+import type { ValidationError } from '@/services/api'
 
 locale('pt-br')
 
@@ -26,8 +29,6 @@ interface props {
 }
 
 const ExtratoEdit = ({ extratoData, handleClose }: props) => {
-  console.log('renderizando estratoEdit', extratoData)
-
   // States
   const [erro, setErro] = useState<erroType>()
   const [reload, setReload] = useState(false)
@@ -44,27 +45,28 @@ const ExtratoEdit = ({ extratoData, handleClose }: props) => {
   }
 
   const salvarSemDocumento = () => {
-    console.log('salvar sem documento', extratoEdit)
+    //console.log('salvar sem documento', extratoEdit)
+
     ContratoService.salvarExtrato(extratoEdit)
       .then(respExtrato => {
-        console.log(respExtrato)
+        //console.log(respExtrato)
         toast.success('Lançamento salvo com sucesso!')
         setExtratoEdit(respExtrato)
         handleClose(true)
       })
       .catch(err => {
-        console.log('ERRO RESP', err)
-        const erro = err?.response.data
+        let msgErro = 'Ocorreu um erro ao tentar salvar o registro'
 
-        const msgErro =
-          err?.response.status === 401
-            ? 'Não autorizado, é preciso logar novamente'
-            : Array.isArray(erro.message)
-              ? erro.message.join(', ')
-              : erro.message
+        if (axios.isAxiosError<ValidationError, Record<string, unknown>>(err)) {
+          console.log('status', err.status)
+          console.error('response', err.response)
+          msgErro = err?.response?.request.responseText
+        } else {
+          console.error(err)
+          msgErro = err
+        }
 
         setErro({ msg: msgErro })
-        toast.error(`Erro, ${msgErro}`)
       })
       .finally(() => {
         setReload(false)
@@ -94,24 +96,24 @@ const ExtratoEdit = ({ extratoData, handleClose }: props) => {
 
     ContratoService.salvarExtratoComDocumento(formData)
       .then(respExtrato => {
-        console.log(respExtrato)
+        //console.log(respExtrato)
         toast.success('Lançamento salvo com sucesso!')
         setExtratoEdit(respExtrato)
         handleClose(true)
       })
       .catch(err => {
-        console.log('ERRO RESP', err)
-        const erro = err?.response.data
+        const msgErro = 'Ocorreu um erro ao tentar salvar o registro'
 
-        const msgErro =
-          err?.response.status === 401
-            ? 'Não autorizado, é preciso logar novamente'
-            : Array.isArray(erro.message)
-              ? erro.message.join(', ')
-              : erro.message
+        if (axios.isAxiosError<ValidationError, Record<string, unknown>>(err)) {
+          console.log(err.status)
+          console.error(err.response)
+          toast.error(`Erro, ${err.status}`)
+        } else {
+          console.error(err)
+          toast.error(`Erro`, err)
+        }
 
         setErro({ msg: msgErro })
-        toast.error(`Erro, ${msgErro}`)
       })
       .finally(() => {
         setReload(false)
@@ -119,6 +121,18 @@ const ExtratoEdit = ({ extratoData, handleClose }: props) => {
   }
 
   const handleSubmit = () => {
+    if (!extratoEdit.valor || extratoEdit.valor <= 0) {
+      toast.error('É preciso informar um valor')
+
+      return
+    }
+
+    if (!extratoEdit.tipo) {
+      toast.error('É preciso informar um tipo para esta operação')
+
+      return
+    }
+
     setReload(true)
     setErro(undefined)
 
@@ -137,6 +151,7 @@ const ExtratoEdit = ({ extratoData, handleClose }: props) => {
       nomeArquivo: extratoEdit.compDeposito,
       tipoUpload: 'COMPROVANTE'
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [extratoEdit])
 
   useEffect(() => {
@@ -149,12 +164,14 @@ const ExtratoEdit = ({ extratoData, handleClose }: props) => {
             titulo: 'Comprovante',
             base64Data: dataImg
           })
-          console.log(arquivoUploadData)
+
+          //console.log(arquivoUploadData)
         })
         .catch(err => {
           console.log('Erro ao recuperar imagem:', err)
         })
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (

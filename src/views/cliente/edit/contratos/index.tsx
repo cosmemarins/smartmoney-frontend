@@ -8,26 +8,26 @@ import CardContent from '@mui/material/CardContent'
 import Grid from '@mui/material/Grid'
 
 // Component Imports
-import { Backdrop, Button, CircularProgress, Dialog, DialogContent, DialogTitle } from '@mui/material'
+import { Button, Dialog, DialogContent, DialogTitle } from '@mui/material'
 
 import type { ContratoType } from '@/types/ContratoType'
-import { contratoInit } from '@/types/ContratoType'
 import ExtratoContrato from './ExtratoContrato'
 import ContratoEdit from './ContratoEdit'
 import ContratoItemList from './ContratoItemList'
 import ContratoService from '@/services/ContratoService'
 import { useClienteContext } from '@/contexts/ClienteContext'
+import { useContratoContext } from '@/contexts/ContratoContext'
+import { trataErro } from '@/utils/erro'
 
 const Contratos = () => {
-  console.log('renderizando contratos')
-
   // States
   const [contratoList, setContratoList] = useState<ContratoType[]>([])
-  const [contratoSelect, setContratoSelect] = useState<ContratoType>(contratoInit)
   const [openDlgContrato, setOpenDlgContrato] = useState<boolean>(false)
-  const [reload, setReload] = useState(false)
 
-  const { cliente } = useClienteContext()
+  const { cliente, setLoadingContext } = useClienteContext()
+  const { contrato, setContratoContext, refresh, setRefreshContext } = useContratoContext()
+
+  console.log('renderizando contratos', contrato)
 
   const handleClickOpenDlgContrato = () => setOpenDlgContrato(true)
 
@@ -38,7 +38,7 @@ const Contratos = () => {
 
   const handleOnSelect = (contrato: ContratoType) => {
     console.log('Selecionou: ', contrato.token)
-    setContratoSelect(contrato)
+    setContratoContext(contrato)
   }
 
   const refreshContratoList = () => {
@@ -50,20 +50,30 @@ const Contratos = () => {
           setContratoList(respContratoList)
         })
         .catch(err => {
-          console.log('ERRO RESP', err)
+          trataErro(err)
         })
         .finally(() => {
-          setReload(false)
+          setLoadingContext(false)
         })
     }
   }
 
   useEffect(() => {
     console.log('useEffect Contratos, []')
-    setReload(true)
+    setLoadingContext(true)
     refreshContratoList()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  useEffect(() => {
+    console.log('useEffect Contratos, [refresh]')
+
+    if (refresh) {
+      setRefreshContext(false)
+      refreshContratoList()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refresh])
 
   return (
     <>
@@ -82,17 +92,10 @@ const Contratos = () => {
               <ContratoItemList handleOnSelect={handleOnSelect} contratoList={contratoList} />
             </Grid>
             <Grid item xs={12} md={8}>
-              <Card>
-                {contratoSelect.token && contratoSelect.token != '' && (
-                  <ExtratoContrato contrato={contratoSelect} refreshContratoList={refreshContratoList} />
-                )}
-              </Card>
+              <Card>{contrato && contrato.token && contrato.token != '' && <ExtratoContrato />}</Card>
             </Grid>
           </Grid>
         </CardContent>
-        <Backdrop open={reload} className='absolute text-white z-[cal(var(--mui-zIndex-mobileStepper)-1)]'>
-          <CircularProgress color='inherit' />
-        </Backdrop>
       </Card>
       <Dialog
         maxWidth='md'

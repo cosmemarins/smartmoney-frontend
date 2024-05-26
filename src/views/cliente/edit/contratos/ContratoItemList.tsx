@@ -53,7 +53,7 @@ const ContratoItemList = ({ handleOnSelect, contratoList }: props) => {
           <CardContent sx={{ p: theme => `${theme.spacing(3, 5.25, 4)} !important` }}>
             <Typography variant={`${selectedItem === contrato.token ? 'h6' : 'body1'}`} sx={{ mb: 2 }}>
               <span>{`${moment(contrato?.data).format('DD-MM-YYYY')} - ${contrato.token}`}</span>
-              <span style={{ float: 'right' }}>{contrato?.valor ? valorEmReal.format(contrato?.valor) : ''}</span>
+              <span style={{ float: 'right' }}>{contrato?.saldo ? valorEmReal.format(contrato?.saldo) : '0,00'}</span>
             </Typography>
             <Chip
               size='small'

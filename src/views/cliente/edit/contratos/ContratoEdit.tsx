@@ -7,7 +7,7 @@ import { useState } from 'react'
 import Grid from '@mui/material/Grid'
 import Alert from '@mui/material/Alert'
 import AlertTitle from '@mui/material/AlertTitle'
-import { Backdrop, Button, Chip, CircularProgress, Divider, MenuItem } from '@mui/material'
+import { Button, Chip, Divider, MenuItem } from '@mui/material'
 import moment, { locale } from 'moment'
 import 'moment/locale/pt-br'
 
@@ -26,29 +26,31 @@ import {
   getStatusContratoEnumDesc
 } from '@/utils/enums/StatusContratoEnum'
 import DialogConfirma from '@/components/DialogConfirma'
+import { useContratoContext } from '@/contexts/ContratoContext'
+import { trataErro } from '@/utils/erro'
 
 locale('pt-br')
 
 interface props {
-  contratoData?: ContratoType
+  contrato?: ContratoType
   handleClose?: any
 }
 
-const ContratoEdit = ({ contratoData, handleClose }: props) => {
+const ContratoEdit = ({ contrato, handleClose }: props) => {
   //contexto
   const { cliente } = useClienteContext()
 
   // States
   const [erro, setErro] = useState<erroType>()
   const [msgAlert, setMsgAlert] = useState<string>()
-  const [reload, setReload] = useState(false)
   const [trocaContrato, setTrocaContrato] = useState(false)
   const [dialogConfirma, setDialogConfirma] = useState<DialogConfirmaType>({ open: false })
 
+  const { setLoadingContext } = useClienteContext()
+  const { setContratoContext } = useContratoContext()
+
   const [contratoEdit, setContratoEdit] = useState<ContratoType>(
-    contratoData
-      ? contratoData
-      : { ...contratoInit, data: new Date(), cliente: { id: cliente?.id, token: cliente?.token } }
+    contrato ? contrato : { ...contratoInit, data: new Date(), cliente: { id: cliente?.id, token: cliente?.token } }
   )
 
   const onChangeValor = (value: string) => {
@@ -69,7 +71,7 @@ const ContratoEdit = ({ contratoData, handleClose }: props) => {
   }
 
   const handleEnviarContrato = () => {
-    setReload(true)
+    setLoadingContext(true)
     setErro(undefined)
 
     if (contratoEdit.token) {
@@ -77,25 +79,14 @@ const ContratoEdit = ({ contratoData, handleClose }: props) => {
         .then(respContrato => {
           //console.log('respContrato', respContrato)
           toast.success('Contrato enviado!')
-          setContratoEdit(respContrato)
+          setContratoContext(respContrato)
           handleClose(true)
         })
         .catch(err => {
-          console.log('ERRO RESP', err)
-          const erro = err?.response.data
-
-          const msgErro =
-            err?.response.status === 401
-              ? 'Não autorizado, é preciso logar novamente'
-              : Array.isArray(erro.message)
-                ? erro.message.join(', ')
-                : erro.message
-
-          setErro({ msg: msgErro })
-          toast.error(`Erro, ${msgErro}`)
+          setErro({ msg: trataErro(err) })
         })
         .finally(() => {
-          setReload(false)
+          setLoadingContext(false)
         })
     }
   }
@@ -111,7 +102,7 @@ const ContratoEdit = ({ contratoData, handleClose }: props) => {
   }
 
   const handleExcluirContrato = () => {
-    setReload(true)
+    setLoadingContext(true)
     setErro(undefined)
 
     if (contratoEdit.token) {
@@ -120,24 +111,14 @@ const ContratoEdit = ({ contratoData, handleClose }: props) => {
           //console.log('respContrato', respContrato)
           toast.success(`Contrato ${contratoEdit?.token} excluído!`)
           setContratoEdit({})
+          setContratoContext(undefined)
           handleClose(true)
         })
         .catch(err => {
-          console.log('ERRO RESP', err)
-          const erro = err?.response.data
-
-          const msgErro =
-            err?.response.status === 401
-              ? 'Não autorizado, é preciso logar novamente'
-              : Array.isArray(erro.message)
-                ? erro.message.join(', ')
-                : erro.message
-
-          setErro({ msg: msgErro })
-          toast.error(`Erro, ${msgErro}`)
+          setErro({ msg: trataErro(err) })
         })
         .finally(() => {
-          setReload(false)
+          setLoadingContext(false)
         })
     }
   }
@@ -153,7 +134,7 @@ const ContratoEdit = ({ contratoData, handleClose }: props) => {
   }
 
   const handleCancelarContrato = () => {
-    setReload(true)
+    setLoadingContext(true)
     setErro(undefined)
 
     if (contratoEdit.token) {
@@ -162,24 +143,14 @@ const ContratoEdit = ({ contratoData, handleClose }: props) => {
           //console.log('respContrato', respContrato)
           toast.success(`Contrato ${contratoEdit?.token} cancelado!`)
           setContratoEdit(respContrato)
+          setContratoContext(respContrato)
           handleClose(true)
         })
         .catch(err => {
-          console.log('ERRO RESP', err)
-          const erro = err?.response.data
-
-          const msgErro =
-            err?.response.status === 401
-              ? 'Não autorizado, é preciso logar novamente'
-              : Array.isArray(erro.message)
-                ? erro.message.join(', ')
-                : erro.message
-
-          setErro({ msg: msgErro })
-          toast.error(`Erro, ${msgErro}`)
+          setErro({ msg: trataErro(err) })
         })
         .finally(() => {
-          setReload(false)
+          setLoadingContext(false)
         })
     }
   }
@@ -220,40 +191,32 @@ const ContratoEdit = ({ contratoData, handleClose }: props) => {
   }
 
   const handleAtivarContrato = () => {
-    setReload(true)
+    //console.log('ativar contrato', contratoEdit)
+    setLoadingContext(true)
     setErro(undefined)
 
     if (contratoEdit.token) {
       ContratoService.ativarContrato(contratoEdit?.token)
         .then(respContrato => {
-          //console.log('respContrato', respContrato)
+          console.log('respContrato', respContrato)
           toast.success(`Contrato ${contratoEdit?.token} ativado!`)
           setContratoEdit(respContrato)
+          setContratoContext(respContrato)
           handleClose(true)
         })
         .catch(err => {
-          console.log('ERRO RESP', err)
-          const erro = err?.response.data
-
-          const msgErro =
-            err?.response.status === 401
-              ? 'Não autorizado, é preciso logar novamente'
-              : Array.isArray(erro.message)
-                ? erro.message.join(', ')
-                : erro.message
-
-          setErro({ msg: msgErro })
-          toast.error(`Erro, ${msgErro}`)
+          console.log('ERRO contratoAtivar', err)
+          setErro({ msg: trataErro(err) })
         })
         .finally(() => {
-          setReload(false)
+          setLoadingContext(false)
         })
     }
   }
 
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    setReload(true)
+    setLoadingContext(true)
     setErro(undefined)
 
     //setContratoEdit({ ...contratoEdit, cliente: { id: cliente.id, token: cliente.token } })
@@ -267,21 +230,10 @@ const ContratoEdit = ({ contratoData, handleClose }: props) => {
         handleClose(true)
       })
       .catch(err => {
-        console.log('ERRO RESP', err)
-        const erro = err?.response.data
-
-        const msgErro =
-          err?.response.status === 401
-            ? 'Não autorizado, é preciso logar novamente'
-            : Array.isArray(erro.message)
-              ? erro.message.join(', ')
-              : erro.message
-
-        setErro({ msg: msgErro })
-        toast.error(`Erro, ${msgErro}`)
+        setErro({ msg: trataErro(err) })
       })
       .finally(() => {
-        setReload(false)
+        setLoadingContext(false)
       })
   }
 
@@ -467,9 +419,6 @@ const ContratoEdit = ({ contratoData, handleClose }: props) => {
               </Button>
             )}
           </Grid>
-          <Backdrop open={reload} className='absolute text-white z-[cal(var(--mui-zIndex-mobileStepper)-1)]'>
-            <CircularProgress color='inherit' />
-          </Backdrop>
         </Grid>
       </form>
       <DialogConfirma dialogConfirmaOptions={dialogConfirma} />

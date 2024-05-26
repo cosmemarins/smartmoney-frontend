@@ -65,7 +65,7 @@ export const authOptions: NextAuthOptions = {
               //role: data.userData.roles
             }
 
-            console.log('return user', user)
+            //console.log('return user', user)
 
             return user
           }
@@ -111,7 +111,7 @@ export const authOptions: NextAuthOptions = {
      * via `jwt()` callback to make them accessible in the `session()` callback
      */
     async jwt({ token, user }) {
-      console.log('callback jwt entrada: ', 'token: ', token, 'user: ', user)
+      //console.log('callback jwt entrada: ', 'token: ', token, 'user: ', user)
 
       if (user) {
         /*
@@ -143,12 +143,12 @@ export const authOptions: NextAuthOptions = {
         //token.role = user.roles
       }
 
-      console.log('callback jwt saida: ', 'token: ', token)
+      //console.log('callback jwt saida: ', 'token: ', token)
 
       return token
     },
     async session({ session, token }) {
-      console.log('callback session entrada', 'token: ', token, 'session: ', session)
+      //console.log('callback session entrada', 'token: ', token, 'session: ', session)
 
       if (session.user) {
         // ** Add custom params to user in session which are added in `jwt()` callback via `token` parameter
@@ -170,7 +170,7 @@ export const authOptions: NextAuthOptions = {
         //session.user.role = token.roles
       }
 
-      console.log('callback session saida', 'token: ', token, 'session: ', session)
+      //console.log('callback session saida', 'token: ', token, 'session: ', session)
 
       return session
     }
