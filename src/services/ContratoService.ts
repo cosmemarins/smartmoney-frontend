@@ -1,6 +1,7 @@
 import type { ContratoType } from '@/types/ContratoType'
 import api from './api'
 import type { ExtratoType } from '@/types/ExtratoType'
+import type TamanhoEquipeDTO from '@/types/TamanhoEquipe.dto'
 
 const path = 'contratos'
 
@@ -118,6 +119,13 @@ const ContratoService = {
     //  return Buffer.from(response.data, 'binary').toString('base64')
     //})
     return Buffer.from(response.data, 'binary').toString('base64')
+  },
+
+  //estatisticas
+  getTotalContratos: async function getTotalClientes(token: string): Promise<TamanhoEquipeDTO> {
+    const { data } = await api.get<TamanhoEquipeDTO>(`${path}/statistics/total-contratos/${token}`)
+
+    return data
   }
 }
 

@@ -6,6 +6,7 @@ import type { DadosBancariosType } from '@/types/DadosBancariosType'
 import type { DataOptionsType } from '@/types/utilTypes'
 import { TipoDocumentoEnum } from '@/utils/enums/TipoDocumentoEnum'
 import type UsuarioSenhaDTO from '@/types/UsuarioSenha.dto'
+import type TamanhoEquipeDTO from '@/types/TamanhoEquipe.dto'
 
 const path = 'usuarios'
 
@@ -98,6 +99,13 @@ async function resetarSenha(token: string, usuarioSenha: UsuarioSenhaDTO): Promi
   return data
 }
 
+//estatisticas
+async function getTotalUsuarios(token: string): Promise<TamanhoEquipeDTO> {
+  const { data } = await api.get<TamanhoEquipeDTO>(`${path}/statistics/total-usuarios/${token}`)
+
+  return data
+}
+
 export {
   getListUsuario,
   getUsuario,
@@ -107,5 +115,6 @@ export {
   uploadDocumento,
   getThumbnailUsuario,
   salvarSenha,
-  resetarSenha
+  resetarSenha,
+  getTotalUsuarios
 }

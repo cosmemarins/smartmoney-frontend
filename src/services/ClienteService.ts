@@ -3,6 +3,7 @@
 import api from '@/services/api'
 import type { ClienteType } from '@/types/ClienteType'
 import type { DadosBancariosType } from '@/types/DadosBancariosType'
+import type TamanhoEquipeDTO from '@/types/TamanhoEquipe.dto'
 import type { DataOptionsType } from '@/types/utilTypes'
 import { TipoDocumentoEnum } from '@/utils/enums/TipoDocumentoEnum'
 
@@ -85,6 +86,13 @@ async function getThumbnailCliente(token: string, tipoDocumento: TipoDocumentoEn
   return Buffer.from(response.data, 'binary').toString('base64')
 }
 
+//estatisticas
+async function getTotalClientes(token: string): Promise<TamanhoEquipeDTO> {
+  const { data } = await api.get<TamanhoEquipeDTO>(`${path}/statistics/total-clientes/${token}`)
+
+  return data
+}
+
 export {
   getListCliente,
   getCliente,
@@ -92,5 +100,6 @@ export {
   salvarDadosBancarios,
   excluirCliente,
   uploadDocumento,
-  getThumbnailCliente
+  getThumbnailCliente,
+  getTotalClientes
 }
