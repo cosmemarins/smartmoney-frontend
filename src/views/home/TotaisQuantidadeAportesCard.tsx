@@ -5,7 +5,6 @@ import Card from '@mui/material/Card'
 import CardHeader from '@mui/material/CardHeader'
 import CardContent from '@mui/material/CardContent'
 import Typography from '@mui/material/Typography'
-import LinearProgress from '@mui/material/LinearProgress'
 
 // Third Party Imports
 import classnames from 'classnames'
@@ -14,7 +13,6 @@ import classnames from 'classnames'
 import type { ThemeColor } from '@core/types'
 
 // Components Imports
-import OptionMenu from '@core/components/option-menu'
 import CustomAvatar from '@core/components/mui/Avatar'
 
 type DataType = {
