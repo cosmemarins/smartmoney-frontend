@@ -95,11 +95,6 @@ export default function ExtratoContrato() {
     },
     {
       divider: true
-    },
-    {
-      text: 'Excluir Contrato',
-      icon: 'tabler-trash text-[22px]',
-      menuItemProps: { className: 'flex items-center gap-2 text-textSecondary' }
     }
   ]
 

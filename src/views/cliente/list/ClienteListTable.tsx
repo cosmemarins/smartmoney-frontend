@@ -309,7 +309,12 @@ const ClienteListTable = () => {
               placeholder='Localizar cliente'
               className='is-full sm:is-auto'
             />
-            <Button variant='contained' startIcon={<i className='tabler-plus' />} className='is-full sm:is-auto'>
+            <Button
+              variant='contained'
+              href='/cliente/new'
+              startIcon={<i className='tabler-plus' />}
+              className='is-full sm:is-auto'
+            >
               Adicionar Cliente
             </Button>
           </div>
