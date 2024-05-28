@@ -310,8 +310,8 @@ const ClienteListTable = () => {
               className='is-full sm:is-auto'
             />
             <Button
-              variant='contained'
               href='/cliente/new'
+              variant='contained'
               startIcon={<i className='tabler-plus' />}
               className='is-full sm:is-auto'
             >

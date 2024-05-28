@@ -56,7 +56,7 @@ const Identificacao = () => {
       if (cep.length < 8) {
         return {}
       } else {
-        fetch(`http://viacep.com.br/ws/${cep}/json/`, { mode: 'cors' })
+        fetch(`https://viacep.com.br/ws/${cep}/json/`, { mode: 'cors' })
           .then(res => res.json())
           .then(data => {
             if (data.hasOwnProperty('erro')) {
