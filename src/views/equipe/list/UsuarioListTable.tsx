@@ -319,7 +319,7 @@ const UsuarioListTable = () => {
               className='is-full sm:is-auto'
             />
             <Button
-              href='/usuario/new'
+              href='/equipe/new'
               variant='contained'
               startIcon={<i className='tabler-plus' />}
               className='is-full sm:is-auto'
