@@ -16,7 +16,16 @@ import ArquivoService from '@/services/ArquivoService'
 import { trataErro } from '@/utils/erro'
 import ArquivoItem from './ArquivoItem'
 
-const DocumentacaoTab = () => {
+import DirectionalIcon from '@/components/DirectionalIcon'
+
+type Props = {
+  activeStep: number
+  handleNext: () => void
+  handlePrev: () => void
+  steps: { title: string; subtitle: string }[]
+}
+
+const Documentacao = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
   //contexto
   const { cliente, setLoadingContext } = useClienteContext()
 
@@ -73,28 +82,63 @@ const DocumentacaoTab = () => {
 
   return (
     <>
-      <Card>
-        <CardHeader
-          title='Documentação'
-          action={
-            <Button variant='contained' startIcon={<i className='tabler-plus' />} onClick={() => handleNovoArquivo()}>
-              Upload Arquivo
-            </Button>
-          }
-        />
-        <CardContent className='flex flex-col gap-4'>
-          <Grid container spacing={4}>
-            {arquivoList.map((arquivo, key) => (
-              <Grid key={key} item xs={12} sm={4}>
-                <ArquivoItem
-                  arquivo={{ ...arquivo, cliente: { id: cliente?.id, token: cliente?.token } }}
-                  handleEditArquivo={handleEditArquivo}
-                />
+      <Grid container spacing={6}>
+        <Grid item xs={12}>
+          <Card>
+            <CardHeader
+              title='Documentação'
+              action={
+                <Button
+                  variant='contained'
+                  startIcon={<i className='tabler-plus' />}
+                  onClick={() => handleNovoArquivo()}
+                >
+                  Upload Arquivo
+                </Button>
+              }
+            />
+            <CardContent className='flex flex-col gap-4'>
+              <Grid container spacing={4}>
+                {arquivoList.map((arquivo, key) => (
+                  <Grid key={key} item xs={12} sm={4}>
+                    <ArquivoItem
+                      arquivo={{ ...arquivo, cliente: { id: cliente?.id, token: cliente?.token } }}
+                      handleEditArquivo={handleEditArquivo}
+                    />
+                  </Grid>
+                ))}
               </Grid>
-            ))}
-          </Grid>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12}>
+          <div className='flex items-center justify-between'>
+            <Button
+              variant='tonal'
+              color='secondary'
+              disabled={activeStep === 0}
+              onClick={handlePrev}
+              startIcon={<DirectionalIcon ltrIconClass='tabler-arrow-left' rtlIconClass='tabler-arrow-right' />}
+            >
+              Anterior
+            </Button>
+            <Button
+              variant='contained'
+              color={activeStep === steps.length - 1 ? 'success' : 'primary'}
+              onClick={handleNext}
+              endIcon={
+                activeStep === steps.length - 1 ? (
+                  <i className='tabler-check' />
+                ) : (
+                  <DirectionalIcon ltrIconClass='tabler-arrow-right' rtlIconClass='tabler-arrow-left' />
+                )
+              }
+            >
+              {activeStep === steps.length - 1 ? 'Enviar Contrato' : 'Próximo'}
+            </Button>
+          </div>
+        </Grid>
+      </Grid>
       <Dialog
         maxWidth='md'
         open={openDlgArquivo}
@@ -119,4 +163,4 @@ const DocumentacaoTab = () => {
   )
 }
 
-export default DocumentacaoTab
+export default Documentacao

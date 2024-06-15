@@ -1,18 +1,37 @@
 export enum TipoDocumentoEnum {
-  IDENTIDADE = 'IDENTIDADE',
+  ADITIVO = 'ADITIVO',
+  APORTE = 'APORTE',
   COMPROVANTE_RESIDENCIA = 'COMPROVANTE_RESIDENCIA',
   COMPROVANTE_FINANCEIRO = 'COMPROVANTE_FINANCEIRO',
+  IDENTIDADE = 'IDENTIDADE',
+  OUTROS = 'OUTROS'
 }
 
-export function getTipoExtratoEnumDesc(item: TipoDocumentoEnum) {
+export function getTipoDocumentoEnumDesc(item: TipoDocumentoEnum) {
   switch (item) {
+    case TipoDocumentoEnum.ADITIVO:
+      return 'Aditivo'
+    case TipoDocumentoEnum.APORTE:
+      return 'Aporte'
     case TipoDocumentoEnum.IDENTIDADE:
-      return 'identidade';
+      return 'Identidade'
     case TipoDocumentoEnum.COMPROVANTE_RESIDENCIA:
-      return 'comprovante de residência';
+      return 'Comprovante de residência'
     case TipoDocumentoEnum.COMPROVANTE_FINANCEIRO:
-      return 'comprovante financeiro';
+      return 'Comprovante financeiro'
+    case TipoDocumentoEnum.OUTROS:
+      return 'Outros'
     default:
-      throw Error(`Valor ${item} inválido`);
+      return ''
   }
 }
+
+export const TipoDocumentoEnumList = [
+  { value: 'ADITIVO', label: 'Aditivo' },
+  { value: 'APORTE', label: 'Aporte' },
+  { value: 'COMPROVANTE_RESIDENCIA', label: 'Comprovante de residência' },
+
+  //{ value: 'COMPROVANTE_FINANCEIRO', label: 'Comprovante financeiro' },
+  { value: 'IDENTIDADE', label: 'Identidade' },
+  { value: 'OUTROS', label: 'Outros' }
+]

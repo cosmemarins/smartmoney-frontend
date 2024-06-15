@@ -290,7 +290,7 @@ const ClienteListTable = () => {
   return (
     <>
       <Card>
-        <CardHeader title='Filters' className='pbe-4' />
+        <CardHeader title='Clientes' className='pbe-4' />
         <div className='flex justify-between flex-col items-start md:flex-row md:items-center p-6 border-bs gap-4'>
           <CustomTextField
             select

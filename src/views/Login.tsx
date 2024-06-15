@@ -20,10 +20,12 @@ import FormControlLabel from '@mui/material/FormControlLabel'
 // Third-party Imports
 import { signIn } from 'next-auth/react'
 import { Controller, useForm } from 'react-hook-form'
+
+import * as v from 'valibot'
 import { valibotResolver } from '@hookform/resolvers/valibot'
-import { object, minLength, string, email } from 'valibot'
 import type { SubmitHandler } from 'react-hook-form'
-import type { Input } from 'valibot'
+
+//import type { Input } from 'valibot'
 import classnames from 'classnames'
 
 // Type Imports
@@ -73,14 +75,24 @@ type ErrorType = {
   message: string[]
 }
 
-type FormData = Input<typeof schema>
+type FormData = v.InferInput<typeof schema>
 
+/*
 const schema = object({
   email: string([minLength(1, 'This field is required'), email('Email is invalid')]),
   password: string([
     minLength(1, 'This field is required'),
     minLength(5, 'Password must be at least 5 characters long')
   ])
+})
+*/
+
+const schema = v.object({
+  email: v.pipe(v.string('É preciso digitar um email'), v.email('Email inválido')),
+  password: v.pipe(
+    v.string('É preciso digitar uma senha'),
+    v.minLength(5, 'A senha deve conter no mínimo 5 caracteres')
+  )
 })
 
 const Login = ({ mode }: { mode: SystemMode }) => {
@@ -173,7 +185,7 @@ const Login = ({ mode }: { mode: SystemMode }) => {
         </div>
         <div className='flex flex-col gap-6 is-full sm:is-auto md:is-full sm:max-is-[400px] md:max-is-[unset] mbs-8 sm:mbs-11 md:mbs-0'>
           <div className='flex flex-col gap-1'>
-            <Typography variant='h4'>{`Bem vindo a ${themeConfig.templateName}! 👋🏻`}</Typography>
+            <Typography variant='h4'>{`Bem vindo a ${themeConfig.templateName}!`}</Typography>
             <Typography>Informe seu login e senha para entrar no sistema</Typography>
           </div>
           <form noValidate autoComplete='off' onSubmit={handleSubmit(onSubmit)} className='flex flex-col gap-6'>

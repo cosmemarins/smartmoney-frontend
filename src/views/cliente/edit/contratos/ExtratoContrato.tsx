@@ -64,8 +64,6 @@ export default function ExtratoContrato() {
 
   const { contrato, setContratoContext, setRefreshContext } = useContratoContext()
 
-  console.log('Renderizando ExtratoContrato', contrato)
-
   const menuOptions = [
     {
       text: 'Refresh',
