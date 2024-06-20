@@ -17,6 +17,7 @@ import UsuarioPageHeader from '../components/UsuarioPageHeader'
 import Identificacao from './identificacao'
 import DocumentacaoTab from './documentacao'
 import DadosBancarios from './dadosBancarios'
+import ConfiguracoesUsuario from './configuracoes'
 import { useUsuarioContext } from '@/contexts/UsuarioContext'
 import SegurancaTab from './seguranca'
 
@@ -63,6 +64,14 @@ const UsuarioEdit = () => {
                   />
                 )}
                 {usuario?.token && (
+                  <Tab
+                    icon={<i className='tabler-settings' />}
+                    value='configuracoesUsuario'
+                    label='Configuracões'
+                    iconPosition='start'
+                  />
+                )}
+                {usuario?.token && (
                   <Tab icon={<i className='tabler-lock' />} value='seguranca' label='Segurança' iconPosition='start' />
                 )}
               </CustomTabList>
@@ -79,6 +88,11 @@ const UsuarioEdit = () => {
               {usuario?.token && (
                 <TabPanel value='documentacao' className='p-0'>
                   <DocumentacaoTab />
+                </TabPanel>
+              )}
+              {usuario?.token && (
+                <TabPanel value='configuracoesUsuario' className='p-0'>
+                  <ConfiguracoesUsuario />
                 </TabPanel>
               )}
               {usuario?.token && (

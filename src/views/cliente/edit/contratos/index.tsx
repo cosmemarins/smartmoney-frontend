@@ -12,7 +12,7 @@ import { Button, Dialog, DialogContent, DialogTitle } from '@mui/material'
 
 import type { ContratoType } from '@/types/ContratoType'
 import ExtratoContrato from './ExtratoContrato'
-import ContratoEdit from './ContratoEdit'
+import ContratoEdit from '../../../contrato/ContratoEdit'
 import ContratoItemList from './ContratoItemList'
 import ContratoService from '@/services/ContratoService'
 import { useClienteContext } from '@/contexts/ClienteContext'
@@ -45,7 +45,7 @@ const Contratos = () => {
     console.log('atualizando contrato list')
 
     if (cliente?.token) {
-      ContratoService.getList(cliente.token)
+      ContratoService.getListByCliente(cliente.token)
         .then(respContratoList => {
           setContratoList(respContratoList)
         })

@@ -70,7 +70,7 @@ const ContratoItemList = ({ handleOnSelect, contratoList }: props) => {
             <Chip
               size='small'
               variant='tonal'
-              label={contrato?.taxa ? valorBr.format(contrato?.taxa) : ''}
+              label={contrato?.taxaCliente ? valorBr.format(contrato?.taxaCliente) : ''}
               color='primary'
               icon={<i className='tabler-percentage' />}
               sx={{

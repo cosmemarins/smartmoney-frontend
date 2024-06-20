@@ -12,7 +12,7 @@ export function getTipoDocumentoEnumDesc(item: TipoDocumentoEnum) {
     case TipoDocumentoEnum.ADITIVO:
       return 'Aditivo'
     case TipoDocumentoEnum.APORTE:
-      return 'Aporte'
+      return 'Comprovante de transferência'
     case TipoDocumentoEnum.IDENTIDADE:
       return 'Identidade'
     case TipoDocumentoEnum.COMPROVANTE_RESIDENCIA:
@@ -28,7 +28,7 @@ export function getTipoDocumentoEnumDesc(item: TipoDocumentoEnum) {
 
 export const TipoDocumentoEnumList = [
   { value: 'ADITIVO', label: 'Aditivo' },
-  { value: 'APORTE', label: 'Aporte' },
+  { value: 'APORTE', label: 'Comprovante de transferência' },
   { value: 'COMPROVANTE_RESIDENCIA', label: 'Comprovante de residência' },
 
   //{ value: 'COMPROVANTE_FINANCEIRO', label: 'Comprovante financeiro' },

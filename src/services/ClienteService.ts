@@ -29,9 +29,13 @@ async function getCliente(token: string): Promise<ClienteType> {
   return data
 }
 
-async function salvarCliente(cliente: ClienteType): Promise<ClienteType> {
-  console.log('incluirCliente', cliente)
+async function getClienteByCpfCnpj(cpfCnpj: string): Promise<ClienteType> {
+  const { data } = await api.get<ClienteType>(`${path}/cpf-cnpj/${cpfCnpj}`)
 
+  return data
+}
+
+async function salvarCliente(cliente: ClienteType): Promise<ClienteType> {
   const { data } =
     cliente.token && cliente.token != ''
       ? await api.put<ClienteType>(path, cliente)
@@ -101,5 +105,6 @@ export {
   excluirCliente,
   uploadDocumento,
   getThumbnailCliente,
-  getTotalClientes
+  getTotalClientes,
+  getClienteByCpfCnpj
 }

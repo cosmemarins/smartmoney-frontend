@@ -74,6 +74,7 @@ export const clienteDocumentacaoInit = {
 
 export const clienteStatusColors: StatusColorType = {
   ATIVO: 'success',
-  PENDENTE: 'warning',
-  INATIVO: 'secondary'
+  NOVO: 'warning',
+  INATIVO: 'secondary',
+  PENDENTE: 'warning'
 }

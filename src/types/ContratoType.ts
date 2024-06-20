@@ -1,5 +1,6 @@
 // Typos para o objoto Cliente
 
+import { StatusContratoEnum } from '@/utils/enums/StatusContratoEnum'
 import type { ClienteType } from './ClienteType'
 
 export type ContratoType = {
@@ -11,7 +12,12 @@ export type ContratoType = {
   valor?: number
   saldo?: number
   prazo?: number
-  taxa?: number
+  taxaCliente?: number
+  taxaCredenciado?: number
+  taxaGestor?: number
+  taxaAgente?: number
+  taxaOutros?: number
+  taxaCcb?: number
   status?: string
   observacao?: string
   dataEnvio?: Date
@@ -22,8 +28,18 @@ export const contratoInit = {
   valor: 0,
   saldo: 0,
   prazo: 12,
-  taxa: 0,
+  taxaCliente: 0,
+  taxaCredenciado: 1,
+  taxaGestor: 0,
+  taxaAgente: 0,
+  taxaOutros: 0,
+  taxaCcb: 0,
+  status: StatusContratoEnum.NOVO,
   observacao: ''
+}
+
+export type ContratoTypeWithAction = ContratoType & {
+  action?: string
 }
 
 export const prazoList = [12, 24, 36]

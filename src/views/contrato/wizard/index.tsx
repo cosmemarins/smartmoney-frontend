@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 // MUI Imports
 import { styled } from '@mui/material/styles'
@@ -15,33 +15,28 @@ import type { StepProps } from '@mui/material/Step'
 // Third-party Imports
 import classnames from 'classnames'
 
-import axios from 'axios'
-
 import CustomAvatar from '@core/components/mui/Avatar'
 
+import { ContratoProvider, useContratoContext } from '@/contexts/ContratoContext'
 import DadosCliente from './DadosCliente'
 import EnderecoCliente from './EnderecoCliente'
 import DadosBancariosCliente from './DadosBancariosCliente'
 import Documentacao from './documentacao'
 import ContratoCliente from './ContratoCliente'
-import { getCliente } from '@/services/ClienteService'
-import { useClienteContext } from '@/contexts/ClienteContext'
-import type { ValidationError } from '@/services/api'
 
 // Styled Component Imports
 import StepperWrapper from '@core/styles/stepper'
 import InicioCadatroContrato from './InicioCadatroContrato'
+import Preview from '../preview'
 
-interface Props {
-  token: string | undefined
-}
+import { useClienteContext } from '@/contexts/ClienteContext'
 
 // Vars
 const steps = [
   {
     icon: 'tabler-arrow-big-down-lines',
     title: 'Início',
-    subtitle: 'Indentifique o cliente ou cadastre um novo'
+    subtitle: 'Indentifique o cliente'
   },
   {
     icon: 'tabler-user',
@@ -49,7 +44,7 @@ const steps = [
     subtitle: 'Informe os dados do cliente para este novo contrato'
   },
   {
-    icon: 'tabler-id',
+    icon: 'tabler-map',
     title: 'Passo 2 - Endereço do Cliente',
     subtitle: 'Informe o endereço do cliente'
   },
@@ -67,6 +62,11 @@ const steps = [
     icon: 'tabler-checkbox',
     title: 'Passo 5 - Dados do contrato',
     subtitle: 'Informe os dados para o novo contrato'
+  },
+  {
+    icon: 'tabler-send',
+    title: 'Passo 6 - Conferir contrato e enviar',
+    subtitle: 'Confira os dados do contrato e envie para o banco'
   }
 ]
 
@@ -75,6 +75,9 @@ const Step = styled(MuiStep)<StepProps>({
     color: 'var(--mui-palette-text-disabled)'
   }
 })
+
+let stepAnterior = 0
+const stepMax = 0
 
 const getStepContent = (step: number, handleNext: () => void, handlePrev: () => void) => {
   const Tag =
@@ -88,15 +91,20 @@ const getStepContent = (step: number, handleNext: () => void, handlePrev: () => 
             ? DadosBancariosCliente
             : step === 4
               ? Documentacao
-              : ContratoCliente
+              : step === 5
+                ? ContratoCliente
+                : Preview
 
   return <Tag activeStep={step} handleNext={handleNext} handlePrev={handlePrev} steps={steps} />
 }
 
-const ContratoPage = ({ token }: Props) => {
+const ContratoPage = () => {
   // States
   const [activeStep, setActiveStep] = useState(0)
-  const { setClienteContext, setLoadingContext } = useClienteContext()
+
+  //hooks
+  const { cliente } = useClienteContext()
+  const { contrato } = useContratoContext()
 
   const handleNext = () => {
     console.log('proximo: ', activeStep)
@@ -104,7 +112,7 @@ const ContratoPage = ({ token }: Props) => {
     if (activeStep !== steps.length - 1) {
       setActiveStep(activeStep + 1)
     } else {
-      alert('Submitted..!!')
+      //alert('Submitted..!!')
     }
   }
 
@@ -114,29 +122,52 @@ const ContratoPage = ({ token }: Props) => {
     }
   }
 
-  useEffect(() => {
-    if (token) {
-      setLoadingContext(true)
+  const handleStep = (index: number) => {
+    console.log('entrada: ', index)
 
-      getCliente(token)
-        .then(respCliente => {
-          setClienteContext(respCliente)
-          console.log('respCliente', respCliente)
-        })
-        .catch(err => {
-          if (axios.isAxiosError<ValidationError, Record<string, unknown>>(err)) {
-            console.log(err.status)
-            console.error(err.response)
-          } else {
-            console.error(err)
-          }
-        })
-        .finally(() => {
-          setLoadingContext(false)
-        })
+    switch (index) {
+      case 1:
+        index = cliente?.token ? index : 0
+        break
+      case 2:
+        index = cliente?.token ? index : 0
+        break
+      case 3:
+        index = cliente?.token && cliente.cep ? index : stepAnterior
+        break
+      case 4:
+        index = cliente?.token && cliente.cep ? index : stepAnterior
+        break
+      case 5:
+        index = cliente?.token && cliente.cep ? index : stepAnterior
+        break
+      case 6:
+        index = contrato?.token ? index : stepAnterior
+        break
+      default:
+        index = 0
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+
+    stepAnterior = index
+    console.log('saída: ', index)
+
+    /*
+    if (cliente?.token) {
+      if (index > stepMax + 1) {
+        index = stepAnterior
+      } else {
+        if (index > 2 && cliente.cep) {
+          stepAnterior = index
+          if (index > stepMax) stepMax = index
+        } else {
+          index = stepAnterior
+        }
+      }
+      }
+    */
+
+    setActiveStep(index)
+  }
 
   return (
     <Card className='flex flex-col md:flex-row'>
@@ -150,7 +181,7 @@ const ContratoPage = ({ token }: Props) => {
           >
             {steps.map((label, index) => {
               return (
-                <Step key={index} onClick={() => setActiveStep(index)}>
+                <Step key={index} onClick={() => handleStep(index)}>
                   <StepLabel icon={<></>} className='p-1 cursor-pointer'>
                     <div className='step-label'>
                       <CustomAvatar
@@ -176,8 +207,9 @@ const ContratoPage = ({ token }: Props) => {
           </Stepper>
         </StepperWrapper>
       </CardContent>
-
-      <CardContent className='flex-1 pbs-6'>{getStepContent(activeStep, handleNext, handlePrev)}</CardContent>
+      <ContratoProvider>
+        <CardContent className='flex-1 pbs-6'>{getStepContent(activeStep, handleNext, handlePrev)}</CardContent>
+      </ContratoProvider>
     </Card>
   )
 }

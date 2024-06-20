@@ -1,4 +1,6 @@
-import { useEffect, useState } from 'react'
+'use client'
+
+import { useEffect, useRef, useState } from 'react'
 
 import moment, { locale } from 'moment'
 import 'moment/locale/pt-br'
@@ -33,11 +35,9 @@ import type { ExtratoType } from '@/types/ExtratoType'
 import { valorBr, valorEmReal } from '@/utils/string'
 import { getStatusContratoEnumColor, getStatusContratoEnumDesc } from '@/utils/enums/StatusContratoEnum'
 import { getTipoExtratoEnumColor, getTipoExtratoEnumDesc } from '@/utils/enums/TipoExtratoEnum'
-import ExtratoEdit from '../../../contrato/extrato/ExtratoEdit'
-import OptionMenu from '@/components/option-menu'
-import { useContratoContext } from '@/contexts/ContratoContext'
-import ContratoEdit from '../../../contrato/ContratoEdit'
+import ExtratoEdit from './ExtratoEdit'
 import { trataErro } from '@/utils/erro'
+import type { ContratoType } from '@/types/ContratoType'
 
 locale('pt-br')
 
@@ -52,60 +52,22 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   }
 }))
 
-export default function ExtratoContrato() {
+interface props {
+  token: string
+}
+
+export default function ExtratoContrato({ token }: props) {
   // States
+  const [contrato, setContrato] = useState<ContratoType>()
   const [extratoEdit, setExtratoEdit] = useState<ExtratoType>({} as ExtratoType)
   const [extratoList, setExtratoList] = useState<ExtratoType[]>([])
   const [reload, setReload] = useState(false)
-  const [openDlgContrato, setOpenDlgContrato] = useState<boolean>(false)
   const [openDlgExtrato, setOpenDlgExtrato] = useState<boolean>(false)
   const [openDlgDeleteExtrato, setOpenDlgDeleteExtrato] = useState<boolean>(false)
   const [itemSelect, setItemSelect] = useState<string | undefined>()
 
-  const { contrato, setContratoContext, setRefreshContext } = useContratoContext()
-
-  const menuOptions = [
-    {
-      text: 'Refresh',
-      icon: 'tabler-refresh text-[22px]',
-      menuItemProps: {
-        onClick: () => {
-          refreshListExtrato(contrato?.token)
-          setRefreshContext(true)
-        },
-        className: 'flex items-center gap-2 text-textSecondary'
-      }
-    },
-    {
-      text: 'Editar Contrato',
-      icon: 'tabler-edit text-[22px]',
-      menuItemProps: {
-        onClick: () => {
-          handleClickOpenDlgContrato()
-        },
-        className: 'flex items-center gap-2 text-textSecondary'
-      }
-    },
-    {
-      text: 'Enviar Contrato',
-      icon: 'tabler-send text-[22px]',
-      menuItemProps: { className: 'flex items-center gap-2 text-textSecondary' }
-    },
-    {
-      divider: true
-    }
-  ]
-
-  const handleClickOpenDlgContrato = () => setOpenDlgContrato(true)
-
-  const handleCloseDlgContrato = (refresh: boolean) => {
-    setOpenDlgContrato(false)
-
-    if (refresh) {
-      refreshContrato(contrato?.token)
-      setRefreshContext(true)
-    }
-  }
+  // Refs
+  const initialized = useRef(false)
 
   const handleNovoExtrato = () => {
     if (contrato) {
@@ -121,9 +83,7 @@ export default function ExtratoContrato() {
     setOpenDlgExtrato(false)
 
     if (refresh) {
-      refreshContrato(contrato?.token)
       refreshListExtrato(contrato?.token)
-      setRefreshContext(true)
     }
   }
 
@@ -146,9 +106,7 @@ export default function ExtratoContrato() {
       setReload(true)
       ContratoService.excluirExtrato(itemSelect)
         .then(() => {
-          refreshContrato(contrato?.token)
           refreshListExtrato(contrato?.token)
-          setRefreshContext(true)
           setOpenDlgDeleteExtrato(false)
           toast.success(`Lançamento ${itemSelect} excluído com sucesso!`)
         })
@@ -161,33 +119,17 @@ export default function ExtratoContrato() {
     }
   }
 
-  const refreshContrato = (token: string | undefined) => {
-    console.log('refreshContrato', token)
-
-    if (token) {
-      setReload(true)
-      ContratoService.get(token)
-        .then(respContrato => {
-          setContratoContext(respContrato)
-        })
-        .catch(err => {
-          trataErro(err)
-        })
-        .finally(() => {
-          setReload(false)
-        })
-    }
-  }
-
   const refreshListExtrato = (token: string | undefined) => {
     if (token) {
       setReload(true)
       ContratoService.getExtrato(token)
         .then(respExtratoList => {
+          console.log('respExtratoList', respExtratoList)
+
           setExtratoList(respExtratoList)
         })
         .catch(err => {
-          trataErro(err)
+          toast.error(trataErro(err))
         })
         .finally(() => {
           setReload(false)
@@ -197,16 +139,25 @@ export default function ExtratoContrato() {
 
   //componenteInit
   useEffect(() => {
-    console.log('useEffect ExtratoContrato, []')
-    refreshListExtrato(contrato?.token)
+    if (!initialized.current) {
+      initialized.current = true
+
+      ContratoService.get(token)
+        .then(contratoResp => {
+          if (contratoResp) {
+            setContrato(contratoResp)
+            refreshListExtrato(contratoResp.token)
+          }
+        })
+        .catch(err => {
+          const msg = trataErro(err)
+
+          toast.error(msg)
+        })
+        .finally(() => {})
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  useEffect(() => {
-    console.log('useEffect ExtratoContrato, [contrato] ')
-    setRefreshContext(true)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [contrato])
 
   return (
     contrato?.token && (
@@ -216,14 +167,17 @@ export default function ExtratoContrato() {
             title={
               <>
                 <span>
-                  {moment(contrato?.data).format('DD/MM/YYYY')} - {contrato.token}
+                  {contrato.cliente?.nome} - {moment(contrato?.data).format('DD/MM/YYYY')} - {contrato.token}
                 </span>
-                <span style={{ float: 'right', paddingRight: '10px' }}>
-                  {contrato.saldo ? valorEmReal.format(contrato.saldo) : '0,00'}
-                </span>
+                <Chip
+                  size='small'
+                  variant='tonal'
+                  label={contrato.status ? getStatusContratoEnumDesc(contrato.status) : ''}
+                  color={contrato.status ? getStatusContratoEnumColor(contrato.status) : 'default'}
+                  sx={{ float: 'right' }}
+                />
               </>
             }
-            action={<OptionMenu options={menuOptions} />}
           />
           <CardContent sx={{ p: theme => `${theme.spacing(3, 5.25, 4)} !important` }}>
             <Chip
@@ -250,13 +204,9 @@ export default function ExtratoContrato() {
               icon={<i className='tabler-currency-dollar' />}
               sx={{ mr: 2.5 }}
             />
-            <Chip
-              size='small'
-              variant='tonal'
-              label={contrato.status ? getStatusContratoEnumDesc(contrato.status) : ''}
-              color={contrato.status ? getStatusContratoEnumColor(contrato.status) : 'default'}
-              sx={{ float: 'right' }}
-            />
+            <span style={{ float: 'right', paddingRight: '10px', fontWeight: 'bolder' }}>
+              Saldo: {contrato.saldo ? valorEmReal.format(contrato.saldo) : '0,00'}
+            </span>
           </CardContent>
           <Backdrop open={reload} className='absolute text-white z-[cal(var(--mui-zIndex-mobileStepper)-1)]'>
             <CircularProgress color='inherit' />
@@ -317,30 +267,27 @@ export default function ExtratoContrato() {
                 </StyledTableRow>
               ))}
             </TableBody>
-            <caption style={{ textAlign: 'right', fontWeight: 'bold' }}>
-              <Button variant='contained' startIcon={<i className='tabler-plus' />} onClick={() => handleNovoExtrato()}>
+            <caption>
+              <Button
+                variant='tonal'
+                color='secondary'
+                startIcon={<i className='tabler-arrow-back-up' />}
+                onClick={() => window.history.back()}
+                sx={{ float: 'left' }}
+              >
+                Voltar para a listagem
+              </Button>
+              <Button
+                variant='contained'
+                startIcon={<i className='tabler-plus' />}
+                onClick={() => handleNovoExtrato()}
+                sx={{ float: 'right' }}
+              >
                 Novo Lançamento
               </Button>
             </caption>
           </Table>
         </TableContainer>
-
-        <Dialog
-          maxWidth='md'
-          open={openDlgContrato}
-          aria-labelledby='form-dialog-title'
-          disableEscapeKeyDown
-          onClose={(event, reason) => {
-            if (reason !== 'backdropClick') {
-              handleCloseDlgContrato(false)
-            }
-          }}
-        >
-          <DialogTitle id='form-dialog-title'>Editar Contrato</DialogTitle>
-          <DialogContent>
-            <ContratoEdit contrato={contrato} handleClose={handleCloseDlgContrato} />
-          </DialogContent>
-        </Dialog>
 
         <Dialog
           maxWidth='md'

@@ -43,7 +43,7 @@ const ArquivoItem = ({ arquivo, handleEditArquivo }: props) => {
         })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [arquivo])
 
   return (
     <Card>

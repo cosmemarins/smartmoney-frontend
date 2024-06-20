@@ -239,17 +239,19 @@ const ArquivoEdit = ({ arquivoData, handleClose, setRefreshArquivoList }: props)
 
           <Divider />
           <Grid item xs={12} sm={12} className='text-right'>
-            <Button
-              type='button'
-              variant='contained'
-              className='mie-2'
-              sx={{ float: 'left' }}
-              onClick={() => {
-                handleOpenDlgConfirmaExcluir()
-              }}
-            >
-              Excluir
-            </Button>
+            {arquivoEdit.token && (
+              <Button
+                type='button'
+                variant='contained'
+                className='mie-2'
+                sx={{ float: 'left' }}
+                onClick={() => {
+                  handleOpenDlgConfirmaExcluir()
+                }}
+              >
+                Excluir
+              </Button>
+            )}
             <Button
               type='button'
               variant='contained'

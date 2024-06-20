@@ -1,44 +1,39 @@
 'use client'
 
 // React Imports
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 // MUI Imports
 import Grid from '@mui/material/Grid'
-import Alert from '@mui/material/Alert'
-import AlertTitle from '@mui/material/AlertTitle'
 import {
   Button,
   Card,
   CardActions,
   CardContent,
   CardHeader,
-  Chip,
+  CircularProgress,
   Divider,
   FormControlLabel,
   MenuItem,
   Radio,
-  RadioGroup,
-  Typography
+  RadioGroup
 } from '@mui/material'
 import moment, { locale } from 'moment'
 import 'moment/locale/pt-br'
 
 import { toast } from 'react-toastify'
 
+import { Controller, useForm } from 'react-hook-form'
+import * as v from 'valibot'
+import { valibotResolver } from '@hookform/resolvers/valibot'
+import type { SubmitHandler } from 'react-hook-form'
+
 import CustomTextField from '@core/components/mui/TextField'
-import type { ContratoType } from '@/types/ContratoType'
-import { contratoInit, prazoList } from '@/types/ContratoType'
-import type { DialogConfirmaType, erroType } from '@/types/utilTypes'
+import { prazoList } from '@/types/ContratoType'
 import ContratoService from '@/services/ContratoService'
 
+import { StatusContratoEnum } from '@/utils/enums/StatusContratoEnum'
 import { useClienteContext } from '@/contexts/ClienteContext'
-import {
-  StatusContratoEnum,
-  getStatusContratoEnumColor,
-  getStatusContratoEnumDesc
-} from '@/utils/enums/StatusContratoEnum'
-import DialogConfirma from '@/components/DialogConfirma'
 import { useContratoContext } from '@/contexts/ContratoContext'
 import { trataErro } from '@/utils/erro'
 
@@ -53,238 +48,82 @@ type Props = {
   steps: { title: string; subtitle: string }[]
 }
 
+type ErrorType = {
+  message: string[]
+}
+
+type FormData = v.InferInput<typeof schema>
+
+const schema = v.object({
+  valor: v.pipe(v.number('Digite um valor'), v.minValue(1, 'É preciso inforar um valor.')),
+  taxaCliente: v.pipe(v.number('Informe a taxa'), v.minValue(0.01, 'Informe a taxa.'))
+})
+
 const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
   //contexto
   const { cliente } = useClienteContext()
+  const { contrato, setContratoContext } = useContratoContext()
 
   // States
-  const [erro, setErro] = useState<erroType>()
-  const [msgAlert, setMsgAlert] = useState<string>()
-  const [trocaContrato, setTrocaContrato] = useState(false)
-  const [dialogConfirma, setDialogConfirma] = useState<DialogConfirmaType>({ open: false })
-  const [ehCcb, setEhCcb] = useState('NAO')
+  const [errorState, setErrorState] = useState<ErrorType | null>(null)
+  const [sending, setSending] = useState<boolean>(false)
 
-  const { setLoadingContext } = useClienteContext()
-  const { setContratoContext } = useContratoContext()
-
-  const [contratoEdit, setContratoEdit] = useState<ContratoType>({
-    ...contratoInit,
-    data: new Date(),
-    cliente: { id: cliente?.id, token: cliente?.token }
+  const {
+    control,
+    handleSubmit,
+    formState: { errors }
+  } = useForm<FormData>({
+    resolver: valibotResolver(schema),
+    defaultValues: {
+      valor: contrato?.valor,
+      taxaCliente: contrato?.taxaCliente
+    }
   })
 
   const onChangeValor = (value: string) => {
     const valorStr = value.replace(/[^\d]+/g, '')
     const valor = parseFloat(valorStr) / 100
 
-    setContratoEdit({ ...contratoEdit, valor })
+    return valor
   }
 
-  const handleOpenDlgConfirmaEnviar = () => {
-    setDialogConfirma({
-      open: true,
-      titulo: 'Enviar Contrato',
-      texto: 'Confirma enviar o contrato para o banco?',
-      botaoConfirma: 'Confirmar Envio',
-      handleConfirma: handleEnviarContrato
-    })
-  }
+  const onSubmit: SubmitHandler<FormData> = async (data: FormData) => {
+    console.log('contrato', contrato)
+    console.log('data', data)
 
-  const handleEnviarContrato = () => {
-    setLoadingContext(true)
-    setErro(undefined)
-
-    if (contratoEdit.token) {
-      ContratoService.enviarContrato(contratoEdit?.token)
-        .then(respContrato => {
-          //console.log('respContrato', respContrato)
-          toast.success('Contrato enviado!')
-          setContratoContext(respContrato)
-          handleClose(true)
-        })
-        .catch(err => {
-          setErro({ msg: trataErro(err) })
-        })
-        .finally(() => {
-          setLoadingContext(false)
-        })
-    }
-  }
-
-  const handleOpenDlgConfirmaExcluir = () => {
-    setDialogConfirma({
-      open: true,
-      titulo: 'Excluir Contrato',
-      texto: `Tem certeza que deseja excluir o contrato ${contratoEdit.token}?`,
-      botaoConfirma: 'Confirmar Exclusão',
-      handleConfirma: handleExcluirContrato
-    })
-  }
-
-  const handleExcluirContrato = () => {
-    setLoadingContext(true)
-    setErro(undefined)
-
-    if (contratoEdit.token) {
-      ContratoService.excluirContrato(contratoEdit?.token)
-        .then(() => {
-          //console.log('respContrato', respContrato)
-          toast.success(`Contrato ${contratoEdit?.token} excluído!`)
-          setContratoEdit({})
-          setContratoContext(undefined)
-          handleClose(true)
-        })
-        .catch(err => {
-          setErro({ msg: trataErro(err) })
-        })
-        .finally(() => {
-          setLoadingContext(false)
-        })
-    }
-  }
-
-  const handleOpenDlgConfirmaCancelar = () => {
-    setDialogConfirma({
-      open: true,
-      titulo: 'Cancelar Contrato',
-      texto: `Tem certeza que deseja cancelar o contrato ${contratoEdit.token}?`,
-      botaoConfirma: 'Confirmar Cancelamento',
-      handleConfirma: handleCancelarContrato
-    })
-  }
-
-  const handleCancelarContrato = () => {
-    setLoadingContext(true)
-    setErro(undefined)
-
-    if (contratoEdit.token) {
-      ContratoService.cancelarContrato(contratoEdit?.token)
-        .then(respContrato => {
-          //console.log('respContrato', respContrato)
-          toast.success(`Contrato ${contratoEdit?.token} cancelado!`)
-          setContratoEdit(respContrato)
-          setContratoContext(respContrato)
-          handleClose(true)
-        })
-        .catch(err => {
-          setErro({ msg: trataErro(err) })
-        })
-        .finally(() => {
-          setLoadingContext(false)
-        })
-    }
-  }
-
-  const handleOpenDlgConfirmaTrocar = () => {
-    setDialogConfirma({
-      open: true,
-      titulo: 'Trocar Contrato',
-      texto: `Tem certeza que deseja trocar este contrato?`,
-      botaoConfirma: 'Confirmar',
-      handleConfirma: handleTrocarContrato
-    })
-  }
-
-  const handleTrocarContrato = () => {
-    setMsgAlert('Para finalizar a substituição do contrato basta informar os novos valores e clicar em salvar')
-    setTrocaContrato(true)
-
-    if (contratoEdit.token) {
-      setContratoEdit({
-        ...contratoEdit,
-        data: new Date(),
-        contratoPai: contratoEdit,
-        token: undefined,
-        status: undefined
-      })
-    }
-  }
-
-  const handleOpenDlgConfirmaAtivar = () => {
-    setDialogConfirma({
-      open: true,
-      titulo: 'Ativar Contrato',
-      texto: `Tem certeza que deseja ativar este contrato?`,
-      botaoConfirma: 'Confirmar',
-      handleConfirma: handleAtivarContrato
-    })
-  }
-
-  const handleAtivarContrato = () => {
-    //console.log('ativar contrato', contratoEdit)
-    setLoadingContext(true)
-    setErro(undefined)
-
-    if (contratoEdit.token) {
-      ContratoService.ativarContrato(contratoEdit?.token)
+    if (contrato && contrato.cliente && contrato.cliente.token && data.valor && data.taxaCliente) {
+      setSending(true)
+      ContratoService.salvarContrato(contrato, false)
         .then(respContrato => {
           console.log('respContrato', respContrato)
-          toast.success(`Contrato ${contratoEdit?.token} ativado!`)
-          setContratoEdit(respContrato)
           setContratoContext(respContrato)
-          handleClose(true)
+          handleNext()
         })
         .catch(err => {
-          console.log('ERRO contratoAtivar', err)
-          setErro({ msg: trataErro(err) })
+          const msgErro = trataErro(err)
+
+          toast.error(msgErro)
         })
         .finally(() => {
-          setLoadingContext(false)
+          setSending(false)
         })
     }
   }
 
-  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setLoadingContext(true)
-    setErro(undefined)
-
-    //setContratoEdit({ ...contratoEdit, cliente: { id: cliente.id, token: cliente.token } })
-    console.log('contratoEdit', contratoEdit)
-
-    ContratoService.salvarContrato(contratoEdit, trocaContrato)
-      .then(() => {
-        //console.log(respCliente)
-        toast.success('Contrato salvo com sucesso!')
-        setContratoEdit(contratoInit)
-        handleClose(true)
+  useEffect(() => {
+    if (contrato && (!contrato?.cliente || !contrato?.cliente.token)) {
+      //é um contrato novo, tem que setar o cliente
+      setContratoContext({
+        ...contrato,
+        cliente: { id: cliente?.id, token: cliente?.token }
       })
-      .catch(err => {
-        setErro({ msg: trataErro(err) })
-      })
-      .finally(() => {
-        setLoadingContext(false)
-      })
-  }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <>
-      <form onSubmit={e => handleFormSubmit(e)}>
-        {erro && (
-          <Alert
-            icon={false}
-            severity='error'
-            onClose={() => {}}
-            sx={{
-              mb: 2.5
-            }}
-          >
-            <AlertTitle>Erro</AlertTitle>
-            {erro?.msg}
-          </Alert>
-        )}
-        {msgAlert && (
-          <Alert
-            icon={false}
-            severity='info'
-            onClose={() => {}}
-            sx={{
-              mb: 2.5
-            }}
-          >
-            {msgAlert}
-          </Alert>
-        )}
+      <form onSubmit={handleSubmit(onSubmit)}>
         <Grid container spacing={6}>
           <Grid item xs={12}>
             <Card className='relative'>
@@ -296,132 +135,114 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
                       type='datetime-local'
                       fullWidth
                       label='Data'
-                      value={contratoEdit?.data ? moment(contratoEdit?.data).format('YYYY-MM-DD HH:mm') : ''}
-                      onChange={e => setContratoEdit({ ...contratoEdit, data: new Date(e.target.value) })}
-                      disabled={!!contratoEdit.status && contratoEdit.status != StatusContratoEnum.NOVO}
+                      value={contrato?.data ? moment(contrato?.data).format('YYYY-MM-DD HH:mm') : ''}
+                      onChange={e => setContratoContext({ ...contrato, data: new Date(e.target.value) })}
+                      disabled={!!contrato?.status && contrato?.status != StatusContratoEnum.NOVO}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <label>É CCB?</label>
-                    <RadioGroup row name='radio-buttons-group' value={ehCcb} onChange={e => setEhCcb(e.target.value)}>
-                      <FormControlLabel value='NAO' control={<Radio />} label='Não' />
-                      <FormControlLabel value='SIM' control={<Radio />} label='Sim' />
+                    <label>É debênture?</label>
+                    <RadioGroup
+                      row
+                      name='radio-buttons-group'
+                      value={contrato?.taxaCcb || 0}
+                      onChange={e =>
+                        setContratoContext({
+                          ...contrato,
+                          taxaCcb: parseFloat(e.target.value) <= 0 ? 0 : parseFloat(e.target.value)
+                        })
+                      }
+                    >
+                      <FormControlLabel value='0' control={<Radio />} label='Não' />
+                      <FormControlLabel value='2' control={<Radio />} label='Sim' />
                     </RadioGroup>
                   </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <CustomTextField
-                      fullWidth
-                      label='Valor'
-                      value={
-                        contratoEdit?.valor
-                          ? contratoEdit?.valor.toLocaleString('pt-BR', {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2
-                            })
-                          : 0
-                      }
-                      onChange={e => onChangeValor(e.target.value)}
-                      disabled={!!contratoEdit.status && contratoEdit.status != StatusContratoEnum.NOVO}
+                  <Grid item xs={12} sm={4}>
+                    <Controller
+                      name='valor'
+                      control={control}
+                      rules={{ required: true }}
+                      render={({ field }) => (
+                        <CustomTextField
+                          {...field}
+                          autoFocus
+                          fullWidth
+                          label='Valor'
+                          placeholder='valor'
+                          value={
+                            contrato?.valor
+                              ? contrato?.valor.toLocaleString('pt-BR', {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2
+                                })
+                              : 0
+                          }
+                          disabled={!!contrato?.status && contrato?.status != StatusContratoEnum.NOVO}
+                          onChange={e => {
+                            field.onChange(onChangeValor(e.target.value))
+                            setContratoContext({ ...contrato, valor: onChangeValor(e.target.value) })
+                            errorState !== null && setErrorState(null)
+                          }}
+                          {...((errors.valor || errorState !== null) && {
+                            error: true,
+                            helperText: errors?.valor?.message || errorState?.message
+                          })}
+                        />
+                      )}
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6}>
+                  <Grid item xs={12} sm={4}>
+                    <Controller
+                      name='taxaCliente'
+                      control={control}
+                      rules={{ required: true }}
+                      render={({ field }) => (
+                        <CustomTextField
+                          {...field}
+                          fullWidth
+                          label='Taxa Cliente'
+                          type='number'
+                          value={contrato?.taxaCliente}
+                          disabled={!!contrato?.status && contrato?.status != StatusContratoEnum.NOVO}
+                          onChange={e => {
+                            field.onChange(parseFloat(e.target.value))
+                            setContratoContext({
+                              ...contrato,
+                              taxaCliente: parseFloat(e.target.value) <= 0 ? 0 : parseFloat(e.target.value)
+                            })
+                            errorState !== null && setErrorState(null)
+                          }}
+                          {...((errors.taxaCliente || errorState !== null) && {
+                            error: true,
+                            helperText: errors?.taxaCliente?.message || errorState?.message
+                          })}
+                        />
+                      )}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={4}>
                     <CustomTextField
                       select
                       fullWidth
                       label='prazo'
-                      value={contratoEdit?.prazo}
-                      onChange={e => setContratoEdit({ ...contratoEdit, prazo: parseInt(e.target.value) })}
-                      disabled={!!contratoEdit.status && contratoEdit.status != StatusContratoEnum.NOVO}
+                      value={contrato?.prazo}
+                      onChange={e => setContratoContext({ ...contrato, prazo: parseInt(e.target.value) })}
+                      disabled={!!contrato?.status && contrato?.status != StatusContratoEnum.NOVO}
                     >
                       {prazoList.map((prazo, index) => (
-                        <MenuItem key={index} value={prazo} selected={contratoEdit?.prazo === prazo}>
+                        <MenuItem key={index} value={prazo} selected={contrato?.prazo === prazo}>
                           {prazo} meses
                         </MenuItem>
                       ))}
                     </CustomTextField>
                   </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <CustomTextField
-                      fullWidth
-                      label='Taxa Cliente'
-                      type='number'
-                      value={contratoEdit?.taxa}
-                      onChange={e =>
-                        setContratoEdit({
-                          ...contratoEdit,
-                          taxa: parseFloat(e.target.value) <= 0 ? 0 : parseFloat(e.target.value)
-                        })
-                      }
-                      disabled={!!contratoEdit.status && contratoEdit.status != StatusContratoEnum.NOVO}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <CustomTextField
-                      fullWidth
-                      label='Taxa Credenciado'
-                      type='number'
-                      value={contratoEdit?.taxa}
-                      onChange={e =>
-                        setContratoEdit({
-                          ...contratoEdit,
-                          taxa: parseFloat(e.target.value) <= 0 ? 0 : parseFloat(e.target.value)
-                        })
-                      }
-                      disabled={!!contratoEdit.status && contratoEdit.status != StatusContratoEnum.NOVO}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <CustomTextField
-                      fullWidth
-                      label='Taxa Gestor'
-                      type='number'
-                      value={contratoEdit?.taxa}
-                      onChange={e =>
-                        setContratoEdit({
-                          ...contratoEdit,
-                          taxa: parseFloat(e.target.value) <= 0 ? 0 : parseFloat(e.target.value)
-                        })
-                      }
-                      disabled={!!contratoEdit.status && contratoEdit.status != StatusContratoEnum.NOVO}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <CustomTextField
-                      fullWidth
-                      label='Taxa Agente'
-                      type='number'
-                      value={contratoEdit?.taxa}
-                      onChange={e =>
-                        setContratoEdit({
-                          ...contratoEdit,
-                          taxa: parseFloat(e.target.value) <= 0 ? 0 : parseFloat(e.target.value)
-                        })
-                      }
-                      disabled={!!contratoEdit.status && contratoEdit.status != StatusContratoEnum.NOVO}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <CustomTextField
-                      fullWidth
-                      label='Taxa Outros'
-                      type='number'
-                      value={contratoEdit?.taxa}
-                      onChange={e =>
-                        setContratoEdit({
-                          ...contratoEdit,
-                          taxa: parseFloat(e.target.value) <= 0 ? 0 : parseFloat(e.target.value)
-                        })
-                      }
-                      disabled={!!contratoEdit.status && contratoEdit.status != StatusContratoEnum.NOVO}
-                    />
-                  </Grid>
                   <Grid item xs={12} sm={12}>
                     <CustomTextField
                       fullWidth
                       label='Observação'
-                      value={contratoEdit?.observacao}
-                      onChange={e => setContratoEdit({ ...contratoEdit, observacao: e.target.value })}
-                      disabled={!!contratoEdit.status && contratoEdit.status != StatusContratoEnum.NOVO}
+                      value={contrato?.observacao}
+                      onChange={e => setContratoContext({ ...contrato, observacao: e.target.value })}
+                      disabled={!!contrato?.status && contrato?.status != StatusContratoEnum.NOVO}
                     />
                   </Grid>
                 </Grid>
@@ -444,12 +265,14 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
               <Button
                 variant='contained'
                 color={activeStep === steps.length - 1 ? 'success' : 'primary'}
-                onClick={handleNext}
+                onClick={handleSubmit(onSubmit)}
                 endIcon={
                   activeStep === steps.length - 1 ? (
                     <i className='tabler-check' />
-                  ) : (
+                  ) : !sending ? (
                     <DirectionalIcon ltrIconClass='tabler-arrow-right' rtlIconClass='tabler-arrow-left' />
+                  ) : (
+                    <CircularProgress size={20} color='inherit' />
                   )
                 }
               >
@@ -459,7 +282,6 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
           </Grid>
         </Grid>
       </form>
-      <DialogConfirma dialogConfirmaOptions={dialogConfirma} />
     </>
   )
 }

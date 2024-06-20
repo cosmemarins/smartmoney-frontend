@@ -1,47 +1,34 @@
 // React Imports
-import { useEffect, useState, type ChangeEvent } from 'react'
-
-import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 
 // MUI Imports
 import Card from '@mui/material/Card'
 import CardHeader from '@mui/material/CardHeader'
 import CardContent from '@mui/material/CardContent'
 import Grid from '@mui/material/Grid'
-import Alert from '@mui/material/Alert'
-import AlertTitle from '@mui/material/AlertTitle'
-import Divider from '@mui/material/Divider'
-
-import moment, { locale } from 'moment'
-import 'moment/locale/pt-br'
 
 // Component Imports
-import {
-  Backdrop,
-  Button,
-  CardActions,
-  CircularProgress,
-  FormLabel,
-  FormControlLabel,
-  Link,
-  Typography,
-  Radio
-} from '@mui/material'
-import RadioGroup from '@mui/material/RadioGroup'
+import { Button, CardActions, CircularProgress, Typography } from '@mui/material'
+
+import { Controller, useForm } from 'react-hook-form'
+import * as v from 'valibot'
+import { valibotResolver } from '@hookform/resolvers/valibot'
+import type { SubmitHandler } from 'react-hook-form'
 
 import { toast } from 'react-toastify'
 
 import CustomTextField from '@core/components/mui/TextField'
-import type { ClienteType } from '@/types/ClienteType'
 import { cpfCnpjMask } from '@/utils/string'
-import type { erroType } from '@/types/utilTypes'
-import { salvarCliente } from '@/services/ClienteService'
+import { getClienteByCpfCnpj } from '@/services/ClienteService'
+import ContratoService from '@/services/ContratoService'
 
 import { useClienteContext } from '@/contexts/ClienteContext'
-import DirectionalIcon from '@/components/DirectionalIcon'
-import ClienteTable from '@/components/ClienteTable'
-
-locale('pt-br')
+import { useContratoContext } from '@/contexts/ContratoContext'
+import { trataErro } from '@/utils/erro'
+import isCPF from '@/utils/cpf'
+import isCNPJ from '@/utils/cnpj'
+import { StatusClienteEnum } from '@/utils/enums/StatusClienteEnum'
+import { contratoInit } from '@/types/ContratoType'
 
 type Props = {
   activeStep: number
@@ -50,61 +37,144 @@ type Props = {
   steps: { title: string; subtitle: string }[]
 }
 
-//const initialData: IdentificacaoType = { cep: '' }
+type ErrorType = {
+  message: string[]
+}
 
-// const status = ['Status', 'Active', 'Inactive', 'Suspended']
+type FormData = v.InferInput<typeof schema>
 
-const InicioCadatroContrato = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
-  const { cliente, setClienteContext, loading, setLoadingContext } = useClienteContext()
+const schema = v.object({
+  cpfCnpj: v.pipe(
+    v.string('É preciso digitar um CPF ou um CNPJ'),
+    v.check(input => isCPF(input) || isCNPJ(input), 'Cpf/Cnpj inválido, é preciso digitar um CPF ou CNPJ válido.')
+  )
+})
 
-  const [ehCliente, setEhCliente] = useState('NAO')
+const InicioCadatroContrato = ({ handleNext }: Props) => {
+  // States
+  const [errorState, setErrorState] = useState<ErrorType | null>(null)
+  const [sending, setSending] = useState<boolean>(false)
 
-  const handleSelect = (itemSelect: ClienteType) => {
-    setClienteContext(itemSelect)
-    handleNext()
-  }
+  const { cliente, setClienteContext } = useClienteContext()
+  const { setContratoContext } = useContratoContext()
 
-  const handleNovoCliente = () => {
-    setClienteContext({})
-    handleNext()
+  const {
+    control,
+    handleSubmit,
+    formState: { errors }
+  } = useForm<FormData>({
+    resolver: valibotResolver(schema),
+    defaultValues: {
+      cpfCnpj: cliente?.cpfCnpj
+    }
+  })
+
+  const onSubmit: SubmitHandler<FormData> = async (data: FormData) => {
+    if (data.cpfCnpj) {
+      if (isCPF(data.cpfCnpj) || isCNPJ(data.cpfCnpj)) {
+        setSending(true)
+
+        getClienteByCpfCnpj(data.cpfCnpj)
+          .then(respCliente => {
+            if (respCliente) {
+              setClienteContext(respCliente)
+              setContratoContext({
+                ...contratoInit,
+                data: new Date(),
+                cliente: { id: respCliente?.id, token: respCliente?.token }
+              })
+
+              if (respCliente && respCliente.token) {
+                ContratoService.getUltimoContratoNovo(respCliente.token)
+                  .then(respContrato => {
+                    console.log('respContrato', respContrato)
+                    if (respContrato) setContratoContext(respContrato)
+                  })
+                  .catch(err => {
+                    const msgErro = trataErro(err)
+
+                    toast.error(msgErro)
+                  })
+                  .finally(() => {
+                    handleNext()
+                    setSending(false)
+                  })
+              }
+            } else {
+              setClienteContext({ cpfCnpj: data.cpfCnpj, status: StatusClienteEnum.NOVO })
+              setContratoContext({
+                ...contratoInit,
+                data: new Date()
+              })
+              handleNext()
+            }
+          })
+          .catch(err => {
+            const msgErro = trataErro(err)
+
+            toast.error(msgErro)
+          })
+          .finally(() => {})
+      } else {
+        toast.error('CPF/CNPJ inválido!')
+      }
+    }
   }
 
   return (
     <Grid container spacing={6}>
       <Grid item xs={12}>
         <Card className='relative'>
-          <CardHeader title='Inicio do Cadastro de Contrato' />
-          <CardContent className='flex flex-col gap-4'>
-            <Typography color='text.primary' className='font-medium'>
-              O cliente para este novo contrato já está cadastrado no sistema?
-            </Typography>
-            <Grid item xs={12}>
-              <RadioGroup row name='radio-buttons-group' value={ehCliente} onChange={e => setEhCliente(e.target.value)}>
-                <FormControlLabel
-                  value='NAO'
-                  control={<Radio />}
-                  label='Não, eu quero cadastrar um novo cliente agora'
-                />
-                <FormControlLabel value='SIM' control={<Radio />} label='Sim, é um cliente já cadastrado' />
-              </RadioGroup>
-            </Grid>
-            {ehCliente === 'SIM' ? (
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <CardHeader title='Inicio do Cadastro de Contrato' />
+            <CardContent className='flex flex-col gap-4'>
+              <Typography color='text.primary' className='font-medium'>
+                Antes de cadastrar um contrato precisamos dos dados do cliente, comece informando o CPF ou CNPJ do
+                cliente:
+              </Typography>
               <Grid container spacing={6}>
-                <Grid item xs={12}>
-                  <ClienteTable handleSelect={handleSelect} />
+                <Grid item xs={12} sm={6}>
+                  <Controller
+                    name='cpfCnpj'
+                    control={control}
+                    rules={{ required: true }}
+                    render={({ field }) => (
+                      <CustomTextField
+                        {...field}
+                        fullWidth
+                        label='CPF/CNPJ'
+                        disabled={sending}
+                        value={cpfCnpjMask(cliente?.cpfCnpj)}
+                        onChange={e => {
+                          field.onChange(e.target.value)
+                          setClienteContext({ ...cliente, cpfCnpj: e.target.value })
+                          errorState !== null && setErrorState(null)
+                        }}
+                        {...((errors.cpfCnpj || errorState !== null) && {
+                          error: true,
+                          helperText: errors?.cpfCnpj?.message || errorState?.message
+                        })}
+                      />
+                    )}
+                  />
+                </Grid>
+                <Grid item xs={6} sm={6} sx={{ alignContent: 'flex-end' }}>
+                  <Button
+                    variant='contained'
+                    color='primary'
+                    type='submit'
+                    className='gap-2'
+                    endIcon={
+                      !sending ? <i className='tabler-arrow-right' /> : <CircularProgress size={20} color='inherit' />
+                    }
+                  >
+                    Próximo
+                  </Button>
                 </Grid>
               </Grid>
-            ) : (
-              <Button
-                variant='contained'
-                color={activeStep === steps.length - 1 ? 'success' : 'primary'}
-                endIcon={<i className='tabler-edit' />}
-                onClick={handleNovoCliente}
-              >
-                Iniciar
-              </Button>
-            )}
-          </CardContent>
+            </CardContent>
+            <CardActions></CardActions>
+          </form>
         </Card>
       </Grid>
     </Grid>

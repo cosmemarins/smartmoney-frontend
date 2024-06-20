@@ -27,6 +27,7 @@ export type UsuarioType = {
   tipoPoupanca?: string
   tipoPix?: string
   chavePix?: string
+  taxaDistribuicao?: number
   docIdentidade?: string
   compResidencia?: string
   compFinanceiro?: string
@@ -44,6 +45,7 @@ export type UsuarioTypeWithAction = UsuarioType & {
 
 export const usuarioStatusColors: StatusColorType = {
   ATIVO: 'success',
-  PENDENTE: 'warning',
-  INATIVO: 'secondary'
+  NOVO: 'secondary',
+  INATIVO: 'secondary',
+  PENDENTE: 'warning'
 }

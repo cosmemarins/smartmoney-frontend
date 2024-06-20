@@ -7,6 +7,7 @@ import type { DataOptionsType } from '@/types/utilTypes'
 import { TipoDocumentoEnum } from '@/utils/enums/TipoDocumentoEnum'
 import type UsuarioSenhaDTO from '@/types/UsuarioSenha.dto'
 import type TamanhoEquipeDTO from '@/types/TamanhoEquipe.dto'
+import type { ConfiguracoesUsuarioType } from './../types/ConfiguracoesUsuarioType'
 
 const path = 'usuarios'
 
@@ -45,6 +46,14 @@ async function salvarDadosBancarios(dadosBancarios: DadosBancariosType): Promise
   console.log('salvarDadosBancarios', dadosBancarios)
 
   const { data } = await api.put<DadosBancariosType>(path, dadosBancarios)
+
+  return data
+}
+
+async function salvarConfiguracoesUsuario(
+  configuracoesUsuario: ConfiguracoesUsuarioType
+): Promise<ConfiguracoesUsuarioType> {
+  const { data } = await api.put<ConfiguracoesUsuarioType>(path, configuracoesUsuario)
 
   return data
 }
@@ -111,6 +120,7 @@ export {
   getUsuario,
   salvarUsuario,
   salvarDadosBancarios,
+  salvarConfiguracoesUsuario,
   excluirUsuario,
   uploadDocumento,
   getThumbnailUsuario,

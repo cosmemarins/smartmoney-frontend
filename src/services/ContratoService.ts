@@ -6,7 +6,13 @@ import type TamanhoEquipeDTO from '@/types/TamanhoEquipe.dto'
 const path = 'contratos'
 
 const ContratoService = {
-  getList: async function getList(tokenCliente: string): Promise<ContratoType[]> {
+  getList: async function getList(): Promise<ContratoType[]> {
+    const { data } = await api.get<ContratoType[]>(`${path}`)
+
+    return data
+  },
+
+  getListByCliente: async function getListByCliente(tokenCliente: string): Promise<ContratoType[]> {
     const { data } = await api.get<ContratoType[]>(`${path}/cliente/${tokenCliente}`)
 
     return data
@@ -14,6 +20,12 @@ const ContratoService = {
 
   get: async function get(token: string): Promise<ContratoType> {
     const { data } = await api.get<ContratoType>(`${path}/${token}`)
+
+    return data
+  },
+
+  getUltimoContratoNovo: async function getUltimoContratoNovo(token: string): Promise<ContratoType> {
+    const { data } = await api.get<ContratoType>(`${path}/cliente/ultimo-novo/${token}`)
 
     return data
   },

@@ -1,17 +1,34 @@
 'use client'
 
 // React Imports
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 // MUI Imports
 import Grid from '@mui/material/Grid'
 import Alert from '@mui/material/Alert'
 import AlertTitle from '@mui/material/AlertTitle'
-import { Button, Chip, Divider, MenuItem } from '@mui/material'
+import {
+  Backdrop,
+  Button,
+  Chip,
+  CircularProgress,
+  Divider,
+  FormControlLabel,
+  MenuItem,
+  Radio,
+  RadioGroup,
+  Slider,
+  Typography
+} from '@mui/material'
 import moment, { locale } from 'moment'
 import 'moment/locale/pt-br'
 
 import { toast } from 'react-toastify'
+
+import { Controller, useForm } from 'react-hook-form'
+import * as v from 'valibot'
+import { valibotResolver } from '@hookform/resolvers/valibot'
+import type { SubmitHandler } from 'react-hook-form'
 
 import CustomTextField from '@core/components/mui/TextField'
 import type { ContratoType } from '@/types/ContratoType'
@@ -28,6 +45,9 @@ import {
 import DialogConfirma from '@/components/DialogConfirma'
 import { useContratoContext } from '@/contexts/ContratoContext'
 import { trataErro } from '@/utils/erro'
+import { valorBr } from '@/utils/string'
+import type { ClienteType } from '@/types/ClienteType'
+import { getCliente } from '@/services/ClienteService'
 
 locale('pt-br')
 
@@ -36,18 +56,89 @@ interface props {
   handleClose?: any
 }
 
+type ErrorType = {
+  message: string[]
+}
+
+type FormData = v.InferInput<typeof schema>
+
+const schema = v.object({
+  valor: v.pipe(v.number('Digite um valor'), v.minValue(1, 'É preciso inforar um valor.')),
+  taxaCliente: v.pipe(v.number('Informe a taxa'), v.minValue(0.01, 'Informe a taxa.'))
+})
+
+const marks = [
+  {
+    value: 0,
+    label: '0'
+  },
+  {
+    value: 0.5,
+    label: '0,5%'
+  },
+  {
+    value: 1,
+    label: '1%'
+  },
+  {
+    value: 1.5,
+    label: '1,5%'
+  },
+  {
+    value: 2,
+    label: '2%'
+  },
+  {
+    value: 2.5,
+    label: '1,5%'
+  },
+  {
+    value: 3,
+    label: '3%'
+  },
+  {
+    value: 3.5,
+    label: '3,5%'
+  },
+  {
+    value: 4,
+    label: '4%'
+  },
+  {
+    value: 4.5,
+    label: '4,5%'
+  },
+  {
+    value: 5,
+    label: '5%'
+  }
+]
+
 const ContratoEdit = ({ contrato, handleClose }: props) => {
   //contexto
   const { cliente } = useClienteContext()
+  const { setContratoContext } = useContratoContext()
 
   // States
   const [erro, setErro] = useState<erroType>()
+  const [errorState, setErrorState] = useState<ErrorType | null>(null)
   const [msgAlert, setMsgAlert] = useState<string>()
   const [trocaContrato, setTrocaContrato] = useState(false)
   const [dialogConfirma, setDialogConfirma] = useState<DialogConfirmaType>({ open: false })
+  const [sending, setSending] = useState<boolean>(false)
+  const [clienteContrato, setClienteContrato] = useState<ClienteType>()
 
-  const { setLoadingContext } = useClienteContext()
-  const { setContratoContext } = useContratoContext()
+  const {
+    control,
+    handleSubmit,
+    formState: { errors }
+  } = useForm<FormData>({
+    resolver: valibotResolver(schema),
+    defaultValues: {
+      valor: contrato?.valor,
+      taxaCliente: contrato?.taxaCliente
+    }
+  })
 
   const [contratoEdit, setContratoEdit] = useState<ContratoType>(
     contrato ? contrato : { ...contratoInit, data: new Date(), cliente: { id: cliente?.id, token: cliente?.token } }
@@ -57,7 +148,7 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
     const valorStr = value.replace(/[^\d]+/g, '')
     const valor = parseFloat(valorStr) / 100
 
-    setContratoEdit({ ...contratoEdit, valor })
+    return valor
   }
 
   const handleOpenDlgConfirmaEnviar = () => {
@@ -71,7 +162,7 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
   }
 
   const handleEnviarContrato = () => {
-    setLoadingContext(true)
+    setSending(true)
     setErro(undefined)
 
     if (contratoEdit.token) {
@@ -86,7 +177,7 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
           setErro({ msg: trataErro(err) })
         })
         .finally(() => {
-          setLoadingContext(false)
+          setSending(false)
         })
     }
   }
@@ -102,7 +193,7 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
   }
 
   const handleExcluirContrato = () => {
-    setLoadingContext(true)
+    setSending(true)
     setErro(undefined)
 
     if (contratoEdit.token) {
@@ -118,7 +209,7 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
           setErro({ msg: trataErro(err) })
         })
         .finally(() => {
-          setLoadingContext(false)
+          setSending(false)
         })
     }
   }
@@ -134,7 +225,7 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
   }
 
   const handleCancelarContrato = () => {
-    setLoadingContext(true)
+    setSending(true)
     setErro(undefined)
 
     if (contratoEdit.token) {
@@ -150,7 +241,7 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
           setErro({ msg: trataErro(err) })
         })
         .finally(() => {
-          setLoadingContext(false)
+          setSending(false)
         })
     }
   }
@@ -192,7 +283,7 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
 
   const handleAtivarContrato = () => {
     //console.log('ativar contrato', contratoEdit)
-    setLoadingContext(true)
+    setSending(true)
     setErro(undefined)
 
     if (contratoEdit.token) {
@@ -209,37 +300,59 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
           setErro({ msg: trataErro(err) })
         })
         .finally(() => {
-          setLoadingContext(false)
+          setSending(false)
         })
     }
   }
 
-  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setLoadingContext(true)
+  const onSubmit: SubmitHandler<FormData> = async (data: FormData) => {
     setErro(undefined)
 
     //setContratoEdit({ ...contratoEdit, cliente: { id: cliente.id, token: cliente.token } })
     console.log('contratoEdit', contratoEdit)
 
-    ContratoService.salvarContrato(contratoEdit, trocaContrato)
-      .then(() => {
-        //console.log(respCliente)
-        toast.success('Contrato salvo com sucesso!')
-        setContratoEdit(contratoInit)
-        handleClose(true)
-      })
-      .catch(err => {
-        setErro({ msg: trataErro(err) })
-      })
-      .finally(() => {
-        setLoadingContext(false)
-      })
+    if (contrato && contrato.cliente && contrato.cliente.token && data.valor && data.taxaCliente) {
+      setSending(true)
+      ContratoService.salvarContrato(contratoEdit, trocaContrato)
+        .then(() => {
+          //console.log(respCliente)
+          toast.success('Contrato salvo com sucesso!')
+          setContratoEdit(contratoInit)
+          handleClose(true)
+        })
+        .catch(err => {
+          setErro({ msg: trataErro(err) })
+        })
+        .finally(() => {
+          setSending(false)
+        })
+    }
   }
+
+  useEffect(() => {
+    if (!cliente && contratoEdit && contratoEdit.cliente && contratoEdit.cliente.token) {
+      getCliente(contratoEdit.cliente.token)
+        .then(respCliente => {
+          console.log('respCliente', respCliente)
+          if (respCliente) setClienteContrato(respCliente)
+        })
+        .catch(err => {
+          const msgErro = trataErro(err)
+
+          toast.error(msgErro)
+        })
+        .finally(() => {
+          setSending(false)
+        })
+    }
+
+    console.log('clienteContrato', clienteContrato)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <>
-      <form onSubmit={e => handleFormSubmit(e)}>
+      <form onSubmit={handleSubmit(onSubmit)}>
         {erro && (
           <Alert
             icon={false}
@@ -267,15 +380,17 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
         )}
         <Grid container spacing={4}>
           <Grid item xs={12} sm={6}>
-            {contratoEdit?.dataEnvio && (
-              <Chip
-                variant='tonal'
-                label={`Data do Envio: ${contratoEdit?.dataEnvio ? moment(contratoEdit?.dataEnvio).format('YYYY-MM-DD HH:mm') : ''}`}
-                color='primary'
-                icon={<i className='tabler-calendar-repeat' />}
-                sx={{}}
-              />
-            )}
+            <Chip
+              variant='tonal'
+              label={
+                contratoEdit?.dataEnvio
+                  ? `Data do Envio: ${contratoEdit?.dataEnvio ? moment(contratoEdit?.dataEnvio).format('YYYY-MM-DD HH:mm') : ''}`
+                  : 'Não enviado'
+              }
+              color='primary'
+              icon={<i className='tabler-calendar-repeat' />}
+              sx={{}}
+            />
           </Grid>
           <Grid item xs={12} sm={6}>
             <Chip
@@ -298,19 +413,79 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
             />
           </Grid>
           <Grid item xs={12} sm={6}>
-            <CustomTextField
-              fullWidth
-              label='Valor'
-              value={
-                contratoEdit?.valor
-                  ? contratoEdit?.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-                  : 0
+            <label>É debênture?</label>
+            <RadioGroup
+              row
+              name='radio-buttons-group'
+              value={contratoEdit?.taxaCcb || 0}
+              onChange={e =>
+                setContratoEdit({
+                  ...contratoEdit,
+                  taxaCcb: parseFloat(e.target.value) <= 0 ? 0 : parseFloat(e.target.value)
+                })
               }
-              onChange={e => onChangeValor(e.target.value)}
-              disabled={!!contratoEdit.status && contratoEdit.status != StatusContratoEnum.NOVO}
+            >
+              <FormControlLabel value='0' control={<Radio />} label='Não' />
+              <FormControlLabel value='2' control={<Radio />} label='Sim' />
+            </RadioGroup>
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <Controller
+              name='valor'
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <CustomTextField
+                  {...field}
+                  autoFocus
+                  fullWidth
+                  label='Valor'
+                  placeholder='valor'
+                  value={contratoEdit?.valor ? valorBr.format(contratoEdit?.valor || 0) : 0}
+                  disabled={!!contratoEdit?.status && contratoEdit?.status != StatusContratoEnum.NOVO}
+                  onChange={e => {
+                    field.onChange(onChangeValor(e.target.value))
+                    setContratoEdit({ ...contratoEdit, valor: onChangeValor(e.target.value) })
+                    errorState !== null && setErrorState(null)
+                  }}
+                  {...((errors.valor || errorState !== null) && {
+                    error: true,
+                    helperText: errors?.valor?.message || errorState?.message
+                  })}
+                />
+              )}
             />
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid item xs={12} sm={4}>
+            <Controller
+              name='taxaCliente'
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <CustomTextField
+                  {...field}
+                  fullWidth
+                  label='Taxa Cliente'
+                  type='number'
+                  value={contratoEdit?.taxaCliente}
+                  disabled={!!contratoEdit?.status && contratoEdit?.status != StatusContratoEnum.NOVO}
+                  onChange={e => {
+                    field.onChange(parseFloat(e.target.value))
+                    setContratoEdit({
+                      ...contratoEdit,
+                      taxaCliente: parseFloat(e.target.value) <= 0 ? 0 : parseFloat(e.target.value)
+                    })
+                    errorState !== null && setErrorState(null)
+                  }}
+                  {...((errors.taxaCliente || errorState !== null) && {
+                    error: true,
+                    helperText: errors?.taxaCliente?.message || errorState?.message
+                  })}
+                />
+              )}
+            />
+          </Grid>
+          <Grid item xs={12} sm={4}>
             <CustomTextField
               select
               fullWidth
@@ -326,19 +501,16 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
               ))}
             </CustomTextField>
           </Grid>
-          <Grid item xs={12} sm={6}>
-            <CustomTextField
-              fullWidth
-              label='Taxa'
-              type='number'
-              value={contratoEdit?.taxa}
-              onChange={e =>
-                setContratoEdit({
-                  ...contratoEdit,
-                  taxa: parseFloat(e.target.value) <= 0 ? 0 : parseFloat(e.target.value)
-                })
-              }
-              disabled={!!contratoEdit.status && contratoEdit.status != StatusContratoEnum.NOVO}
+          <Grid item xs={12} sm={12}>
+            <Typography className='font-medium'>Taxa cliente</Typography>
+            <Slider
+              marks={marks}
+              min={0}
+              max={clienteContrato?.gestor?.taxaDistribuicao || cliente?.gestor?.taxaDistribuicao}
+              step={0.1}
+              defaultValue={contratoEdit?.taxaCliente || 1}
+              valueLabelDisplay='on'
+              aria-labelledby='continuous-slider'
             />
           </Grid>
           <Grid item xs={12} sm={12}>
@@ -420,6 +592,9 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
             )}
           </Grid>
         </Grid>
+        <Backdrop open={sending} className='absolute text-white z-[cal(var(--mui-zIndex-mobileStepper)-1)]'>
+          <CircularProgress color='inherit' />
+        </Backdrop>
       </form>
       <DialogConfirma dialogConfirmaOptions={dialogConfirma} />
     </>

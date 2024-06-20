@@ -101,7 +101,7 @@ const AlterarSenha = () => {
 
   return (
     <Card>
-      <CardHeader title='Change Password' />
+      <CardHeader title='Alterar senha' />
       <CardContent className='flex flex-col gap-4'>
         <Alert icon={false} severity='warning' onClose={() => {}}>
           <AlertTitle>Requisitos para a senha</AlertTitle>
