@@ -200,12 +200,15 @@ const ContratoListTable = () => {
       columnHelper.accessor('data', {
         header: 'Data',
         cell: ({ row }) => (
-          <Typography color='text.primary'>{moment(row.original.data).format('DD/MM/YYYY HH:mm')}</Typography>
+          <div className='flex items-center gap-4'>
+            <div className='flex flex-col'>
+              <Typography color='text.primary' className='font-medium'>
+                {moment(row.original.data).format('DD/MM/YYYY HH:mm')}
+              </Typography>
+              <Typography variant='body2'>Contrato: {row.original.token}</Typography>
+            </div>
+          </div>
         )
-      }),
-      columnHelper.accessor('token', {
-        header: 'Contrato',
-        cell: ({ row }) => <Typography color='text.primary'>{row.original.token}</Typography>
       }),
       columnHelper.accessor('cliente.nome', {
         header: 'Cliente',
@@ -213,21 +216,41 @@ const ContratoListTable = () => {
           <div className='flex items-center gap-4'>
             {getAvatar({ foto: row.original.cliente?.foto, nome: row.original.cliente?.nome })}
             <div className='flex flex-col'>
-              <Typography color='text.primary' className='font-medium'>
-                {row.original.cliente?.nome}
-              </Typography>
+              <Link href={`/cliente/${row.original.cliente?.token}`} title='Ir para o cadastro do cliente'>
+                <Typography color='text.primary' className='font-medium'>
+                  {row.original.cliente?.nome}
+                </Typography>
+              </Link>
               <Typography variant='body2'>{row.original.cliente?.cpfCnpj}</Typography>
             </div>
           </div>
         )
       }),
       columnHelper.accessor('cliente.email', {
-        header: 'Email',
-        cell: ({ row }) => <Typography color='text.primary'>{row.original.cliente?.email}</Typography>
+        header: 'Contato',
+        cell: ({ row }) => (
+          <div className='flex items-center gap-4'>
+            <div className='flex flex-col'>
+              <Typography color='text.primary' className='font-medium'>
+                {row.original.cliente?.email}
+              </Typography>
+              <Typography variant='body2'>celular: {row.original.cliente?.telefone}</Typography>
+            </div>
+          </div>
+        )
       }),
-      columnHelper.accessor('cliente.telefone', {
-        header: 'Telefone',
-        cell: ({ row }) => <Typography color='text.primary'>{row.original.cliente?.telefone}</Typography>
+      columnHelper.accessor('cliente.gestor', {
+        header: 'Gestor',
+        cell: ({ row }) => (
+          <div className='flex items-center gap-4'>
+            <div className='flex flex-col'>
+              <Typography color='text.primary' className='font-medium'>
+                {row.original.cliente?.gestor?.nome}
+              </Typography>
+              <Typography variant='body2'>celular: {row.original.cliente?.gestor?.telefone}</Typography>
+            </div>
+          </div>
+        )
       }),
       columnHelper.accessor('status', {
         header: 'Status',
@@ -239,6 +262,7 @@ const ContratoListTable = () => {
               label={row.original.status}
               color={getStatusContratoEnumColor(row.original.status || 'default')}
               size='small'
+              sx={{ fontSize: '10px' }}
             />
           </div>
         )
@@ -431,10 +455,10 @@ const ContratoListTable = () => {
         }}
       >
         <DialogTitle id='form-dialog-title'>
-          <Typography variant='h4' sx={{ float: 'left' }}>
+          <Typography sx={{ fontSize: '20px', fontWeight: 'bold', float: 'left' }}>
             Cliente: {contratoEdit?.cliente?.nome}
           </Typography>
-          <Typography variant='h4' sx={{ float: 'right' }}>
+          <Typography sx={{ fontSize: '20px', fontWeight: 'bold', float: 'right' }}>
             Contrato: {contratoEdit?.token}
           </Typography>
         </DialogTitle>

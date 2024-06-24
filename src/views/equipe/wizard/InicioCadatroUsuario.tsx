@@ -17,20 +17,16 @@ import type { SubmitHandler } from 'react-hook-form'
 
 import { toast } from 'react-toastify'
 
-import { useSession } from 'next-auth/react'
-
 import CustomTextField from '@core/components/mui/TextField'
 import { cpfCnpjMask } from '@/utils/string'
-import { getClienteByCpfCnpj } from '@/services/ClienteService'
-import ContratoService from '@/services/ContratoService'
 
-import { useClienteContext } from '@/contexts/ClienteContext'
-import { useContratoContext } from '@/contexts/ContratoContext'
+import { useUsuarioContext } from '@/contexts/UsuarioContext'
 import { trataErro } from '@/utils/erro'
 import isCPF from '@/utils/cpf'
 import isCNPJ from '@/utils/cnpj'
-import { StatusClienteEnum } from '@/utils/enums/StatusClienteEnum'
-import { contratoInit } from '@/types/ContratoType'
+
+import { getUsuarioByCpfCnpj } from '@/services/UsuarioService'
+import { StatusUsuarioEnum } from '@/utils/enums/StatusUsuarioEnum'
 
 type Props = {
   activeStep: number
@@ -52,16 +48,12 @@ const schema = v.object({
   )
 })
 
-const InicioCadatroContrato = ({ handleNext }: Props) => {
-  //session
-  const { data: session } = useSession()
-
+const InicioCadatroUsuario = ({ handleNext }: Props) => {
   // States
   const [errorState, setErrorState] = useState<ErrorType | null>(null)
   const [sending, setSending] = useState<boolean>(false)
 
-  const { cliente, setClienteContext } = useClienteContext()
-  const { setContratoContext } = useContratoContext()
+  const { usuario, setUsuarioContext } = useUsuarioContext()
 
   const {
     control,
@@ -70,7 +62,7 @@ const InicioCadatroContrato = ({ handleNext }: Props) => {
   } = useForm<FormData>({
     resolver: valibotResolver(schema),
     defaultValues: {
-      cpfCnpj: cliente?.cpfCnpj
+      cpfCnpj: usuario?.cpfCnpj
     }
   })
 
@@ -79,48 +71,24 @@ const InicioCadatroContrato = ({ handleNext }: Props) => {
       if (isCPF(data.cpfCnpj) || isCNPJ(data.cpfCnpj)) {
         setSending(true)
 
-        getClienteByCpfCnpj(data.cpfCnpj)
-          .then(respCliente => {
-            if (respCliente) {
-              setClienteContext(respCliente)
-              setContratoContext({
-                ...contratoInit,
-                data: new Date(),
-                cliente: { id: respCliente?.id, token: respCliente?.token }
-              })
-
-              if (respCliente && respCliente.token) {
-                ContratoService.getUltimoContratoNovo(respCliente.token)
-                  .then(respContrato => {
-                    console.log('respContrato', respContrato)
-                    if (respContrato) setContratoContext(respContrato)
-                  })
-                  .catch(err => {
-                    const msgErro = trataErro(err)
-
-                    toast.error(msgErro)
-                  })
-                  .finally(() => {
-                    handleNext()
-                    setSending(false)
-                  })
-              }
+        getUsuarioByCpfCnpj(data.cpfCnpj)
+          .then(respUsuario => {
+            if (respUsuario) {
+              setUsuarioContext(respUsuario)
             } else {
-              setClienteContext({ cpfCnpj: data.cpfCnpj, status: StatusClienteEnum.NOVO })
-              setContratoContext({
-                ...contratoInit,
-                data: new Date()
-              })
-              handleNext()
+              setUsuarioContext({ cpfCnpj: data.cpfCnpj, status: StatusUsuarioEnum.NOVO })
             }
+
+            handleNext()
           })
           .catch(err => {
             const msgErro = trataErro(err)
 
             toast.error(msgErro)
+          })
+          .finally(() => {
             setSending(false)
           })
-          .finally(() => {})
       } else {
         toast.error('CPF/CNPJ inválido!')
       }
@@ -132,11 +100,10 @@ const InicioCadatroContrato = ({ handleNext }: Props) => {
       <Grid item xs={12}>
         <Card className='relative'>
           <form onSubmit={handleSubmit(onSubmit)}>
-            <CardHeader title='Inicio do Cadastro de Contrato' />
+            <CardHeader title='Inicio do Cadastro de Parceiro' />
             <CardContent className='flex flex-col gap-4'>
               <Typography color='text.primary' className='font-medium'>
-                Antes de cadastrar um contrato precisamos dos dados do cliente, comece informando o CPF ou CNPJ do
-                cliente:
+                Para cadastrar um parceiro comece informando o CPF ou CNPJ do parceiro:
               </Typography>
               <Grid container spacing={6}>
                 <Grid item xs={12} sm={6}>
@@ -150,10 +117,10 @@ const InicioCadatroContrato = ({ handleNext }: Props) => {
                         fullWidth
                         label='CPF/CNPJ'
                         disabled={sending}
-                        value={cpfCnpjMask(cliente?.cpfCnpj)}
+                        value={cpfCnpjMask(usuario?.cpfCnpj)}
                         onChange={e => {
                           field.onChange(e.target.value)
-                          setClienteContext({ ...cliente, cpfCnpj: e.target.value })
+                          setUsuarioContext({ ...usuario, cpfCnpj: e.target.value })
                           errorState !== null && setErrorState(null)
                         }}
                         {...((errors.cpfCnpj || errorState !== null) && {
@@ -187,4 +154,4 @@ const InicioCadatroContrato = ({ handleNext }: Props) => {
   )
 }
 
-export default InicioCadatroContrato
+export default InicioCadatroUsuario

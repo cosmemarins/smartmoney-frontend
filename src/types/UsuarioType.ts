@@ -34,6 +34,7 @@ export type UsuarioType = {
   foto?: string
   roles?: string
   status?: string
+  podeCriarEquipe?: boolean
   data?: Date
   dataUltimoAcesso?: Date
   dataUltimaModificacao?: Date

@@ -40,7 +40,7 @@ const ArquivoItem = ({ arquivo }: props) => {
     <div className='flex flex-col items-center justify-center'>
       <Typography className='mbe-2'>{titulo}</Typography>
 
-      <img alt='iPhone 11 Pro' src={`data:image/jpeg;base64, ${fileDocumento}`} width={200} />
+      <img alt={titulo} src={`data:image/jpeg;base64, ${fileDocumento}`} width={200} />
     </div>
   )
 }

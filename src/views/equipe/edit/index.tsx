@@ -11,6 +11,8 @@ import TabPanel from '@mui/lab/TabPanel'
 
 // Component Imports
 
+import { useSession } from 'next-auth/react'
+
 import CustomTabList from '@core/components/mui/TabList'
 import UsuarioPageHeader from '../components/UsuarioPageHeader'
 
@@ -22,6 +24,9 @@ import { useUsuarioContext } from '@/contexts/UsuarioContext'
 import SegurancaTab from './seguranca'
 
 const UsuarioEdit = () => {
+  //hooks
+  const { data: session } = useSession()
+
   // States
   const [activeTab, setActiveTab] = useState('identificacao')
 
@@ -63,7 +68,7 @@ const UsuarioEdit = () => {
                     iconPosition='start'
                   />
                 )}
-                {usuario?.token && (
+                {usuario?.token && session?.user.token != usuario.token && (
                   <Tab
                     icon={<i className='tabler-settings' />}
                     value='configuracoesUsuario'
@@ -90,7 +95,7 @@ const UsuarioEdit = () => {
                   <DocumentacaoTab />
                 </TabPanel>
               )}
-              {usuario?.token && (
+              {usuario?.token && session?.user.token != usuario.token && (
                 <TabPanel value='configuracoesUsuario' className='p-0'>
                   <ConfiguracoesUsuario />
                 </TabPanel>

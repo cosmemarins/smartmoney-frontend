@@ -7,7 +7,7 @@ import { ClienteProvider } from '@/contexts/ClienteContext'
 export default function ContratoApp() {
   return (
     <ClienteProvider>
-      <ContratoPage token={undefined} />
+      <ContratoPage />
     </ClienteProvider>
   )
 }

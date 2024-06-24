@@ -158,6 +158,7 @@ const Login = ({ mode }: { mode: SystemMode }) => {
       router.push(redirectURL)
     } else {
       if (res?.error) {
+        console.log('res.error', res.error)
         const error = JSON.parse(res.error)
 
         // é preciso definir o objeto error que tenha a propriedade message

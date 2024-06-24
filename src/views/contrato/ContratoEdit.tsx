@@ -13,7 +13,9 @@ import {
   Chip,
   CircularProgress,
   Divider,
+  FormControl,
   FormControlLabel,
+  FormHelperText,
   MenuItem,
   Radio,
   RadioGroup,
@@ -32,7 +34,7 @@ import type { SubmitHandler } from 'react-hook-form'
 
 import CustomTextField from '@core/components/mui/TextField'
 import type { ContratoType } from '@/types/ContratoType'
-import { contratoInit, prazoList } from '@/types/ContratoType'
+import { contratoInit, prazoList, taxaContratoMarks } from '@/types/ContratoType'
 import type { DialogConfirmaType, erroType } from '@/types/utilTypes'
 import ContratoService from '@/services/ContratoService'
 
@@ -60,60 +62,6 @@ type ErrorType = {
   message: string[]
 }
 
-type FormData = v.InferInput<typeof schema>
-
-const schema = v.object({
-  valor: v.pipe(v.number('Digite um valor'), v.minValue(1, 'É preciso inforar um valor.')),
-  taxaCliente: v.pipe(v.number('Informe a taxa'), v.minValue(0.01, 'Informe a taxa.'))
-})
-
-const marks = [
-  {
-    value: 0,
-    label: '0'
-  },
-  {
-    value: 0.5,
-    label: '0,5%'
-  },
-  {
-    value: 1,
-    label: '1%'
-  },
-  {
-    value: 1.5,
-    label: '1,5%'
-  },
-  {
-    value: 2,
-    label: '2%'
-  },
-  {
-    value: 2.5,
-    label: '1,5%'
-  },
-  {
-    value: 3,
-    label: '3%'
-  },
-  {
-    value: 3.5,
-    label: '3,5%'
-  },
-  {
-    value: 4,
-    label: '4%'
-  },
-  {
-    value: 4.5,
-    label: '4,5%'
-  },
-  {
-    value: 5,
-    label: '5%'
-  }
-]
-
 const ContratoEdit = ({ contrato, handleClose }: props) => {
   //contexto
   const { cliente } = useClienteContext()
@@ -127,6 +75,20 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
   const [dialogConfirma, setDialogConfirma] = useState<DialogConfirmaType>({ open: false })
   const [sending, setSending] = useState<boolean>(false)
   const [clienteContrato, setClienteContrato] = useState<ClienteType>()
+
+  type FormData = v.InferInput<typeof schema>
+
+  const schema = v.object({
+    valor: v.pipe(v.number('Digite um valor'), v.minValue(1, 'É preciso inforar um valor.')),
+    taxaCliente: v.pipe(
+      v.number('A taxa precisa ser maior que 0'),
+      v.minValue(0.01, 'A taxa precisa ser maior que 0.'),
+      v.maxValue(
+        clienteContrato?.gestor?.taxaDistribuicao || 1,
+        `O valor da taxa não pode ser maior que ${clienteContrato?.gestor?.taxaDistribuicao}`
+      )
+    )
+  })
 
   const {
     control,
@@ -170,11 +132,17 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
         .then(respContrato => {
           //console.log('respContrato', respContrato)
           toast.success('Contrato enviado!')
-          setContratoContext(respContrato)
+
+          try {
+            setContratoContext(respContrato)
+          } catch (error) {}
+
           handleClose(true)
         })
         .catch(err => {
-          setErro({ msg: trataErro(err) })
+          const msg = trataErro(err)
+
+          setErro({ msg })
         })
         .finally(() => {
           setSending(false)
@@ -202,7 +170,11 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
           //console.log('respContrato', respContrato)
           toast.success(`Contrato ${contratoEdit?.token} excluído!`)
           setContratoEdit({})
-          setContratoContext(undefined)
+
+          try {
+            setContratoContext(undefined)
+          } catch (error) {}
+
           handleClose(true)
         })
         .catch(err => {
@@ -234,7 +206,11 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
           //console.log('respContrato', respContrato)
           toast.success(`Contrato ${contratoEdit?.token} cancelado!`)
           setContratoEdit(respContrato)
-          setContratoContext(respContrato)
+
+          try {
+            setContratoContext(respContrato)
+          } catch (error) {}
+
           handleClose(true)
         })
         .catch(err => {
@@ -292,7 +268,11 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
           console.log('respContrato', respContrato)
           toast.success(`Contrato ${contratoEdit?.token} ativado!`)
           setContratoEdit(respContrato)
-          setContratoContext(respContrato)
+
+          try {
+            setContratoContext(respContrato)
+          } catch (error) {}
+
           handleClose(true)
         })
         .catch(err => {
@@ -308,8 +288,19 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
   const onSubmit: SubmitHandler<FormData> = async (data: FormData) => {
     setErro(undefined)
 
-    //setContratoEdit({ ...contratoEdit, cliente: { id: cliente.id, token: cliente.token } })
-    console.log('contratoEdit', contratoEdit)
+    if (!contratoEdit.taxaCliente || contratoEdit.taxaCliente < 0.1) {
+      toast.error(`É preciso informar um valor para a taxa do cliente`)
+
+      return
+    }
+
+    const taxaMaxima = clienteContrato?.gestor?.taxaDistribuicao || 0
+
+    if (contratoEdit.taxaCliente > taxaMaxima) {
+      toast.error(`O valor da taxa do cliente não pode ser maior que ${taxaMaxima}%`)
+
+      return
+    }
 
     if (contrato && contrato.cliente && contrato.cliente.token && data.valor && data.taxaCliente) {
       setSending(true)
@@ -333,7 +324,6 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
     if (!cliente && contratoEdit && contratoEdit.cliente && contratoEdit.cliente.token) {
       getCliente(contratoEdit.cliente.token)
         .then(respCliente => {
-          console.log('respCliente', respCliente)
           if (respCliente) setClienteContrato(respCliente)
         })
         .catch(err => {
@@ -384,7 +374,7 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
               variant='tonal'
               label={
                 contratoEdit?.dataEnvio
-                  ? `Data do Envio: ${contratoEdit?.dataEnvio ? moment(contratoEdit?.dataEnvio).format('YYYY-MM-DD HH:mm') : ''}`
+                  ? `Data do Envio: ${contratoEdit?.dataEnvio ? moment(contratoEdit?.dataEnvio).format('DD-MM-YYYY HH:mm') : ''}`
                   : 'Não enviado'
               }
               color='primary'
@@ -429,7 +419,7 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
               <FormControlLabel value='2' control={<Radio />} label='Sim' />
             </RadioGroup>
           </Grid>
-          <Grid item xs={12} sm={4}>
+          <Grid item xs={12} sm={6}>
             <Controller
               name='valor'
               control={control}
@@ -456,36 +446,7 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
               )}
             />
           </Grid>
-          <Grid item xs={12} sm={4}>
-            <Controller
-              name='taxaCliente'
-              control={control}
-              rules={{ required: true }}
-              render={({ field }) => (
-                <CustomTextField
-                  {...field}
-                  fullWidth
-                  label='Taxa Cliente'
-                  type='number'
-                  value={contratoEdit?.taxaCliente}
-                  disabled={!!contratoEdit?.status && contratoEdit?.status != StatusContratoEnum.NOVO}
-                  onChange={e => {
-                    field.onChange(parseFloat(e.target.value))
-                    setContratoEdit({
-                      ...contratoEdit,
-                      taxaCliente: parseFloat(e.target.value) <= 0 ? 0 : parseFloat(e.target.value)
-                    })
-                    errorState !== null && setErrorState(null)
-                  }}
-                  {...((errors.taxaCliente || errorState !== null) && {
-                    error: true,
-                    helperText: errors?.taxaCliente?.message || errorState?.message
-                  })}
-                />
-              )}
-            />
-          </Grid>
-          <Grid item xs={12} sm={4}>
+          <Grid item xs={12} sm={6}>
             <CustomTextField
               select
               fullWidth
@@ -502,16 +463,40 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
             </CustomTextField>
           </Grid>
           <Grid item xs={12} sm={12}>
-            <Typography className='font-medium'>Taxa cliente</Typography>
-            <Slider
-              marks={marks}
-              min={0}
-              max={clienteContrato?.gestor?.taxaDistribuicao || cliente?.gestor?.taxaDistribuicao}
-              step={0.1}
-              defaultValue={contratoEdit?.taxaCliente || 1}
-              valueLabelDisplay='on'
-              aria-labelledby='continuous-slider'
-            />
+            <FormControl error={Boolean(errors.taxaCliente)} fullWidth>
+              <Typography className='font-medium'>
+                Taxa do cliente: <b>{contratoEdit?.taxaCliente}%</b>
+              </Typography>
+              <Controller
+                name='taxaCliente'
+                control={control}
+                rules={{ required: true }}
+                render={({ field }) => (
+                  <Slider
+                    {...field}
+                    key={`slider-taxaCliente`} /* fixed issue */
+                    marks={taxaContratoMarks}
+                    min={0}
+                    max={clienteContrato?.gestor?.taxaDistribuicao}
+                    step={0.05}
+                    defaultValue={contratoEdit?.taxaCliente || 1}
+                    valueLabelDisplay='auto'
+                    aria-labelledby='continuous-slider'
+                    disabled={!!contratoEdit?.status && contratoEdit?.status != StatusContratoEnum.NOVO}
+                    onChangeCommitted={(e, sliderValue) => {
+                      if (typeof sliderValue === 'number') {
+                        field.onChange(sliderValue)
+                        setContratoEdit({
+                          ...contratoEdit,
+                          taxaCliente: sliderValue
+                        })
+                      }
+                    }}
+                  />
+                )}
+              />
+              {errors.taxaCliente && <FormHelperText error>{errors.taxaCliente?.message}</FormHelperText>}
+            </FormControl>
           </Grid>
           <Grid item xs={12} sm={12}>
             <CustomTextField

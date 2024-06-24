@@ -40,6 +40,7 @@ export const authOptions: NextAuthOptions = {
             body: JSON.stringify({ email, password, rememberMe })
           })
 
+          console.log('res auth', res)
           const data = await res.json()
 
           if (res.status === 400 || res.status === 401) {
@@ -65,7 +66,8 @@ export const authOptions: NextAuthOptions = {
               //role: data.userData.roles
             }
 
-            //console.log('return user', user)
+            console.log('data', data)
+            console.log('return user', user)
 
             return user
           }
@@ -131,6 +133,7 @@ export const authOptions: NextAuthOptions = {
         token.nome = user.nome
         token.email = user.email
         token.isAdmin = user.isAdmin
+        token.podeCriarEquipe = user.podeCriarEquipe
         token.roles = user.roles
         token.foto = user.foto
         token.rememberMe = user.rememberMe
@@ -158,6 +161,7 @@ export const authOptions: NextAuthOptions = {
         session.user.nome = token.nome
         session.user.email = token.email
         session.user.isAdmin = token.isAdmin
+        session.user.podeCriarEquipe = token.podeCriarEquipe
         session.user.roles = token.roles
         session.user.foto = token.foto
         session.user.rememberMe = token.rememberMe

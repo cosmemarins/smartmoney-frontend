@@ -7,6 +7,7 @@ declare module 'next-auth/jwt' {
     token: string
     nome: string
     isAdmin: boolean
+    podeCriaEquipe: boolean
     roles: string
     email: string
     foto?: string
@@ -23,6 +24,7 @@ declare module 'next-auth' {
       token: string
       nome: string
       isAdmin: boolean
+      podeCriarEquipe: boolean
       roles: string
       email: string
       foto?: string
@@ -37,6 +39,7 @@ declare module 'next-auth' {
     token: string
     nome: string
     isAdmin: boolean
+    podeCriarEquipe: boolean
     roles: string
     email: string
     foto?: string

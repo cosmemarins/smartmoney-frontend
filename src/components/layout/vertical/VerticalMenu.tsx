@@ -7,6 +7,8 @@ import { useTheme } from '@mui/material/styles'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 
 // Type Imports
+import { useSession } from 'next-auth/react'
+
 import type { VerticalMenuContextProps } from '@menu/components/vertical-menu/Menu'
 
 // Component Imports
@@ -42,6 +44,7 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
   // Hooks
   const theme = useTheme()
   const verticalNavOptions = useVerticalNav()
+  const { data: session } = useSession()
   const { settings } = useSettings()
   const { isBreakpointReached } = useVerticalNav()
 
@@ -76,10 +79,13 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
         <MenuItem href='/home' icon={<i className='tabler-smart-home' />}>
           Home
         </MenuItem>
-        <SubMenu label='Equipe' icon={<i className='tabler-users' />}>
-          <MenuItem href={`/equipe/list`}>Listar equipe</MenuItem>
-          <MenuItem href={`/equipe/new`}>Novo parceiro</MenuItem>
-        </SubMenu>
+        {session?.user.podeCriarEquipe && (
+          <SubMenu label='Equipe' icon={<i className='tabler-users' />}>
+            <MenuItem href={`/equipe/list`}>Listar equipe</MenuItem>
+            <MenuItem href={`/equipe/comissao/list`}>Comissionamento</MenuItem>
+            <MenuItem href={`/equipe/new`}>Novo parceiro</MenuItem>
+          </SubMenu>
+        )}
         <SubMenu label='Clientes' icon={<i className='tabler-users' />}>
           <MenuItem href={`/cliente/list`}>Listar Clientes</MenuItem>
           <MenuItem href={`/cliente/new`}>Novo cliente</MenuItem>
