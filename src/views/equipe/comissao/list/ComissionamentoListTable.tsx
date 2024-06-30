@@ -127,6 +127,14 @@ const ComissionamentoListTable = () => {
           </Typography>
         )
       }),
+      columnHelper.accessor('dataVencimento', {
+        header: 'Data Vencimento',
+        cell: ({ row }) => (
+          <Typography color='text.primary'>
+            {moment(row.original.dataVencimento).utcOffset('+0300').format('DD/MM/YYYY')}
+          </Typography>
+        )
+      }),
       columnHelper.accessor('nomeGestor', {
         header: 'Broker',
         cell: ({ row }) => <Typography color='text.primary'>{row.original.nomeGestor}</Typography>
