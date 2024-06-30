@@ -21,9 +21,9 @@ import FormControlLabel from '@mui/material/FormControlLabel'
 import { signIn } from 'next-auth/react'
 import { Controller, useForm } from 'react-hook-form'
 
-import * as v from 'valibot'
-import { valibotResolver } from '@hookform/resolvers/valibot'
 import type { SubmitHandler } from 'react-hook-form'
+import { valibotResolver } from '@hookform/resolvers/valibot'
+import * as v from 'valibot'
 
 //import type { Input } from 'valibot'
 import classnames from 'classnames'
