@@ -13,14 +13,10 @@ import {
   CardHeader,
   CircularProgress,
   Divider,
-  FormControl,
   FormControlLabel,
-  FormHelperText,
   MenuItem,
   Radio,
-  RadioGroup,
-  Slider,
-  Typography
+  RadioGroup
 } from '@mui/material'
 import moment, { locale } from 'moment'
 import 'moment/locale/pt-br'
@@ -33,7 +29,7 @@ import { valibotResolver } from '@hookform/resolvers/valibot'
 import type { SubmitHandler } from 'react-hook-form'
 
 import CustomTextField from '@core/components/mui/TextField'
-import { prazoList, taxaContratoMarks } from '@/types/ContratoType'
+import { prazoList } from '@/types/ContratoType'
 import ContratoService from '@/services/ContratoService'
 
 import { StatusContratoEnum } from '@/utils/enums/StatusContratoEnum'
@@ -56,6 +52,13 @@ type ErrorType = {
   message: string[]
 }
 
+type FormData = v.InferInput<typeof schema>
+
+const schema = v.object({
+  valor: v.pipe(v.number('Digite um valor'), v.minValue(1, 'É preciso inforar um valor.')),
+  taxaCliente: v.pipe(v.number('Informe a taxa'), v.minValue(0.01, 'Informe a taxa.'))
+})
+
 const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
   //contexto
   const { cliente } = useClienteContext()
@@ -64,18 +67,6 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
   // States
   const [errorState, setErrorState] = useState<ErrorType | null>(null)
   const [sending, setSending] = useState<boolean>(false)
-  const [maxTaxa, setMaxTaxa] = useState<number>(3)
-
-  const schema = v.object({
-    valor: v.pipe(v.number('Informe um valor maior que 0'), v.minValue(1, 'É preciso inforar um valor.')),
-    taxaCliente: v.pipe(
-      v.number('A taxa precisa ser maior que 0'),
-      v.minValue(0.01, 'A taxa precisa ser maior que 0.'),
-      v.maxValue(maxTaxa || 3, `O valor da taxa não pode ser maior que ${maxTaxa}`)
-    )
-  })
-
-  type FormData = v.InferInput<typeof schema>
 
   const {
     control,
@@ -126,11 +117,6 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
         ...contrato,
         cliente: { id: cliente?.id, token: cliente?.token }
       })
-      setMaxTaxa(
-        cliente?.gestor?.parceiro?.taxaDistribuicao && cliente?.gestor?.parceiro?.taxaDistribuicao <= 3
-          ? cliente?.gestor?.parceiro?.taxaDistribuicao
-          : 3
-      )
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -171,7 +157,7 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
                       <FormControlLabel value='2' control={<Radio />} label='Sim' />
                     </RadioGroup>
                   </Grid>
-                  <Grid item xs={12} sm={6}>
+                  <Grid item xs={12} sm={4}>
                     <Controller
                       name='valor'
                       control={control}
@@ -205,7 +191,36 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
                       )}
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6}>
+                  <Grid item xs={12} sm={4}>
+                    <Controller
+                      name='taxaCliente'
+                      control={control}
+                      rules={{ required: true }}
+                      render={({ field }) => (
+                        <CustomTextField
+                          {...field}
+                          fullWidth
+                          label='Taxa Cliente'
+                          type='number'
+                          value={contrato?.taxaCliente}
+                          disabled={!!contrato?.status && contrato?.status != StatusContratoEnum.NOVO}
+                          onChange={e => {
+                            field.onChange(parseFloat(e.target.value))
+                            setContratoContext({
+                              ...contrato,
+                              taxaCliente: parseFloat(e.target.value) <= 0 ? 0 : parseFloat(e.target.value)
+                            })
+                            errorState !== null && setErrorState(null)
+                          }}
+                          {...((errors.taxaCliente || errorState !== null) && {
+                            error: true,
+                            helperText: errors?.taxaCliente?.message || errorState?.message
+                          })}
+                        />
+                      )}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={4}>
                     <CustomTextField
                       select
                       fullWidth
@@ -220,42 +235,6 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
                         </MenuItem>
                       ))}
                     </CustomTextField>
-                  </Grid>
-                  <Grid item xs={12} sm={12}>
-                    <FormControl error={Boolean(errors.taxaCliente)} fullWidth>
-                      <Typography className='font-medium'>
-                        Taxa do cliente: <b>{contrato?.taxaCliente}%</b>
-                      </Typography>
-                      <Controller
-                        name='taxaCliente'
-                        control={control}
-                        rules={{ required: true }}
-                        render={({ field }) => (
-                          <Slider
-                            {...field}
-                            key={`slider-taxaCliente`} /* fixed issue */
-                            marks={taxaContratoMarks}
-                            min={0}
-                            max={maxTaxa || 3}
-                            step={0.05}
-                            defaultValue={contrato?.taxaCliente || 3}
-                            valueLabelDisplay='auto'
-                            aria-labelledby='continuous-slider'
-                            disabled={!!contrato?.status && contrato?.status != StatusContratoEnum.NOVO}
-                            onChangeCommitted={(e, sliderValue) => {
-                              if (typeof sliderValue === 'number') {
-                                field.onChange(sliderValue)
-                                setContratoContext({
-                                  ...contrato,
-                                  taxaCliente: sliderValue
-                                })
-                              }
-                            }}
-                          />
-                        )}
-                      />
-                      {errors.taxaCliente && <FormHelperText error>{errors.taxaCliente?.message}</FormHelperText>}
-                    </FormControl>
                   </Grid>
                   <Grid item xs={12} sm={12}>
                     <CustomTextField

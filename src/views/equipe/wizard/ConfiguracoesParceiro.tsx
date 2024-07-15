@@ -19,11 +19,11 @@ import {
 } from '@mui/material'
 import { toast } from 'react-toastify'
 
-import { salvarConfiguracoesUsuario } from '@/services/UsuarioService'
+import ParceiroService from '@/services/ParceiroService'
 
-import { useUsuarioContext } from '@/contexts/UsuarioContext'
+import { useParceiroContext } from '@/contexts/ParceiroContext'
 import { trataErro } from '@/utils/erro'
-import type { ConfiguracoesUsuarioType } from '@/types/ConfiguracoesUsuarioType'
+import type { ConfiguracoesParceiroType } from '@/types/ConfiguracoesParceiroType'
 import DirectionalIcon from '@/components/DirectionalIcon'
 import { taxaContratoMarks } from '@/types/ContratoType'
 
@@ -34,23 +34,22 @@ type Props = {
   steps: { title: string; subtitle: string }[]
 }
 
-const ConfiguracoesUsuario = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
+const ConfiguracoesParceiro = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
   // States
-  const [configuracoesUsuario, setConfiguracoesUsuario] = useState<ConfiguracoesUsuarioType>({ podeCriarEquipe: false })
+  const [configuracoesParceiro, setConfiguracoesParceiro] = useState<ConfiguracoesParceiroType>({
+    podeCriarEquipe: false
+  })
+
   const [sending, setSending] = useState<boolean>(false)
 
-  const { usuario, setUsuarioContext } = useUsuarioContext()
+  const { parceiro, setParceiroContext } = useParceiroContext()
 
   const handleSubmit = () => {
-    if (usuario && usuario.token && configuracoesUsuario) {
+    if (parceiro && parceiro.token && configuracoesParceiro) {
       setSending(true)
-      salvarConfiguracoesUsuario(configuracoesUsuario)
-        .then(respConfig => {
-          setUsuarioContext({
-            ...usuario,
-            taxaDistribuicao: respConfig.taxaDistribuicao,
-            podeCriarEquipe: respConfig.podeCriarEquipe
-          })
+      ParceiroService.salvarConfiguracoes(parceiro.token, configuracoesParceiro)
+        .then(respParceiro => {
+          setParceiroContext(respParceiro)
           toast.success('Dados salvo com sucesso!')
           handleNext()
         })
@@ -66,14 +65,22 @@ const ConfiguracoesUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pro
   }
 
   function handleSlideChange(event: any, sliderValue: number | number[]) {
-    console.log(event.target.value)
-    console.log(sliderValue)
+    //console.log(event.target.value)
+    //console.log(sliderValue)
 
     if (typeof sliderValue === 'number') {
-      setConfiguracoesUsuario({
-        ...configuracoesUsuario,
-        taxaDistribuicao: sliderValue
-      })
+      if (sliderValue < 5) {
+        setConfiguracoesParceiro({
+          ...configuracoesParceiro,
+          taxaDistribuicao: sliderValue,
+          podeCriarEquipe: false
+        })
+      } else {
+        setConfiguracoesParceiro({
+          ...configuracoesParceiro,
+          taxaDistribuicao: sliderValue
+        })
+      }
     }
 
     /*
@@ -87,35 +94,35 @@ const ConfiguracoesUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pro
   }
 
   useEffect(() => {
-    if (usuario && usuario.token) {
-      setConfiguracoesUsuario({
-        id: usuario.id,
-        token: usuario.token,
-        taxaDistribuicao: usuario.taxaDistribuicao,
-        podeCriarEquipe: usuario.podeCriarEquipe
+    if (parceiro && parceiro.token) {
+      setConfiguracoesParceiro({
+        id: parceiro.id,
+        token: parceiro.token,
+        taxaDistribuicao: parceiro.taxaDistribuicao,
+        podeCriarEquipe: parceiro.taxaDistribuicao && parceiro.taxaDistribuicao < 5 ? false : parceiro.podeCriarEquipe
       })
     }
-  }, [usuario])
+  }, [parceiro])
 
   return (
     <Grid container spacing={6}>
       <Grid item xs={12}>
         <Card className='relative'>
           <form onSubmit={e => e.preventDefault()}>
-            <CardHeader title='Configurações' />
+            <CardHeader title='Configurações do parceiro' />
             <CardContent className='flex flex-col gap-4'>
               <Grid container spacing={5}>
                 <Grid item xs={12} sm={12}>
                   <Typography className='font-medium'>
-                    Taxa de distribuição: <b>{configuracoesUsuario?.taxaDistribuicao}%</b>
+                    Taxa de distribuição: <b>{configuracoesParceiro?.taxaDistribuicao}%</b>
                   </Typography>
                   <Slider
-                    key={`slider-${configuracoesUsuario?.taxaDistribuicao}`} /* fixed issue */
+                    key={`slider-${configuracoesParceiro?.taxaDistribuicao}`} /* fixed issue */
                     marks={taxaContratoMarks}
                     min={0}
                     max={5}
                     step={0.1}
-                    defaultValue={configuracoesUsuario?.taxaDistribuicao || 1}
+                    defaultValue={configuracoesParceiro?.taxaDistribuicao || 1}
                     valueLabelDisplay='auto'
                     aria-labelledby='continuous-slider'
                     onChangeCommitted={(e, value) => handleSlideChange(e, value)}
@@ -126,16 +133,30 @@ const ConfiguracoesUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pro
                   <RadioGroup
                     row
                     name='radio-buttons-group'
-                    value={configuracoesUsuario.podeCriarEquipe ? 1 : 0}
+                    value={configuracoesParceiro.podeCriarEquipe ? 1 : 0}
                     onChange={e =>
-                      setConfiguracoesUsuario({
-                        ...configuracoesUsuario,
+                      setConfiguracoesParceiro({
+                        ...configuracoesParceiro,
                         podeCriarEquipe: e.target.value == '1' ? true : false
                       })
                     }
                   >
-                    <FormControlLabel value='0' control={<Radio />} label='Não' />
-                    <FormControlLabel value='1' control={<Radio />} label='Sim' />
+                    <FormControlLabel
+                      value='0'
+                      control={<Radio />}
+                      label='Não'
+                      disabled={
+                        (configuracoesParceiro.taxaDistribuicao && configuracoesParceiro.taxaDistribuicao < 5) || false
+                      }
+                    />
+                    <FormControlLabel
+                      value='1'
+                      control={<Radio />}
+                      label='Sim'
+                      disabled={
+                        (configuracoesParceiro.taxaDistribuicao && configuracoesParceiro.taxaDistribuicao < 5) || false
+                      }
+                    />
                   </RadioGroup>
                 </Grid>
               </Grid>
@@ -178,4 +199,4 @@ const ConfiguracoesUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pro
   )
 }
 
-export default ConfiguracoesUsuario
+export default ConfiguracoesParceiro

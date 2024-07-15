@@ -18,18 +18,18 @@ import classnames from 'classnames'
 import CustomAvatar from '@core/components/mui/Avatar'
 
 import { ContratoProvider, useContratoContext } from '@/contexts/ContratoContext'
-import DadosEmpresa from './DadosEmpresa'
-import DadosSocio from './DadosSocio'
-import EnderecoEmpresa from './EnderecoEmpresa'
-import DadosBancariosEmpresa from './DadosBancariosEmpresa'
+import DadosUsuario from './DadosUsuario'
+import EnderecoUsuario from './EnderecoUsuario'
+import DadosBancariosUsuario from './DadosBancariosUsuario'
+import Documentacao from './documentacao'
 
 // Styled Component Imports
 import StepperWrapper from '@core/styles/stepper'
 import InicioCadatroParceiro from './InicioCadatroParceiro'
 
-import { useParceiroContext } from '@/contexts/ParceiroContext'
-import ConfiguracoesParceiro from './ConfiguracoesParceiro'
-import FinalizarCadastroParceiro from './FinalizarCadastroParceiro'
+import { useClienteContext } from '@/contexts/ClienteContext'
+import ConfiguracoesUsuario from './ConfiguracoesUsuario'
+import FinalizarCadastroUsuario from './FinalizarCadastroUsuario'
 
 // Vars
 const steps = [
@@ -39,9 +39,9 @@ const steps = [
     subtitle: 'Indentifique o parceiro'
   },
   {
-    icon: 'tabler-building',
-    title: 'Passo 1 - Dados da Empresa',
-    subtitle: 'Informe os dados empresariais do parceiro'
+    icon: 'tabler-user',
+    title: 'Passo 1 - Dados Pessoais do Parceiro',
+    subtitle: 'Informe os dados do parceiro para efetuar o cadastro'
   },
   {
     icon: 'tabler-map',
@@ -54,9 +54,9 @@ const steps = [
     subtitle: 'Informe os dados bancários do parceiro'
   },
   {
-    icon: 'tabler-user',
-    title: 'Passo 4 - Dados do Sócio Responsável',
-    subtitle: 'Informe os dados do sócio responsável'
+    icon: 'tabler-id',
+    title: 'Passo 4 - Documentação do Parceiro',
+    subtitle: 'Envie a documentação para habilitar o parceiro'
   },
   {
     icon: 'tabler-checkbox',
@@ -83,16 +83,16 @@ const getStepContent = (step: number, handleNext: () => void, handlePrev: () => 
     step === 0
       ? InicioCadatroParceiro
       : step === 1
-        ? DadosEmpresa
+        ? DadosUsuario
         : step === 2
-          ? EnderecoEmpresa
+          ? EnderecoUsuario
           : step === 3
-            ? DadosBancariosEmpresa
+            ? DadosBancariosUsuario
             : step === 4
-              ? DadosSocio
+              ? Documentacao
               : step === 5
-                ? ConfiguracoesParceiro
-                : FinalizarCadastroParceiro
+                ? ConfiguracoesUsuario
+                : FinalizarCadastroUsuario
 
   return <Tag activeStep={step} handleNext={handleNext} handlePrev={handlePrev} steps={steps} />
 }
@@ -102,10 +102,12 @@ const UsuarioPage = () => {
   const [activeStep, setActiveStep] = useState(0)
 
   //hooks
-  const { parceiro } = useParceiroContext()
+  const { cliente } = useClienteContext()
   const { contrato } = useContratoContext()
 
   const handleNext = () => {
+    console.log('proximo: ', activeStep)
+
     if (activeStep !== steps.length - 1) {
       setActiveStep(activeStep + 1)
     } else {
@@ -124,19 +126,19 @@ const UsuarioPage = () => {
 
     switch (index) {
       case 1:
-        index = parceiro?.token ? index : 0
+        index = cliente?.token ? index : 0
         break
       case 2:
-        index = parceiro?.token ? index : 0
+        index = cliente?.token ? index : 0
         break
       case 3:
-        index = parceiro?.token && parceiro.cep ? index : stepAnterior
+        index = cliente?.token && cliente.cep ? index : stepAnterior
         break
       case 4:
-        index = parceiro?.token && parceiro.cep ? index : stepAnterior
+        index = cliente?.token && cliente.cep ? index : stepAnterior
         break
       case 5:
-        index = parceiro?.token && parceiro.cep ? index : stepAnterior
+        index = cliente?.token && cliente.cep ? index : stepAnterior
         break
       case 6:
         index = contrato?.token ? index : stepAnterior
@@ -146,6 +148,22 @@ const UsuarioPage = () => {
     }
 
     stepAnterior = index
+    console.log('saída: ', index)
+
+    /*
+    if (cliente?.token) {
+      if (index > stepMax + 1) {
+        index = stepAnterior
+      } else {
+        if (index > 2 && cliente.cep) {
+          stepAnterior = index
+          if (index > stepMax) stepMax = index
+        } else {
+          index = stepAnterior
+        }
+      }
+      }
+    */
 
     setActiveStep(index)
   }

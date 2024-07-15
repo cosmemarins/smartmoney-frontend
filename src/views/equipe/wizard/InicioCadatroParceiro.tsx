@@ -20,13 +20,12 @@ import { toast } from 'react-toastify'
 import CustomTextField from '@core/components/mui/TextField'
 import { cpfCnpjMask } from '@/utils/string'
 
-import { useUsuarioContext } from '@/contexts/UsuarioContext'
+import { useParceiroContext } from '@/contexts/ParceiroContext'
 import { trataErro } from '@/utils/erro'
-import isCPF from '@/utils/cpf'
 import isCNPJ from '@/utils/cnpj'
 
-import { getUsuarioByCpfCnpj } from '@/services/UsuarioService'
-import { StatusUsuarioEnum } from '@/utils/enums/StatusUsuarioEnum'
+import ParceiroService from '@/services/ParceiroService'
+import { StatusParceiroEnum } from '@/utils/enums/StatusParceiroEnum'
 
 type Props = {
   activeStep: number
@@ -42,18 +41,18 @@ type ErrorType = {
 type FormData = v.InferInput<typeof schema>
 
 const schema = v.object({
-  cpfCnpj: v.pipe(
-    v.string('É preciso digitar um CPF ou um CNPJ'),
-    v.check(input => isCPF(input) || isCNPJ(input), 'Cpf/Cnpj inválido, é preciso digitar um CPF ou CNPJ válido.')
+  cnpj: v.pipe(
+    v.string('É preciso digitar um CNPJ'),
+    v.check(input => isCNPJ(input), 'Cnpj inválido, é preciso digitar um CNPJ válido.')
   )
 })
 
-const InicioCadatroUsuario = ({ handleNext }: Props) => {
+const InicioCadatroParceiro = ({ handleNext }: Props) => {
   // States
   const [errorState, setErrorState] = useState<ErrorType | null>(null)
   const [sending, setSending] = useState<boolean>(false)
 
-  const { usuario, setUsuarioContext } = useUsuarioContext()
+  const { parceiro, setParceiroContext } = useParceiroContext()
 
   const {
     control,
@@ -62,21 +61,21 @@ const InicioCadatroUsuario = ({ handleNext }: Props) => {
   } = useForm<FormData>({
     resolver: valibotResolver(schema),
     defaultValues: {
-      cpfCnpj: usuario?.cpfCnpj
+      cnpj: parceiro?.cnpj
     }
   })
 
   const onSubmit: SubmitHandler<FormData> = async (data: FormData) => {
-    if (data.cpfCnpj) {
-      if (isCPF(data.cpfCnpj) || isCNPJ(data.cpfCnpj)) {
+    if (data.cnpj) {
+      if (isCNPJ(data.cnpj)) {
         setSending(true)
 
-        getUsuarioByCpfCnpj(data.cpfCnpj)
-          .then(respUsuario => {
-            if (respUsuario) {
-              setUsuarioContext(respUsuario)
+        ParceiroService.getByCnpj(data.cnpj)
+          .then(respParceiro => {
+            if (respParceiro) {
+              setParceiroContext(respParceiro)
             } else {
-              setUsuarioContext({ cpfCnpj: data.cpfCnpj, status: StatusUsuarioEnum.NOVO })
+              setParceiroContext({ cnpj: data.cnpj, status: StatusParceiroEnum.NOVO })
             }
 
             handleNext()
@@ -90,7 +89,7 @@ const InicioCadatroUsuario = ({ handleNext }: Props) => {
             setSending(false)
           })
       } else {
-        toast.error('CPF/CNPJ inválido!')
+        toast.error('CNPJ inválido!')
       }
     }
   }
@@ -103,29 +102,29 @@ const InicioCadatroUsuario = ({ handleNext }: Props) => {
             <CardHeader title='Inicio do Cadastro de Parceiro' />
             <CardContent className='flex flex-col gap-4'>
               <Typography color='text.primary' className='font-medium'>
-                Para cadastrar um parceiro comece informando o CPF ou CNPJ do parceiro:
+                Para cadastrar um parceiro comece informando o CNPJ do parceiro:
               </Typography>
               <Grid container spacing={6}>
                 <Grid item xs={12} sm={6}>
                   <Controller
-                    name='cpfCnpj'
+                    name='cnpj'
                     control={control}
                     rules={{ required: true }}
                     render={({ field }) => (
                       <CustomTextField
                         {...field}
                         fullWidth
-                        label='CPF/CNPJ'
+                        label='CNPJ'
                         disabled={sending}
-                        value={cpfCnpjMask(usuario?.cpfCnpj)}
+                        value={cpfCnpjMask(parceiro?.cnpj)}
                         onChange={e => {
                           field.onChange(e.target.value)
-                          setUsuarioContext({ ...usuario, cpfCnpj: e.target.value })
+                          setParceiroContext({ ...parceiro, cnpj: e.target.value })
                           errorState !== null && setErrorState(null)
                         }}
-                        {...((errors.cpfCnpj || errorState !== null) && {
+                        {...((errors.cnpj || errorState !== null) && {
                           error: true,
-                          helperText: errors?.cpfCnpj?.message || errorState?.message
+                          helperText: errors?.cnpj?.message || errorState?.message
                         })}
                       />
                     )}
@@ -154,4 +153,4 @@ const InicioCadatroUsuario = ({ handleNext }: Props) => {
   )
 }
 
-export default InicioCadatroUsuario
+export default InicioCadatroParceiro

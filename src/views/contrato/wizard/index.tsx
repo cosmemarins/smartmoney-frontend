@@ -77,7 +77,6 @@ const Step = styled(MuiStep)<StepProps>({
 })
 
 let stepAnterior = 0
-const stepMax = 0
 
 const getStepContent = (step: number, handleNext: () => void, handlePrev: () => void) => {
   const Tag =

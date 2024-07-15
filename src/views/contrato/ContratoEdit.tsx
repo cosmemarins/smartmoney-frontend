@@ -84,8 +84,8 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
       v.number('A taxa precisa ser maior que 0'),
       v.minValue(0.01, 'A taxa precisa ser maior que 0.'),
       v.maxValue(
-        clienteContrato?.gestor?.taxaDistribuicao || 1,
-        `O valor da taxa não pode ser maior que ${clienteContrato?.gestor?.taxaDistribuicao}`
+        clienteContrato?.gestor?.parceiro?.taxaDistribuicao || 1,
+        `O valor da taxa não pode ser maior que ${clienteContrato?.gestor?.parceiro?.taxaDistribuicao}`
       )
     )
   })
@@ -294,7 +294,7 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
       return
     }
 
-    const taxaMaxima = clienteContrato?.gestor?.taxaDistribuicao || 0
+    const taxaMaxima = clienteContrato?.gestor?.parceiro?.taxaDistribuicao || 0
 
     if (contratoEdit.taxaCliente > taxaMaxima) {
       toast.error(`O valor da taxa do cliente não pode ser maior que ${taxaMaxima}%`)
@@ -477,7 +477,7 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
                     key={`slider-taxaCliente`} /* fixed issue */
                     marks={taxaContratoMarks}
                     min={0}
-                    max={clienteContrato?.gestor?.taxaDistribuicao}
+                    max={clienteContrato?.gestor?.parceiro?.taxaDistribuicao}
                     step={0.05}
                     defaultValue={contratoEdit?.taxaCliente || 1}
                     valueLabelDisplay='auto'

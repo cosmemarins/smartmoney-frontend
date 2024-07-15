@@ -213,11 +213,18 @@ const ArquivoEdit = ({ arquivoData, handleClose, setRefreshArquivoList }: props)
                         value={arquivoEdit?.tipoDocumento ? arquivoEdit?.tipoDocumento : ''}
                         onChange={e => setArquivoEdit({ ...arquivoEdit, tipoDocumento: e.target.value })}
                       >
-                        {TipoDocumentoEnumList.map((tipo, index) => (
-                          <MenuItem key={index} value={tipo.value} selected={arquivoEdit?.tipoDocumento === tipo.value}>
-                            {tipo.label}
-                          </MenuItem>
-                        ))}
+                        {TipoDocumentoEnumList.map(
+                          (tipo, index) =>
+                            (tipo.tipoPessoa === 'A' || tipo.tipoPessoa === arquivoEdit.cliente?.tipoPessoa) && (
+                              <MenuItem
+                                key={index}
+                                value={tipo.value}
+                                selected={arquivoEdit?.tipoDocumento === tipo.value}
+                              >
+                                {tipo.label}
+                              </MenuItem>
+                            )
+                        )}
                       </CustomTextField>
                     </Grid>
                     <Grid item xs={12} sm={12}>

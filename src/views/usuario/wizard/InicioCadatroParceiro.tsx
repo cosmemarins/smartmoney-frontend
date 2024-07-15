@@ -19,16 +19,13 @@ import { toast } from 'react-toastify'
 
 import CustomTextField from '@core/components/mui/TextField'
 import { cpfCnpjMask } from '@/utils/string'
-import { getClienteByCpfCnpj } from '@/services/ClienteService'
-import ContratoService from '@/services/ContratoService'
 
-import { useClienteContext } from '@/contexts/ClienteContext'
-import { useContratoContext } from '@/contexts/ContratoContext'
+import { useParceiroContext } from '@/contexts/ParceiroContext'
 import { trataErro } from '@/utils/erro'
-import isCPF from '@/utils/cpf'
 import isCNPJ from '@/utils/cnpj'
-import { StatusClienteEnum } from '@/utils/enums/StatusClienteEnum'
-import { contratoInit } from '@/types/ContratoType'
+
+import ParceiroService from '@/services/ParceiroService'
+import { StatusParceiroEnum } from '@/utils/enums/StatusParceiroEnum'
 
 type Props = {
   activeStep: number
@@ -44,20 +41,18 @@ type ErrorType = {
 type FormData = v.InferInput<typeof schema>
 
 const schema = v.object({
-  cpfCnpj: v.pipe(
-    v.string('É preciso digitar um CPF ou um CNPJ'),
-    v.check(input => isCPF(input) || isCNPJ(input), 'Cpf/Cnpj inválido, é preciso digitar um CPF ou CNPJ válido.')
+  cnpj: v.pipe(
+    v.string('É preciso digitar um CNPJ'),
+    v.check(input => isCNPJ(input), 'Cnpj inválido, é preciso digitar um CNPJ válido.')
   )
 })
 
-const InicioCadatroContrato = ({ handleNext }: Props) => {
+const InicioCadatroParceiro = ({ handleNext }: Props) => {
   // States
   const [errorState, setErrorState] = useState<ErrorType | null>(null)
   const [sending, setSending] = useState<boolean>(false)
 
-  //context
-  const { cliente, setClienteContext } = useClienteContext()
-  const { setContratoContext } = useContratoContext()
+  const { parceiro, setParceiroContext } = useParceiroContext()
 
   const {
     control,
@@ -66,63 +61,35 @@ const InicioCadatroContrato = ({ handleNext }: Props) => {
   } = useForm<FormData>({
     resolver: valibotResolver(schema),
     defaultValues: {
-      cpfCnpj: cliente?.cpfCnpj
+      cnpj: parceiro?.cnpj
     }
   })
 
   const onSubmit: SubmitHandler<FormData> = async (data: FormData) => {
-    if (data.cpfCnpj) {
-      if (isCPF(data.cpfCnpj) || isCNPJ(data.cpfCnpj)) {
+    if (data.cnpj) {
+      if (isCNPJ(data.cnpj)) {
         setSending(true)
 
-        getClienteByCpfCnpj(data.cpfCnpj)
-          .then(respCliente => {
-            if (respCliente) {
-              setClienteContext(respCliente)
-              setContratoContext({
-                ...contratoInit,
-                data: new Date(),
-                cliente: { id: respCliente?.id, token: respCliente?.token }
-              })
-
-              if (respCliente && respCliente.token) {
-                ContratoService.getUltimoContratoNovo(respCliente.token)
-                  .then(respContrato => {
-                    console.log('respContrato', respContrato)
-                    if (respContrato) setContratoContext(respContrato)
-                  })
-                  .catch(err => {
-                    const msgErro = trataErro(err)
-
-                    toast.error(msgErro)
-                  })
-                  .finally(() => {
-                    handleNext()
-                    setSending(false)
-                  })
-              }
+        ParceiroService.getByCnpj(data.cnpj)
+          .then(respParceiro => {
+            if (respParceiro) {
+              setParceiroContext(respParceiro)
             } else {
-              setClienteContext({
-                cpfCnpj: data.cpfCnpj,
-                tipoPessoa: isCPF(data.cpfCnpj) ? 'F' : 'J',
-                status: StatusClienteEnum.NOVO
-              })
-              setContratoContext({
-                ...contratoInit,
-                data: new Date()
-              })
-              handleNext()
+              setParceiroContext({ cnpj: data.cnpj, status: StatusParceiroEnum.NOVO })
             }
+
+            handleNext()
           })
           .catch(err => {
             const msgErro = trataErro(err)
 
             toast.error(msgErro)
+          })
+          .finally(() => {
             setSending(false)
           })
-          .finally(() => {})
       } else {
-        toast.error('CPF/CNPJ inválido!')
+        toast.error('CNPJ inválido!')
       }
     }
   }
@@ -132,33 +99,32 @@ const InicioCadatroContrato = ({ handleNext }: Props) => {
       <Grid item xs={12}>
         <Card className='relative'>
           <form onSubmit={handleSubmit(onSubmit)}>
-            <CardHeader title='Inicio do Cadastro de Contrato' />
+            <CardHeader title='Inicio do Cadastro de Parceiro' />
             <CardContent className='flex flex-col gap-4'>
               <Typography color='text.primary' className='font-medium'>
-                Antes de cadastrar um contrato precisamos dos dados do cliente, comece informando o CPF ou CNPJ do
-                cliente:
+                Para cadastrar um parceiro comece informando o CNPJ do parceiro:
               </Typography>
               <Grid container spacing={6}>
                 <Grid item xs={12} sm={6}>
                   <Controller
-                    name='cpfCnpj'
+                    name='cnpj'
                     control={control}
                     rules={{ required: true }}
                     render={({ field }) => (
                       <CustomTextField
                         {...field}
                         fullWidth
-                        label='CPF/CNPJ'
+                        label='CNPJ'
                         disabled={sending}
-                        value={cpfCnpjMask(cliente?.cpfCnpj)}
+                        value={cpfCnpjMask(parceiro?.cnpj)}
                         onChange={e => {
                           field.onChange(e.target.value)
-                          setClienteContext({ ...cliente, cpfCnpj: e.target.value })
+                          setParceiroContext({ ...parceiro, cnpj: e.target.value })
                           errorState !== null && setErrorState(null)
                         }}
-                        {...((errors.cpfCnpj || errorState !== null) && {
+                        {...((errors.cnpj || errorState !== null) && {
                           error: true,
-                          helperText: errors?.cpfCnpj?.message || errorState?.message
+                          helperText: errors?.cnpj?.message || errorState?.message
                         })}
                       />
                     )}
@@ -187,4 +153,4 @@ const InicioCadatroContrato = ({ handleNext }: Props) => {
   )
 }
 
-export default InicioCadatroContrato
+export default InicioCadatroParceiro

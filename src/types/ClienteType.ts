@@ -8,8 +8,11 @@ export type ClienteType = {
   id?: number
   token?: string
   nome?: string
+  razaoSocial?: string
+  nomeSocio?: string
   dataNascimento?: string
   identidade?: string
+  tipoPessoa?: string
   cpfCnpj?: string
   email?: string
   gestor?: UsuarioType

@@ -30,12 +30,18 @@ async function getCliente(token: string): Promise<ClienteType> {
 }
 
 async function getClienteByCpfCnpj(cpfCnpj: string): Promise<ClienteType> {
-  const { data } = await api.get<ClienteType>(`${path}/cpf-cnpj/${cpfCnpj}`)
+  const cpfCnpjPar = cpfCnpj.replace(/[^\d]+/g, '')
+  const { data } = await api.get<ClienteType>(`${path}/cpf-cnpj/${cpfCnpjPar}`)
 
   return data
 }
 
 async function salvarCliente(cliente: ClienteType): Promise<ClienteType> {
+  cliente = {
+    ...cliente,
+    cpfCnpj: cliente.cpfCnpj?.replace(/[^\d]+/g, '')
+  }
+
   const { data } =
     cliente.token && cliente.token != ''
       ? await api.put<ClienteType>(path, cliente)

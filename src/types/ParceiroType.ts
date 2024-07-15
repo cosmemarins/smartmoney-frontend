@@ -1,16 +1,18 @@
 import type { BancoType } from './BancoType'
-import type { ParceiroType } from './ParceiroType'
+import type { UsuarioType } from './UsuarioType'
 import type { StatusColorType } from './utilTypes'
 
-export type UsuarioType = {
+export type ParceiroType = {
   id?: number
   token?: string
-  parceiro?: ParceiroType
-  nome?: string
+  gestor?: ParceiroType
+  nomeFantasia?: string
+  razaoSocial?: string
+  cnpj?: string
+  inscricaoEstadual?: string
+  dataAbertura?: Date
+  socioResponsavel?: UsuarioType
   email?: string
-  senha?: string
-  dataNascimento?: string
-  cpf?: string
   telefone?: string
   endereco?: string
   numero?: string
@@ -27,23 +29,18 @@ export type UsuarioType = {
   tipoPoupanca?: string
   tipoPix?: string
   chavePix?: string
-  foto?: string
-  status?: string
-  isAdmin?: boolean
+  taxaDistribuicao?: number
   podeCriarEquipe?: boolean
-  roles?: string
-  cargo?: string
-  dataUltimoAcesso?: Date
+  status?: string
   dataUltimaModificacao?: Date
-  dataSenha?: Date
   data?: Date
 }
 
-export type UsuarioTypeWithAction = UsuarioType & {
+export type ParceiroTypeWithAction = ParceiroType & {
   action?: string
 }
 
-export const usuarioStatusColors: StatusColorType = {
+export const parceiroStatusColors: StatusColorType = {
   ATIVO: 'success',
   NOVO: 'secondary',
   INATIVO: 'secondary',

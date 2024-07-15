@@ -24,13 +24,14 @@ import ArquivoService from '@/services/ArquivoService'
 import { trataErro } from '@/utils/erro'
 import type { ArquivoType } from '@/types/ArquivoType'
 import ArquivoItem from './ArquivoItem'
-import { valorEmReal } from '@/utils/string'
+import { cpfCnpjMask, valorEmReal } from '@/utils/string'
 
 locale('pt-br')
 
 const PreviewCard = () => {
   //contexto
-  const { cliente } = useClienteContext()
+  const { cliente, isCpf } = useClienteContext()
+
   const { contrato } = useContratoContext()
 
   const [arquivoList, setArquivoList] = useState<ArquivoType[]>([])
@@ -71,7 +72,7 @@ const PreviewCard = () => {
                   <Typography variant='h5'>{`Contrato #${contrato?.token}`}</Typography>
                   <div className='flex flex-col gap-1'>
                     <Typography color='text.primary'>{cliente?.nome}</Typography>
-                    <Typography color='text.primary'>{cliente?.cpfCnpj}</Typography>
+                    <Typography color='text.primary'>{cpfCnpjMask(cliente?.cpfCnpj)}</Typography>
                   </div>
                 </div>
               </div>
@@ -92,8 +93,8 @@ const PreviewCard = () => {
                       </Typography>
                     </div>
                     <div className='flex items-center gap-4'>
-                      <Typography className='min-is-[100px]'>CPF/CNPJ:</Typography>
-                      <Typography>{cliente?.cpfCnpj}</Typography>
+                      <Typography className='min-is-[100px]'>{isCpf ? 'CPF' : 'CNPJ'}</Typography>
+                      <Typography>{cpfCnpjMask(cliente?.cpfCnpj)}</Typography>
                     </div>
                     <div className='flex items-center gap-4'>
                       <Typography className='min-is-[100px]'>Nascimento: </Typography>

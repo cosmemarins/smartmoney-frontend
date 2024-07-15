@@ -38,7 +38,11 @@ const Documentacao = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
     data: new Date(),
     tipoUsuario: 'C',
     idUsuario: cliente?.id,
-    cliente: { id: cliente?.id, token: cliente?.token }
+    cliente: {
+      id: cliente?.id,
+      token: cliente?.token,
+      tipoPessoa: cliente?.tipoPessoa
+    }
   }
 
   const [arquivoEdit, setArquivoEdit] = useState<ArquivoType>(arquivoInit)

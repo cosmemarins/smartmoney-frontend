@@ -21,12 +21,13 @@ import { toast } from 'react-toastify'
 
 import CustomTextField from '@core/components/mui/TextField'
 import { cpfCnpjMask, telefoleMask } from '@/utils/string'
-import { salvarCliente } from '@/services/ClienteService'
+import ParceiroService from '@/services/ParceiroService'
 
-import { useClienteContext } from '@/contexts/ClienteContext'
-import { useContratoContext } from '@/contexts/ContratoContext'
+import { useParceiroContext } from '@/contexts/ParceiroContext'
 import DirectionalIcon from '@/components/DirectionalIcon'
 import { trataErro } from '@/utils/erro'
+import isCPF from '@/utils/cpf'
+import { CargoEnum } from '@/utils/enums/CargoEnum'
 
 locale('pt-br')
 
@@ -44,26 +45,27 @@ type ErrorType = {
 type FormData = v.InferInput<typeof schema>
 
 const schema = v.object({
+  cpf: v.pipe(
+    v.string('É preciso digitar um CPF'),
+    v.check(input => isCPF(input), 'Cpf inválido, é preciso digitar um CPF válido.')
+  ),
   nome: v.string('É preciso digitar um nome'),
   email: v.pipe(v.string('É preciso digitar um email'), v.email('Email inválido')),
-  identidade: v.string('É preciso informar a identidade'),
   telefone: v.string('É preciso informar um celular'),
   dataNascimento: v.pipe(
     v.date('É preciso infromar uma data válida'),
-    v.minValue(moment().subtract(110, 'years').toDate(), 'Não pode ser tão velho')
-
-    //v.maxValue(moment().subtract(18, 'years').toDate(), 'Preciser ser maior de 18 anos')
+    v.minValue(moment().subtract(110, 'years').toDate(), 'Não pode ser tão velho'),
+    v.maxValue(moment().subtract(18, 'years').toDate(), 'Preciser ser maior de 18 anos')
   )
 })
 
-const DadosCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
+const DadosSocio = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
   // States
   const [errorState, setErrorState] = useState<ErrorType | null>(null)
   const [sending, setSending] = useState<boolean>(false)
 
   //hooks
-  const { cliente, setClienteContext, isCpf } = useClienteContext()
-  const { contrato, setContratoContext } = useContratoContext()
+  const { parceiro, setParceiroContext } = useParceiroContext()
 
   const {
     control,
@@ -72,25 +74,31 @@ const DadosCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
   } = useForm<FormData>({
     resolver: valibotResolver(schema),
     defaultValues: {
-      nome: cliente?.nome,
-      email: cliente?.email,
-      identidade: cliente?.identidade,
-      telefone: cliente?.telefone,
-      dataNascimento: moment(cliente?.dataNascimento).toDate()
+      cpf: parceiro?.socioResponsavel?.cpf,
+      nome: parceiro?.socioResponsavel?.nome,
+      email: parceiro?.socioResponsavel?.email,
+      telefone: parceiro?.socioResponsavel?.telefone,
+      dataNascimento: moment(parceiro?.socioResponsavel?.dataNascimento).toDate()
     }
   })
 
   const onSubmit: SubmitHandler<FormData> = async (data: FormData) => {
-    if (cliente && data.nome && data.email) {
+    if (parceiro?.token && parceiro?.socioResponsavel && data.nome && data.email) {
       setSending(true)
-      salvarCliente(cliente)
-        .then(respCliente => {
-          setClienteContext(respCliente)
-          if (!contrato?.cliente)
-            setContratoContext({
-              ...contrato,
-              cliente: { id: cliente?.id, token: cliente?.token }
-            })
+
+      //não usei a variavel do contexto pq quando muda, ela não assume imediatamento o valor do cargo
+      //e acaba mandando para o back o valor sem o cargo
+      const socioResponsavel = {
+        ...parceiro?.socioResponsavel,
+        cargo: CargoEnum.SOCIO_ADMIN
+      }
+
+      ParceiroService.salvarUsuario(parceiro.token, socioResponsavel)
+        .then(respUsuario => {
+          setParceiroContext({
+            ...parceiro,
+            socioResponsavel: respUsuario
+          })
           handleNext()
         })
         .catch(err => {
@@ -109,9 +117,38 @@ const DadosCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
       <Grid item xs={12}>
         <Card className='relative'>
           <form onSubmit={handleSubmit(onSubmit)}>
-            <CardHeader title='Dados Pessoais' />
+            <CardHeader title='Dados Pessoais do Sócio Responsável' />
             <CardContent className='flex flex-col gap-4'>
               <Grid container spacing={5}>
+                <Grid item xs={12} sm={6}>
+                  <Controller
+                    name='cpf'
+                    control={control}
+                    rules={{ required: true }}
+                    render={({ field }) => (
+                      <CustomTextField
+                        {...field}
+                        autoFocus
+                        fullWidth
+                        label='CPF'
+                        disabled={sending}
+                        value={cpfCnpjMask(parceiro?.socioResponsavel?.cpf)}
+                        onChange={e => {
+                          field.onChange(e.target.value)
+                          setParceiroContext({
+                            ...parceiro,
+                            socioResponsavel: { ...parceiro?.socioResponsavel, cpf: e.target.value }
+                          })
+                          errorState !== null && setErrorState(null)
+                        }}
+                        {...((errors.cpf || errorState !== null) && {
+                          error: true,
+                          helperText: errors?.cpf?.message || errorState?.message
+                        })}
+                      />
+                    )}
+                  />
+                </Grid>
                 <Grid item xs={12} sm={6}>
                   <Controller
                     name='nome'
@@ -120,14 +157,16 @@ const DadosCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
                     render={({ field }) => (
                       <CustomTextField
                         {...field}
-                        autoFocus
                         fullWidth
-                        label={isCpf ? 'Nome' : 'Razão Social'}
-                        placeholder={isCpf ? 'nome' : 'Razão Social ou Nome Fantasia'}
-                        value={cliente?.nome || ''}
+                        label='Nome'
+                        placeholder='nome'
+                        value={parceiro?.socioResponsavel?.nome || ''}
                         onChange={e => {
                           field.onChange(e.target.value)
-                          setClienteContext({ ...cliente, nome: e.target.value })
+                          setParceiroContext({
+                            ...parceiro,
+                            socioResponsavel: { ...parceiro?.socioResponsavel, nome: e.target.value }
+                          })
                           errorState !== null && setErrorState(null)
                         }}
                         {...((errors.nome || errorState !== null) && {
@@ -150,10 +189,13 @@ const DadosCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
                         type='email'
                         label='Email'
                         placeholder='email'
-                        value={cliente?.email || ''}
+                        value={parceiro?.socioResponsavel?.email || ''}
                         onChange={e => {
                           field.onChange(e.target.value)
-                          setClienteContext({ ...cliente, email: e.target.value })
+                          setParceiroContext({
+                            ...parceiro,
+                            socioResponsavel: { ...parceiro?.socioResponsavel, email: e.target.value }
+                          })
                           errorState !== null && setErrorState(null)
                         }}
                         {...((errors.email || errorState !== null) && {
@@ -166,39 +208,6 @@ const DadosCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <Controller
-                    name='identidade'
-                    control={control}
-                    rules={{ required: true }}
-                    render={({ field }) => (
-                      <CustomTextField
-                        {...field}
-                        fullWidth
-                        label={isCpf ? 'Identidade' : 'Inscrição Estadual'}
-                        placeholder='identidade'
-                        value={cliente?.identidade || ''}
-                        onChange={e => {
-                          field.onChange(e.target.value)
-                          setClienteContext({ ...cliente, identidade: e.target.value })
-                          errorState !== null && setErrorState(null)
-                        }}
-                        {...((errors.identidade || errorState !== null) && {
-                          error: true,
-                          helperText: errors?.identidade?.message || errorState?.message
-                        })}
-                      />
-                    )}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <CustomTextField
-                    disabled
-                    fullWidth
-                    label={isCpf ? 'CPF' : 'CNPJ'}
-                    value={cpfCnpjMask(cliente?.cpfCnpj)}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Controller
                     name='telefone'
                     control={control}
                     rules={{ required: true }}
@@ -207,12 +216,15 @@ const DadosCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
                         {...field}
                         type='tel'
                         fullWidth
-                        label='Telefone'
+                        label='Celular'
                         placeholder='(00) 00000-0000'
-                        value={telefoleMask(cliente?.telefone)}
+                        value={telefoleMask(parceiro?.socioResponsavel?.telefone)}
                         onChange={e => {
                           field.onChange(e.target.value)
-                          setClienteContext({ ...cliente, telefone: e.target.value })
+                          setParceiroContext({
+                            ...parceiro,
+                            socioResponsavel: { ...parceiro?.socioResponsavel, telefone: e.target.value }
+                          })
                           errorState !== null && setErrorState(null)
                         }}
                         {...((errors.telefone || errorState !== null) && {
@@ -233,11 +245,18 @@ const DadosCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
                         {...field}
                         type='date'
                         fullWidth
-                        label={isCpf ? 'Data de Nascimento' : 'Data Abertura'}
-                        value={cliente?.dataNascimento ? moment(cliente?.dataNascimento).format('YYYY-MM-DD') : ''}
+                        label='Data de Nascimento'
+                        value={
+                          parceiro?.socioResponsavel?.dataNascimento
+                            ? moment(parceiro?.socioResponsavel?.dataNascimento).format('YYYY-MM-DD')
+                            : ''
+                        }
                         onChange={e => {
                           field.onChange(new Date(e.target.value))
-                          setClienteContext({ ...cliente, dataNascimento: e.target.value })
+                          setParceiroContext({
+                            ...parceiro,
+                            socioResponsavel: { ...parceiro?.socioResponsavel, dataNascimento: e.target.value }
+                          })
                           errorState !== null && setErrorState(null)
                         }}
                         {...((errors.dataNascimento || errorState !== null) && {
@@ -279,7 +298,7 @@ const DadosCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
               )
             }
           >
-            {activeStep === steps.length - 1 ? 'Enviar Contrato' : 'Próximo'}
+            {activeStep === steps.length - 1 ? 'Salvar Parceiro' : 'Próximo'}
           </Button>
         </div>
       </Grid>
@@ -287,4 +306,4 @@ const DadosCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
   )
 }
 
-export default DadosCliente
+export default DadosSocio
