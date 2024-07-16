@@ -17,7 +17,7 @@ import Button from '@mui/material/Button'
 // Component Imports
 import { toast } from 'react-toastify'
 
-import { CircularProgress } from '@mui/material'
+import { CircularProgress, FormControlLabel, Radio, RadioGroup } from '@mui/material'
 
 import CustomTextField from '@core/components/mui/TextField'
 import { salvarSenha } from '@/services/UsuarioService'
@@ -26,6 +26,7 @@ import { useParceiroContext } from '@/contexts/ParceiroContext'
 import type UsuarioSenhaDTO from '@/types/UsuarioSenha.dto'
 import DirectionalIcon from '@/components/DirectionalIcon'
 import { trataErro } from '@/utils/erro'
+import { geraSenha } from '@/utils/string'
 
 type Props = {
   activeStep: number
@@ -42,6 +43,7 @@ const FinalizarCadastroParceiro = ({ activeStep, handlePrev, steps }: Props) => 
 
   const [novaSenha, setNovaSenha] = useState('')
   const [confirmacaoSenha, setConfirmacaoSenha] = useState('')
+  const [senhaAutomatica, setSenhaAutomatica] = useState(true)
 
   //const [erroSenha, setErroSenha] = useState(false)
 
@@ -70,13 +72,13 @@ const FinalizarCadastroParceiro = ({ activeStep, handlePrev, steps }: Props) => 
     // If all requirements are met, password is valid
     const isValid = requirements.every(Boolean)
 
-    if (!isValid) {
+    if (!isValid && !senhaAutomatica) {
       toast.error(`Senha inválida, a senha precisa conter letras e números e ter ao menos 6 caracteres`)
 
       return
     }
 
-    if (novaSenha != confirmacaoSenha) {
+    if (novaSenha != confirmacaoSenha && !senhaAutomatica) {
       toast.error(`Senha inválida, a confirmação de senha não é igual a senha`)
 
       return
@@ -88,10 +90,13 @@ const FinalizarCadastroParceiro = ({ activeStep, handlePrev, steps }: Props) => 
     if (tokenParceiro && tokenSocio) {
       setSending(true)
 
+      const senhaRandom = geraSenha()
+
       const usuarioSenha = {
         token: tokenSocio,
-        novaSenha,
-        confirmacaoSenha
+        novaSenha: senhaAutomatica ? senhaRandom : novaSenha,
+        confirmacaoSenha: senhaAutomatica ? senhaRandom : confirmacaoSenha,
+        senhaAutomatica
       } as UsuarioSenhaDTO
 
       salvarSenha(tokenSocio, usuarioSenha)
@@ -127,12 +132,28 @@ const FinalizarCadastroParceiro = ({ activeStep, handlePrev, steps }: Props) => 
             </Alert>
             <form>
               <Grid container spacing={4}>
+                <Grid item xs={12} sm={12}>
+                  <RadioGroup
+                    row
+                    name='radio-buttons-group'
+                    value={senhaAutomatica ? '1' : '0'}
+                    onChange={e => setSenhaAutomatica(e.target.value === '0' ? false : true)}
+                  >
+                    <FormControlLabel
+                      value='1'
+                      control={<Radio />}
+                      label='Quero que o sistema gere uma senha automática'
+                    />
+                    <FormControlLabel value='0' control={<Radio />} label='Não, prefiro digitar uma senha agora' />
+                  </RadioGroup>
+                </Grid>
                 <Grid item xs={12} sm={6}>
                   <CustomTextField
                     fullWidth
                     label='Senha'
                     type={isPasswordShown ? 'text' : 'password'}
                     onChange={e => setNovaSenha(e.target.value)}
+                    disabled={senhaAutomatica}
                     InputProps={{
                       endAdornment: (
                         <InputAdornment position='end'>
@@ -154,6 +175,7 @@ const FinalizarCadastroParceiro = ({ activeStep, handlePrev, steps }: Props) => 
                     label='Confirmação da senha'
                     type={isConfirmPasswordShown ? 'text' : 'password'}
                     onChange={e => setConfirmacaoSenha(e.target.value)}
+                    disabled={senhaAutomatica}
                     InputProps={{
                       endAdornment: (
                         <InputAdornment position='end'>

@@ -51,6 +51,7 @@ import DialogConfirma from '@/components/DialogConfirma'
 import type { DialogConfirmaType } from '@/types/utilTypes'
 import type { ValidationError } from '@/services/api'
 import { excluirCliente, getListCliente } from '@/services/ClienteService'
+import { cpfCnpjMask } from '@/utils/string'
 
 // Column Definitions
 const columnHelper = createColumnHelper<ClienteTypeWithAction>()
@@ -187,7 +188,7 @@ const ClienteListTable = () => {
               <Typography color='text.primary' className='font-medium'>
                 {row.original.nome}
               </Typography>
-              <Typography variant='body2'>{row.original.cpfCnpj}</Typography>
+              <Typography variant='body2'>{cpfCnpjMask(row.original.cpfCnpj)}</Typography>
             </div>
           </div>
         )

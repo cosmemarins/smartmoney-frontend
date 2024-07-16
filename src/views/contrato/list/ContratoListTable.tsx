@@ -57,6 +57,7 @@ import { trataErro } from '@/utils/erro'
 import { StatusContratoEnum, getStatusContratoEnumColor } from '@/utils/enums/StatusContratoEnum'
 import type { ClienteType } from '@/types/ClienteType'
 import ContratoEdit from '../ContratoEdit'
+import { cpfCnpjMask } from '@/utils/string'
 
 locale('pt-br')
 
@@ -221,7 +222,7 @@ const ContratoListTable = () => {
                   {row.original.cliente?.nome}
                 </Typography>
               </Link>
-              <Typography variant='body2'>{row.original.cliente?.cpfCnpj}</Typography>
+              <Typography variant='body2'>{cpfCnpjMask(row.original.cliente?.cpfCnpj)}</Typography>
             </div>
           </div>
         )

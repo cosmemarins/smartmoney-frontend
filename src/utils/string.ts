@@ -5,6 +5,10 @@ export const withoutSuffix = (str: string, suffix: string) =>
 
 export const withoutPrefix = (str: string, prefix: string) => (str.startsWith(prefix) ? str.slice(prefix.length) : str)
 
+export const geraSenha = () => {
+  return Math.random().toString(36).slice(-10)
+}
+
 export const cpfCnpjMask = (value: string | undefined) => {
   if (!value) return ''
 

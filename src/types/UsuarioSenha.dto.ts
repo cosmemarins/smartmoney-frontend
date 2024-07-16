@@ -9,4 +9,5 @@ export default interface UsuarioSenhaDTO {
   senha: string
   novaSenha: string
   confirmacaoSenha: string
+  senhaAutomatica: boolean
 }
