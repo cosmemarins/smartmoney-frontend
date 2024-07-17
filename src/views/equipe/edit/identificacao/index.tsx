@@ -165,17 +165,9 @@ const Identificacao = () => {
             <Grid item xs={12} sm={6}>
               <CustomTextField
                 fullWidth
-                label='Identidade'
-                value={usuarioEdit?.identidade || ''}
-                onChange={e => setUsuarioEdit({ ...usuarioEdit, identidade: e.target.value })}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <CustomTextField
-                fullWidth
                 label='CPF/CNPJ'
-                value={cpfCnpjMask(usuarioEdit?.cpfCnpj)}
-                onChange={e => setUsuarioEdit({ ...usuarioEdit, cpfCnpj: e.target.value })}
+                value={cpfCnpjMask(usuarioEdit?.cpf)}
+                onChange={e => setUsuarioEdit({ ...usuarioEdit, cpf: e.target.value })}
               />
             </Grid>
             <Grid item xs={12} sm={6}>

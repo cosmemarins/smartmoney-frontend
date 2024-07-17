@@ -23,7 +23,7 @@ import {
 
 import axios from 'axios'
 
-import { getThumbnailUsuario, uploadDocumento } from '@/services/UsuarioService'
+import { uploadDocumento } from '@/services/UsuarioService'
 import type { erroType } from '@/types/utilTypes'
 import type { ValidationError } from '@/services/api'
 import { TipoDocumentoEnum } from '@/utils/enums/TipoDocumentoEnum'
@@ -46,7 +46,7 @@ const DocumentoUploadDropzone = ({ titulo, tipoUpload }: props) => {
   const [loadFile, setLoadFile] = useState(false)
   const [files, setFiles] = useState<File[]>([])
   const [uploadStatus, setUploadStatus] = useState('Salvar arquivo')
-  const [fileDocumento, setFileDocumento] = useState<any>()
+  const [fileDocumento] = useState<any>()
 
   const { usuario, setUsuarioContext } = useUsuarioContext()
 
@@ -110,20 +110,23 @@ const DocumentoUploadDropzone = ({ titulo, tipoUpload }: props) => {
         switch (tipoUpload) {
           case TipoDocumentoEnum.IDENTIDADE:
             setUsuarioContext({
-              ...usuario,
-              docIdentidade: respUpload.docIdentidade
+              ...usuario
+
+              //docIdentidade: respUpload.docIdentidade
             })
             break
           case TipoDocumentoEnum.COMPROVANTE_RESIDENCIA:
             setUsuarioContext({
-              ...usuario,
-              compResidencia: respUpload.compResidencia
+              ...usuario
+
+              //compResidencia: respUpload.compResidencia
             })
             break
           case TipoDocumentoEnum.COMPROVANTE_FINANCEIRO:
             setUsuarioContext({
-              ...usuario,
-              compFinanceiro: respUpload.compFinanceiro
+              ...usuario
+
+              //compFinanceiro: respUpload.compFinanceiro
             })
             break
         }
@@ -148,6 +151,7 @@ const DocumentoUploadDropzone = ({ titulo, tipoUpload }: props) => {
 
   useEffect(() => {
     if (usuario && usuario.token) {
+      /*
       if (
         (usuario.docIdentidade && tipoUpload === TipoDocumentoEnum.IDENTIDADE) ||
         (usuario.compResidencia && tipoUpload === TipoDocumentoEnum.COMPROVANTE_RESIDENCIA) ||
@@ -167,6 +171,7 @@ const DocumentoUploadDropzone = ({ titulo, tipoUpload }: props) => {
             setLoadFile(false)
           })
       }
+          */
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])

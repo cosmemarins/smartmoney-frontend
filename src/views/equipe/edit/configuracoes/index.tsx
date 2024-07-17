@@ -56,7 +56,7 @@ const ConfiguracoesUsuario = () => {
   } = useForm<FormData>({
     resolver: valibotResolver(schema),
     defaultValues: {
-      taxaDistribuicao: usuario?.taxaDistribuicao
+      taxaDistribuicao: usuario?.parceiro?.taxaDistribuicao
     }
   })
 
@@ -69,7 +69,10 @@ const ConfiguracoesUsuario = () => {
         .then(respConfig => {
           setUsuarioContext({
             ...usuario,
-            taxaDistribuicao: respConfig.taxaDistribuicao,
+            parceiro: {
+              ...usuario.parceiro,
+              taxaDistribuicao: respConfig.taxaDistribuicao
+            },
             podeCriarEquipe: respConfig.podeCriarEquipe
           })
           toast.success('Dados salvo com sucesso!')
@@ -90,7 +93,7 @@ const ConfiguracoesUsuario = () => {
       setConfiguracoesUsuario({
         id: usuario.id,
         token: usuario.token,
-        taxaDistribuicao: usuario.taxaDistribuicao,
+        taxaDistribuicao: usuario.parceiro?.taxaDistribuicao,
         podeCriarEquipe: usuario.podeCriarEquipe
       })
     }

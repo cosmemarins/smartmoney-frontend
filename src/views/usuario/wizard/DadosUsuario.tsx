@@ -71,7 +71,6 @@ const DadosUsuario = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
     defaultValues: {
       nome: usuario?.nome,
       email: usuario?.email,
-      identidade: usuario?.identidade,
       telefone: usuario?.telefone,
       dataNascimento: moment(usuario?.dataNascimento).toDate()
     }
@@ -157,32 +156,7 @@ const DadosUsuario = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <Controller
-                    name='identidade'
-                    control={control}
-                    rules={{ required: true }}
-                    render={({ field }) => (
-                      <CustomTextField
-                        {...field}
-                        fullWidth
-                        label='Identidade'
-                        placeholder='identidade'
-                        value={usuario?.identidade || ''}
-                        onChange={e => {
-                          field.onChange(e.target.value)
-                          setUsuarioContext({ ...usuario, identidade: e.target.value })
-                          errorState !== null && setErrorState(null)
-                        }}
-                        {...((errors.identidade || errorState !== null) && {
-                          error: true,
-                          helperText: errors?.identidade?.message || errorState?.message
-                        })}
-                      />
-                    )}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <CustomTextField disabled fullWidth label='CPF/CNPJ' value={cpfCnpjMask(usuario?.cpfCnpj)} />
+                  <CustomTextField disabled fullWidth label='CPF' value={cpfCnpjMask(usuario?.cpf)} />
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <Controller
