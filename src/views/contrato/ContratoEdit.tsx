@@ -29,6 +29,7 @@ import { toast } from 'react-toastify'
 
 import { Controller, useForm } from 'react-hook-form'
 import * as v from 'valibot'
+import { pipe } from 'valibot'
 import { valibotResolver } from '@hookform/resolvers/valibot'
 import type { SubmitHandler } from 'react-hook-form'
 
@@ -79,8 +80,8 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
   type FormData = v.InferInput<typeof schema>
 
   const schema = v.object({
-    valor: v.pipe(v.number('Digite um valor'), v.minValue(1, 'É preciso inforar um valor.')),
-    taxaCliente: v.pipe(
+    valor: pipe(v.number('Digite um valor'), v.minValue(1, 'É preciso inforar um valor.')),
+    taxaCliente: pipe(
       v.number('A taxa precisa ser maior que 0'),
       v.minValue(0.01, 'A taxa precisa ser maior que 0.'),
       v.maxValue(
