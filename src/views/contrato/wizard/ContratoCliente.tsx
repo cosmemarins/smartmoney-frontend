@@ -29,6 +29,7 @@ import { toast } from 'react-toastify'
 
 import { Controller, useForm } from 'react-hook-form'
 import * as v from 'valibot'
+import { pipe } from 'valibot'
 import { valibotResolver } from '@hookform/resolvers/valibot'
 import type { SubmitHandler } from 'react-hook-form'
 
@@ -67,8 +68,8 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
   const [maxTaxa, setMaxTaxa] = useState<number>(3)
 
   const schema = v.object({
-    valor: v.pipe(v.number('Informe um valor maior que 0'), v.minValue(1, 'É preciso inforar um valor.')),
-    taxaCliente: v.pipe(
+    valor: pipe(v.number('Informe um valor maior que 0'), v.minValue(1, 'É preciso inforar um valor.')),
+    taxaCliente: pipe(
       v.number('A taxa precisa ser maior que 0'),
       v.minValue(0.01, 'A taxa precisa ser maior que 0.'),
       v.maxValue(maxTaxa || 3, `O valor da taxa não pode ser maior que ${maxTaxa}`)

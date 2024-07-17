@@ -24,6 +24,7 @@ import { Controller, useForm } from 'react-hook-form'
 import type { SubmitHandler } from 'react-hook-form'
 import { valibotResolver } from '@hookform/resolvers/valibot'
 import * as v from 'valibot'
+import { pipe } from 'valibot'
 
 //import type { Input } from 'valibot'
 import classnames from 'classnames'
@@ -88,11 +89,8 @@ const schema = object({
 */
 
 const schema = v.object({
-  email: v.pipe(v.string('É preciso digitar um email'), v.email('Email inválido')),
-  password: v.pipe(
-    v.string('É preciso digitar uma senha'),
-    v.minLength(5, 'A senha deve conter no mínimo 5 caracteres')
-  )
+  email: pipe(v.string('É preciso digitar um email'), v.email('Email inválido')),
+  password: pipe(v.string('É preciso digitar uma senha'), v.minLength(5, 'A senha deve conter no mínimo 5 caracteres'))
 })
 
 const Login = ({ mode }: { mode: SystemMode }) => {

@@ -12,6 +12,7 @@ import { Button, CardActions, CircularProgress, Typography } from '@mui/material
 
 import { Controller, useForm } from 'react-hook-form'
 import * as v from 'valibot'
+import { pipe } from 'valibot'
 import { valibotResolver } from '@hookform/resolvers/valibot'
 import type { SubmitHandler } from 'react-hook-form'
 
@@ -41,7 +42,7 @@ type ErrorType = {
 type FormData = v.InferInput<typeof schema>
 
 const schema = v.object({
-  cnpj: v.pipe(
+  cnpj: pipe(
     v.string('É preciso digitar um CNPJ'),
     v.check(input => isCNPJ(input), 'Cnpj inválido, é preciso digitar um CNPJ válido.')
   )

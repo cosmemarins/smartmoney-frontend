@@ -23,6 +23,7 @@ import { toast } from 'react-toastify'
 
 import { Controller, useForm } from 'react-hook-form'
 import * as v from 'valibot'
+import { pipe } from 'valibot'
 import { valibotResolver } from '@hookform/resolvers/valibot'
 import type { SubmitHandler } from 'react-hook-form'
 
@@ -36,7 +37,7 @@ import { taxaContratoMarks } from '@/types/ContratoType'
 type FormData = v.InferInput<typeof schema>
 
 const schema = v.object({
-  taxaDistribuicao: v.pipe(
+  taxaDistribuicao: pipe(
     v.number('Informe a taxa de distribuição'),
     v.minValue(0.01, 'Informe a taxa de distribuição.')
   )

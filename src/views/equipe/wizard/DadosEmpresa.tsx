@@ -8,6 +8,7 @@ import Grid from '@mui/material/Grid'
 
 import { Controller, useForm } from 'react-hook-form'
 import * as v from 'valibot'
+import { pipe } from 'valibot'
 import { valibotResolver } from '@hookform/resolvers/valibot'
 import type { SubmitHandler } from 'react-hook-form'
 
@@ -44,7 +45,7 @@ type FormData = v.InferInput<typeof schema>
 
 const schema = v.object({
   nomeFantasia: v.string('É preciso digitar um nome'),
-  email: v.pipe(v.string('É preciso digitar um email'), v.email('Email inválido')),
+  email: pipe(v.string('É preciso digitar um email'), v.email('Email inválido')),
   telefone: v.string('É preciso informar um celular')
 })
 
