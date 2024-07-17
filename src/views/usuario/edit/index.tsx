@@ -14,7 +14,6 @@ import TabPanel from '@mui/lab/TabPanel'
 import { useSession } from 'next-auth/react'
 
 import CustomTabList from '@core/components/mui/TabList'
-import UsuarioPageHeader from '../components/UsuarioPageHeader'
 
 import Identificacao from './identificacao'
 import DocumentacaoTab from './documentacao'
@@ -22,6 +21,7 @@ import DadosBancarios from './dadosBancarios'
 import ConfiguracoesUsuario from './configuracoes'
 import { useUsuarioContext } from '@/contexts/UsuarioContext'
 import SegurancaTab from './seguranca'
+import UsuarioPageHeader from '@/views/equipe/components/UsuarioPageHeader'
 
 const UsuarioEdit = () => {
   //hooks

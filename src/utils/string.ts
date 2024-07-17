@@ -5,6 +5,7 @@ export const withoutSuffix = (str: string, suffix: string) =>
 
 export const withoutPrefix = (str: string, prefix: string) => (str.startsWith(prefix) ? str.slice(prefix.length) : str)
 
+//gera stringo com letras e numeros
 export const geraSenha = () => {
   return Math.random().toString(36).slice(-10)
 }
