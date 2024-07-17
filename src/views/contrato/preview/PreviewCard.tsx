@@ -59,20 +59,20 @@ const PreviewCard = () => {
             <div className='p-6 bg-actionHover rounded'>
               <div className='flex justify-between gap-y-4 flex-col sm:flex-row'>
                 <div className='flex flex-col gap-6'>
-                  <div className='flex items-center gap-2.5'>
-                    <Logo />
-                  </div>
-                  <div>
-                    <Typography color='text.primary'>Endereço da smart money</Typography>
-                    <Typography color='text.primary'>Cidade, estado, cep</Typography>
-                    <Typography color='text.primary'>+1 (123) 456 7891, +44 (876) 543 2198</Typography>
-                  </div>
-                </div>
-                <div className='flex flex-col gap-6'>
                   <Typography variant='h5'>{`Contrato #${contrato?.token}`}</Typography>
                   <div className='flex flex-col gap-1'>
                     <Typography color='text.primary'>{cliente?.nome}</Typography>
                     <Typography color='text.primary'>{cpfCnpjMask(cliente?.cpfCnpj)}</Typography>
+                  </div>
+                </div>
+                <div className='flex flex-col gap-6'>
+                  <div className='flex items-center gap-2.5'>
+                    <Logo />
+                  </div>
+                  <div>
+                    <Typography color='text.primary'></Typography>
+                    <Typography color='text.primary'></Typography>
+                    <Typography color='text.primary'></Typography>
                   </div>
                 </div>
               </div>
@@ -127,6 +127,10 @@ const PreviewCard = () => {
                     Dados do contrato:
                   </Typography>
                   <div>
+                    <div className='flex items-center gap-4'>
+                      <Typography className='min-is-[100px]'>Contrato:</Typography>
+                      <Typography>{contrato?.token}</Typography>
+                    </div>
                     <div className='flex items-center gap-4'>
                       <Typography className='min-is-[100px]'>Data:</Typography>
                       <Typography>{contrato?.data ? moment(contrato?.data).format('DD/MM/YYYY HH:mm') : ''}</Typography>
