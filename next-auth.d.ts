@@ -8,8 +8,10 @@ declare module 'next-auth/jwt' {
     nome: string
     tipoPessoa: string
     isAdmin: boolean
+    idParceiro: number
     podeCriarEquipe: boolean
     roles: string
+    cargo: string
     email: string
     foto?: string
     rememberMe: boolean
@@ -26,8 +28,10 @@ declare module 'next-auth' {
       nome: string
       tipoPessoa: string
       isAdmin: boolean
+      idParceiro: number
       podeCriarEquipe: boolean
       roles: string
+      cargo: string
       email: string
       foto?: string
       rememberMe: boolean
@@ -42,8 +46,10 @@ declare module 'next-auth' {
     nome: string
     tipoPessoa: string
     isAdmin: boolean
+    idParceiro: number
     podeCriarEquipe: boolean
     roles: string
+    cargo: string
     email: string
     foto?: string
     rememberMe: boolean

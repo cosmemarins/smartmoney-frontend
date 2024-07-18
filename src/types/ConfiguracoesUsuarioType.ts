@@ -5,6 +5,7 @@ export type ConfiguracoesUsuarioType = {
   token?: string
   taxaDistribuicao?: number
   podeCriarEquipe?: boolean
+  cargo?: string
 }
 
 export const ConfiguracoesUsuarioInit = {

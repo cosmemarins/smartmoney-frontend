@@ -13,7 +13,7 @@ import { Button, CircularProgress } from '@mui/material'
 import { useSession } from 'next-auth/react'
 
 import CustomAvatar from '@core/components/mui/Avatar'
-import { getTotalUsuarios } from '@/services/UsuarioService'
+import ParceiroService from '@/services/ParceiroService'
 import { trataErro } from '@/utils/erro'
 import type TamanhoEquipeDTO from '@/types/TamanhoEquipe.dto'
 
@@ -29,7 +29,7 @@ const TotalEquipeCard = () => {
     if (user && user.token) {
       setLoading(true)
 
-      getTotalUsuarios(user.token)
+      ParceiroService.getTotalParceiros(user.token)
         .then(resp => {
           setTamanhoEquipe(resp)
         })
@@ -40,8 +40,7 @@ const TotalEquipeCard = () => {
           setLoading(false)
         })
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [session])
 
   return (
     <Card>

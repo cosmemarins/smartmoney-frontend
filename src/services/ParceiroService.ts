@@ -121,7 +121,7 @@ const ParceiroService = {
 
   //estatisticas
   getTotalParceiros: async function (token: string): Promise<TamanhoEquipeDTO> {
-    const { data } = await api.get<TamanhoEquipeDTO>(`${path}/statistics/total-usuarios/${token}`)
+    const { data } = await api.get<TamanhoEquipeDTO>(`${path}/statistics/total-parceiros/${token}`)
 
     return data
   },

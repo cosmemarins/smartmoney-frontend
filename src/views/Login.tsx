@@ -30,6 +30,8 @@ import { pipe } from 'valibot'
 import classnames from 'classnames'
 
 // Type Imports
+import { CircularProgress } from '@mui/material'
+
 import type { SystemMode } from '@core/types'
 
 //import type { Locale } from '@/configs/i18n'
@@ -97,6 +99,7 @@ const Login = ({ mode }: { mode: SystemMode }) => {
   // States
   const [isPasswordShown, setIsPasswordShown] = useState(false)
   const [errorState, setErrorState] = useState<ErrorType | null>(null)
+  const [sending, setSending] = useState(false)
 
   // Vars
   const darkImg = '/images/pages/auth-mask-dark.png'
@@ -139,6 +142,8 @@ const Login = ({ mode }: { mode: SystemMode }) => {
   const handleClickShowPassword = () => setIsPasswordShown(show => !show)
 
   const onSubmit: SubmitHandler<FormData> = async (data: FormData) => {
+    setSending(true)
+
     const res = await signIn('credentials', {
       email: data.email,
       password: data.password,
@@ -163,6 +168,8 @@ const Login = ({ mode }: { mode: SystemMode }) => {
         setErrorState(error)
       }
     }
+
+    setSending(false)
   }
 
   return (
@@ -246,8 +253,14 @@ const Login = ({ mode }: { mode: SystemMode }) => {
                 Esqueceu sua senha?
               </Typography>
             </div>
-            <Button fullWidth variant='contained' type='submit'>
-              Entrar
+            <Button fullWidth variant='contained' type='submit' disabled={sending}>
+              {sending ? (
+                <>
+                  aguarde... <CircularProgress size={20} color='inherit' sx={{ marginLeft: '10px' }} />
+                </>
+              ) : (
+                'Entrar'
+              )}
             </Button>
           </form>
         </div>
