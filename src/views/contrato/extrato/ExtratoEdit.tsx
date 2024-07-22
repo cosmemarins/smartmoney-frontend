@@ -17,18 +17,21 @@ import CustomTextField from '@core/components/mui/TextField'
 import type { ExtratoType } from '@/types/ExtratoType'
 import type { ArquivoUploadType, erroType } from '@/types/utilTypes'
 import ContratoService from '@/services/ContratoService'
-import { TipoExtratoEnumList } from '@/utils/enums/TipoExtratoEnum'
+import type { TipoExtratoEnum } from '@/utils/enums/TipoExtratoEnum'
+import { getTipoExtratoEnumDesc, TipoExtratoEnumList } from '@/utils/enums/TipoExtratoEnum'
 import ComprovanteUpload from '@/components/DocumentoUpload'
 import type { ValidationError } from '@/services/api'
+import { TipoArquivoRegistroEnum } from '@/utils/enums/TipoArquivoRegistroEnum'
 
 locale('pt-br')
 
 interface props {
   extratoData: ExtratoType
   handleClose?: any
+  tipoExtrato?: TipoExtratoEnum
 }
 
-const ExtratoEdit = ({ extratoData, handleClose }: props) => {
+const ExtratoEdit = ({ extratoData, handleClose, tipoExtrato }: props) => {
   // States
   const [erro, setErro] = useState<erroType>()
   const [reload, setReload] = useState(false)
@@ -77,8 +80,16 @@ const ExtratoEdit = ({ extratoData, handleClose }: props) => {
     const formData = new FormData()
 
     //os parametros devem ser appendados antes do file, senão não recupera lá no request do server
-    formData.append('tipoDocumento', 'COMPROVANTE_FINANCEIRO')
-    formData.append('token', `${extratoEdit.token}`) //esse aqui vai ser o inicio do nome do arquivo
+    //o arquivo tem que mandar separado
+    formData.append(
+      'arquivo',
+      JSON.stringify({
+        ...extratoEdit.arquivo,
+        tipoDocumento: extratoEdit.tipo,
+        tipoRegistro: TipoArquivoRegistroEnum.EXTRATO
+      })
+    )
+
     formData.append(
       'extrato',
       JSON.stringify({
@@ -148,14 +159,14 @@ const ExtratoEdit = ({ extratoData, handleClose }: props) => {
       ...arquivoUploadData,
       token: extratoEdit.token,
       titulo: 'Comprovante',
-      nomeArquivo: extratoEdit.compDeposito,
+      nomeArquivo: extratoEdit.arquivo?.nome,
       tipoUpload: 'COMPROVANTE'
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [extratoEdit])
 
   useEffect(() => {
-    if (extratoData?.token && extratoData.compDeposito) {
+    if (extratoData?.token && extratoData.arquivo) {
       //precisa recuperar por aqui pois tem que ser via axios por causa da validação de seção
       ContratoService.getThumbnail(extratoData.token)
         .then(dataImg => {
@@ -203,14 +214,21 @@ const ExtratoEdit = ({ extratoData, handleClose }: props) => {
                       select
                       fullWidth
                       label='Tipo'
+                      disabled={tipoExtrato ? true : false}
                       value={extratoEdit?.tipo ? extratoEdit?.tipo : ''}
                       onChange={e => setExtratoEdit({ ...extratoEdit, tipo: e.target.value })}
                     >
-                      {TipoExtratoEnumList.map((tipo, index) => (
-                        <MenuItem key={index} value={tipo.value} selected={extratoEdit?.tipo === tipo.value}>
-                          {tipo.label}
+                      {tipoExtrato ? (
+                        <MenuItem value={tipoExtrato} selected={true}>
+                          {getTipoExtratoEnumDesc(tipoExtrato)}
                         </MenuItem>
-                      ))}
+                      ) : (
+                        TipoExtratoEnumList.map((tipo, index) => (
+                          <MenuItem key={index} value={tipo.value} selected={extratoEdit?.tipo === tipo.value}>
+                            {tipo.label}
+                          </MenuItem>
+                        ))
+                      )}
                     </CustomTextField>
                   </Grid>
                   <Grid item xs={12} sm={12}>

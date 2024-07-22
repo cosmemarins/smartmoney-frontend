@@ -28,6 +28,8 @@ const DocumentoUpload = ({ arquivoUploadData, setFileUpload }: props) => {
   // States
   const [files, setFiles] = useState<File[]>([])
 
+  console.log('arquivoUploadData', arquivoUploadData)
+
   // Hooks
   const { getRootProps, getInputProps } = useDropzone({
     multiple: false,

@@ -20,26 +20,25 @@ import 'moment/locale/pt-br'
 import { useClienteContext } from '@/contexts/ClienteContext'
 import { useContratoContext } from '@/contexts/ContratoContext'
 
-import ArquivoService from '@/services/ArquivoService'
 import { trataErro } from '@/utils/erro'
 import type { ArquivoType } from '@/types/ArquivoType'
 import ArquivoItem from './ArquivoItem'
 import { cpfCnpjMask, valorEmReal } from '@/utils/string'
+import ContratoService from '@/services/ContratoService'
 
 locale('pt-br')
 
 const PreviewCard = () => {
   //contexto
   const { cliente, isCpf } = useClienteContext()
-
   const { contrato } = useContratoContext()
 
   const [arquivoList, setArquivoList] = useState<ArquivoType[]>([])
 
   useEffect(() => {
-    if (cliente?.token) {
+    if (contrato?.token) {
       //precisa recuperar por aqui pois tem que ser via axios por causa da validação de seção
-      ArquivoService.getListCliente(cliente.token)
+      ContratoService.listDocumentos(contrato.token)
         .then(respList => {
           setArquivoList(respList)
         })

@@ -8,13 +8,13 @@ export enum TipoExtratoEnum {
 export function getTipoExtratoEnumDesc(item: string) {
   switch (item) {
     case TipoExtratoEnum.ADITIVO:
-      return 'aditivo'
+      return 'Aditivo'
     case TipoExtratoEnum.APORTE:
-      return 'aporte'
+      return 'Aporte'
     case TipoExtratoEnum.DIVIDENDO:
-      return 'dividendo'
+      return 'Dividendo'
     case TipoExtratoEnum.RETIRADA:
-      return 'retirada'
+      return 'Retirada'
     default:
       return ''
   }

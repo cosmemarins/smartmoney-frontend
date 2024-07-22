@@ -238,7 +238,7 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
                             marks={taxaContratoMarks}
                             min={0}
                             max={maxTaxa || 3}
-                            step={0.05}
+                            step={0.01}
                             defaultValue={contrato?.taxaCliente || 3}
                             valueLabelDisplay='auto'
                             aria-labelledby='continuous-slider'

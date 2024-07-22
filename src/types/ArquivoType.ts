@@ -4,8 +4,9 @@ import type { UsuarioType } from './UsuarioType'
 export type ArquivoType = {
   id?: number
   token?: string
-  tipoUsuario?: string
-  idUsuario?: number
+  tipoRegistro?: string //U - usuario; C - Cliente; E - Extrato
+  idRegistro?: number
+  tokenRegistro?: string
   cliente?: ClienteType
   usuario?: UsuarioType
   tipoDocumento?: string

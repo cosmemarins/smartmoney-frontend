@@ -52,7 +52,7 @@ const TotalClientesCard = () => {
       <CardHeader
         title='Clientes'
         action={
-          <Button variant='contained' startIcon={<i className='tabler-plus' />} href={`/cliente/new`}>
+          <Button variant='contained' startIcon={<i className='tabler-plus' />} href={`/contrato/new`}>
             Novo Cliente
           </Button>
         }

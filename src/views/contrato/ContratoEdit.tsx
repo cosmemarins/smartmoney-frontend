@@ -39,7 +39,6 @@ import { contratoInit, prazoList, taxaContratoMarks } from '@/types/ContratoType
 import type { DialogConfirmaType, erroType } from '@/types/utilTypes'
 import ContratoService from '@/services/ContratoService'
 
-import { useClienteContext } from '@/contexts/ClienteContext'
 import {
   StatusContratoEnum,
   getStatusContratoEnumColor,
@@ -50,7 +49,6 @@ import { useContratoContext } from '@/contexts/ContratoContext'
 import { trataErro } from '@/utils/erro'
 import { valorBr } from '@/utils/string'
 import type { ClienteType } from '@/types/ClienteType'
-import { getCliente } from '@/services/ClienteService'
 
 locale('pt-br')
 
@@ -65,7 +63,6 @@ type ErrorType = {
 
 const ContratoEdit = ({ contrato, handleClose }: props) => {
   //contexto
-  const { cliente } = useClienteContext()
   const { setContratoContext } = useContratoContext()
 
   // States
@@ -76,6 +73,7 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
   const [dialogConfirma, setDialogConfirma] = useState<DialogConfirmaType>({ open: false })
   const [sending, setSending] = useState<boolean>(false)
   const [clienteContrato, setClienteContrato] = useState<ClienteType>()
+  const [maxTaxa, setMaxTaxa] = useState<number>(3)
 
   type FormData = v.InferInput<typeof schema>
 
@@ -84,10 +82,7 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
     taxaCliente: pipe(
       v.number('A taxa precisa ser maior que 0'),
       v.minValue(0.01, 'A taxa precisa ser maior que 0.'),
-      v.maxValue(
-        clienteContrato?.gestor?.parceiro?.taxaDistribuicao || 1,
-        `O valor da taxa não pode ser maior que ${clienteContrato?.gestor?.parceiro?.taxaDistribuicao}`
-      )
+      v.maxValue(maxTaxa || 3, `O valor da taxa não pode ser maior que ${maxTaxa}`)
     )
   })
 
@@ -104,7 +99,7 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
   })
 
   const [contratoEdit, setContratoEdit] = useState<ContratoType>(
-    contrato ? contrato : { ...contratoInit, data: new Date(), cliente: { id: cliente?.id, token: cliente?.token } }
+    contrato ? contrato : { ...contratoInit, data: new Date() }
   )
 
   const onChangeValor = (value: string) => {
@@ -295,10 +290,8 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
       return
     }
 
-    const taxaMaxima = clienteContrato?.gestor?.parceiro?.taxaDistribuicao || 0
-
-    if (contratoEdit.taxaCliente > taxaMaxima) {
-      toast.error(`O valor da taxa do cliente não pode ser maior que ${taxaMaxima}%`)
+    if (contratoEdit.taxaCliente > maxTaxa) {
+      toast.error(`O valor da taxa do cliente não pode ser maior que ${maxTaxa}%`)
 
       return
     }
@@ -322,7 +315,20 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
   }
 
   useEffect(() => {
-    if (!cliente && contratoEdit && contratoEdit.cliente && contratoEdit.cliente.token) {
+    console.log('useeffect contrato', contrato)
+    console.log('useeffect contratoEdit', contratoEdit)
+
+    if (contratoEdit && contratoEdit.cliente && contratoEdit.cliente.token) {
+      setMaxTaxa(
+        contratoEdit.cliente?.gestor?.parceiro?.taxaDistribuicao &&
+          contratoEdit.cliente?.gestor?.parceiro?.taxaDistribuicao <= 3
+          ? contratoEdit.cliente?.gestor?.parceiro?.taxaDistribuicao
+          : 3
+      )
+
+      setClienteContrato(contratoEdit.cliente)
+
+      /*
       getCliente(contratoEdit.cliente.token)
         .then(respCliente => {
           if (respCliente) setClienteContrato(respCliente)
@@ -335,9 +341,10 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
         .finally(() => {
           setSending(false)
         })
+      */
     }
 
-    console.log('clienteContrato', clienteContrato)
+    //console.log('clienteContrato', clienteContrato)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -416,8 +423,18 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
                 })
               }
             >
-              <FormControlLabel value='0' control={<Radio />} label='Não' />
-              <FormControlLabel value='2' control={<Radio />} label='Sim' />
+              <FormControlLabel
+                value='0'
+                control={<Radio />}
+                label='Não'
+                disabled={!!contratoEdit.status && contratoEdit.status != StatusContratoEnum.NOVO}
+              />
+              <FormControlLabel
+                value='2'
+                control={<Radio />}
+                label='Sim'
+                disabled={!!contratoEdit.status && contratoEdit.status != StatusContratoEnum.NOVO}
+              />
             </RadioGroup>
           </Grid>
           <Grid item xs={12} sm={6}>
@@ -478,8 +495,8 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
                     key={`slider-taxaCliente`} /* fixed issue */
                     marks={taxaContratoMarks}
                     min={0}
-                    max={clienteContrato?.gestor?.parceiro?.taxaDistribuicao}
-                    step={0.05}
+                    max={maxTaxa || 3}
+                    step={0.01}
                     defaultValue={contratoEdit?.taxaCliente || 1}
                     valueLabelDisplay='auto'
                     aria-labelledby='continuous-slider'

@@ -34,10 +34,11 @@ import ContratoService from '@/services/ContratoService'
 import type { ExtratoType } from '@/types/ExtratoType'
 import { valorBr, valorEmReal } from '@/utils/string'
 import { getStatusContratoEnumColor, getStatusContratoEnumDesc } from '@/utils/enums/StatusContratoEnum'
-import { getTipoExtratoEnumColor, getTipoExtratoEnumDesc } from '@/utils/enums/TipoExtratoEnum'
+import { getTipoExtratoEnumColor, getTipoExtratoEnumDesc, TipoExtratoEnum } from '@/utils/enums/TipoExtratoEnum'
 import ExtratoEdit from './ExtratoEdit'
 import { trataErro } from '@/utils/erro'
 import type { ContratoType } from '@/types/ContratoType'
+import { TipoDocumentoEnum } from '@/utils/enums/TipoDocumentoEnum'
 
 locale('pt-br')
 
@@ -59,6 +60,7 @@ interface props {
 export default function ExtratoContrato({ token }: props) {
   // States
   const [contrato, setContrato] = useState<ContratoType>()
+  const [saldo, setSaldo] = useState<number>(0)
   const [extratoEdit, setExtratoEdit] = useState<ExtratoType>({} as ExtratoType)
   const [extratoList, setExtratoList] = useState<ExtratoType[]>([])
   const [reload, setReload] = useState(false)
@@ -73,7 +75,11 @@ export default function ExtratoContrato({ token }: props) {
     if (contrato) {
       setExtratoEdit({
         data: new Date(),
-        contrato: { id: contrato.id, token: contrato.token }
+        contrato: { id: contrato.id, token: contrato.token },
+        tipo: TipoExtratoEnum.ADITIVO,
+        arquivo: {
+          tipoDocumento: TipoDocumentoEnum.ADITIVO
+        }
       })
       setOpenDlgExtrato(true)
     }
@@ -89,6 +95,12 @@ export default function ExtratoContrato({ token }: props) {
 
   const handleOnEditExtrato = (extrato: ExtratoType) => {
     if (extrato.token) {
+      extrato = {
+        ...extrato,
+        contrato: {
+          token: contrato?.token
+        }
+      }
       setExtratoEdit(extrato)
       setOpenDlgExtrato(true)
     }
@@ -122,10 +134,8 @@ export default function ExtratoContrato({ token }: props) {
   const refreshListExtrato = (token: string | undefined) => {
     if (token) {
       setReload(true)
-      ContratoService.getExtrato(token)
+      ContratoService.getExtratoComArquivos(token)
         .then(respExtratoList => {
-          console.log('respExtratoList', respExtratoList)
-
           setExtratoList(respExtratoList)
         })
         .catch(err => {
@@ -133,6 +143,15 @@ export default function ExtratoContrato({ token }: props) {
         })
         .finally(() => {
           setReload(false)
+        })
+
+      //atualiza o saldo
+      ContratoService.getSaldo(token)
+        .then(respSaldo => {
+          setSaldo(respSaldo)
+        })
+        .catch(err => {
+          toast.error(trataErro(err))
         })
     }
   }
@@ -205,7 +224,7 @@ export default function ExtratoContrato({ token }: props) {
               sx={{ mr: 2.5 }}
             />
             <span style={{ float: 'right', paddingRight: '10px', fontWeight: 'bolder' }}>
-              Saldo: {contrato.saldo ? valorEmReal.format(contrato.saldo) : '0,00'}
+              Saldo: {saldo ? valorEmReal.format(saldo) : '0,00'}
             </span>
           </CardContent>
           <Backdrop open={reload} className='absolute text-white z-[cal(var(--mui-zIndex-mobileStepper)-1)]'>
@@ -302,7 +321,11 @@ export default function ExtratoContrato({ token }: props) {
         >
           <DialogTitle id='form-dialog-title'>Novo Lançamento</DialogTitle>
           <DialogContent>
-            <ExtratoEdit extratoData={extratoEdit} handleClose={handleCloseDlgExtrato} />
+            <ExtratoEdit
+              extratoData={extratoEdit}
+              handleClose={handleCloseDlgExtrato}
+              tipoExtrato={TipoExtratoEnum.ADITIVO}
+            />
           </DialogContent>
         </Dialog>
 

@@ -3,8 +3,6 @@
 // Next Imports
 import { useState } from 'react'
 
-import Link from 'next/link'
-
 // MUI Imports
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
@@ -63,11 +61,18 @@ const PreviewActions = () => {
           <div className='flex items-center gap-4'>
             <Button
               fullWidth
-              target='_blank'
-              component={Link}
               color='secondary'
               variant='tonal'
-              className='capitalize'
+              startIcon={<i className='tabler-file-filled' />}
+              onClick={() => toast.success('Contrato salvo com sucesso')}
+            >
+              Salvar
+            </Button>
+            <Button
+              fullWidth
+              color='secondary'
+              variant='tonal'
+              startIcon={<i className='tabler-printer' />}
               href={`./print/${contrato?.token}`}
             >
               Print

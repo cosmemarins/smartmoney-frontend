@@ -15,21 +15,31 @@ import CustomTextField from '@core/components/mui/TextField'
 import type { ArquivoType } from '@/types/ArquivoType'
 import type { ArquivoUploadType, DialogConfirmaType, erroType } from '@/types/utilTypes'
 import ArquivoService from '@/services/ArquivoService'
-import { TipoDocumentoEnumList } from '@/utils/enums/TipoDocumentoEnum'
+import {
+  TipoDocumentoEnum,
+  TipoDocumentoExtratoEnumList,
+  TipoDocumentoPessoaJuridicaEnumList,
+  TipoDocumentoPessoFisicaEnumList
+} from '@/utils/enums/TipoDocumentoEnum'
 import ComprovanteUpload from '@/components/DocumentoUpload'
 import { trataErro } from '@/utils/erro'
 import DialogConfirma from '@/components/DialogConfirma'
 import { useClienteContext } from '@/contexts/ClienteContext'
+import { TipoArquivoRegistroEnum } from '@/utils/enums/TipoArquivoRegistroEnum'
+import type { ExtratoType } from '@/types/ExtratoType'
+import ContratoService from '@/services/ContratoService'
 
 locale('pt-br')
 
 interface props {
   arquivoData: ArquivoType
+  extratoData?: ExtratoType
   handleClose?: any
-  setRefreshArquivoList?: any
+  setRefresh?: any
+  disableSelectTipo?: boolean
 }
 
-const ArquivoEdit = ({ arquivoData, handleClose, setRefreshArquivoList }: props) => {
+const DocumentoContratoEdit = ({ arquivoData, extratoData, handleClose, setRefresh, disableSelectTipo }: props) => {
   // States
   const [erro, setErro] = useState<erroType>()
   const [reload, setReload] = useState(false)
@@ -37,6 +47,7 @@ const ArquivoEdit = ({ arquivoData, handleClose, setRefreshArquivoList }: props)
   const [files, setFiles] = useState<File[]>([])
 
   const [arquivoEdit, setArquivoEdit] = useState<ArquivoType>(arquivoData)
+  const [extratoEdit, setExtratoEdit] = useState<ExtratoType>()
   const [dialogConfirma, setDialogConfirma] = useState<DialogConfirmaType>({ open: false })
 
   const { setLoadingContext } = useClienteContext()
@@ -59,7 +70,7 @@ const ArquivoEdit = ({ arquivoData, handleClose, setRefreshArquivoList }: props)
       ArquivoService.excluir(arquivoEdit?.token)
         .then(() => {
           //console.log('respContrato', respContrato)
-          setRefreshArquivoList(true)
+          setRefresh(true)
           toast.success(`Arquivo ${arquivoEdit?.token} excluído!`)
           setArquivoEdit({})
           handleClose(true)
@@ -91,10 +102,93 @@ const ArquivoEdit = ({ arquivoData, handleClose, setRefreshArquivoList }: props)
     ArquivoService.salvarArquivo(formData)
       .then(() => {
         //console.log(resp)
-        setRefreshArquivoList(true)
+        setRefresh(true)
         toast.success('Arquivo salvo com sucesso!')
 
         //setArquivoEdit(respExtrato)
+        handleClose(true)
+      })
+      .catch(err => {
+        setErro({ msg: trataErro(err) })
+      })
+      .finally(() => {
+        setReload(false)
+      })
+  }
+
+  const salvarExtratoSemDocumento = () => {
+    if (!extratoEdit) {
+      toast.error('Dados do aporte não localizado')
+
+      return
+    }
+
+    setExtratoEdit({
+      ...extratoEdit,
+      historico: arquivoEdit.descricao
+    })
+
+    ContratoService.salvarExtrato(extratoEdit)
+      .then(respExtrato => {
+        //console.log(respExtrato)
+        toast.success('Lançamento salvo com sucesso!')
+        setExtratoEdit(respExtrato)
+        handleClose(true)
+      })
+      .catch(err => {
+        setErro({ msg: trataErro(err) })
+      })
+      .finally(() => {
+        setReload(false)
+      })
+  }
+
+  const salvarExtratoComDocumento = () => {
+    console.log('extratoEdit', extratoEdit)
+    setReload(false)
+
+    return
+
+    if (!extratoEdit) {
+      toast.error('Dados do aporte não localizado')
+
+      return
+    }
+
+    const formData = new FormData()
+
+    //os parametros devem ser appendados antes do file, senão não recupera lá no request do server
+    //o arquivo tem que mandar separado
+    formData.append(
+      'arquivo',
+      JSON.stringify({
+        ...extratoEdit.arquivo,
+        tipoDocumento: extratoEdit.tipo,
+        tipoRegistro: TipoArquivoRegistroEnum.EXTRATO
+      })
+    )
+
+    formData.append(
+      'extrato',
+      JSON.stringify({
+        ...extratoEdit,
+        historico: arquivoEdit.descricao,
+        contrato: {
+          //so precisa enviar o token do contrato
+          token: extratoEdit.contrato.token
+        }
+      })
+    )
+
+    files.forEach(image => {
+      formData.append('file', image)
+    })
+
+    ContratoService.salvarExtratoComDocumento(formData)
+      .then(respExtrato => {
+        //console.log(respExtrato)
+        toast.success('Lançamento salvo com sucesso!')
+        setExtratoEdit(respExtrato)
         handleClose(true)
       })
       .catch(err => {
@@ -109,7 +203,7 @@ const ArquivoEdit = ({ arquivoData, handleClose, setRefreshArquivoList }: props)
     ArquivoService.update(arquivoEdit)
       .then(() => {
         //console.log(resp)
-        setRefreshArquivoList(true)
+        setRefresh(true)
         toast.success('Arquivo salvo com sucesso!')
         handleClose(true)
       })
@@ -122,10 +216,18 @@ const ArquivoEdit = ({ arquivoData, handleClose, setRefreshArquivoList }: props)
   }
 
   const handleSubmit = () => {
-    if (!arquivoEdit.idUsuario || arquivoEdit.idUsuario <= 0) {
+    if (!arquivoEdit.idRegistro || arquivoEdit.idRegistro <= 0) {
       toast.error('É preciso informar um cliente ou usuário')
 
       return
+    }
+
+    if (arquivoEdit.tipoDocumento === TipoDocumentoEnum.APORTE) {
+      if (!extratoEdit || !extratoEdit.valor || extratoEdit.valor <= 0) {
+        toast.error('É preciso informar um valor para o aporte')
+
+        return
+      }
     }
 
     if (!arquivoEdit?.token && files.length <= 0) {
@@ -138,26 +240,33 @@ const ArquivoEdit = ({ arquivoData, handleClose, setRefreshArquivoList }: props)
     setErro(undefined)
 
     if (files.length > 0) {
-      salvarArquivo()
+      if (arquivoEdit.tipoDocumento === TipoDocumentoEnum.APORTE) {
+        if (files.length > 0) salvarExtratoComDocumento()
+        else salvarExtratoSemDocumento()
+      } else {
+        salvarArquivo()
+      }
     } else {
       update()
     }
   }
 
-  /*
-  useEffect(() => {
-    setArquivoUploadData({
-      ...arquivoUploadData,
-      token: arquivoEdit.token,
-      titulo: 'Comprovante',
-      nomeArquivo: arquivoEdit.compDeposito,
-      tipoUpload: 'COMPROVANTE'
-    })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [arquivoEdit])
-  */
+  const onChangeValor = (value: string) => {
+    const valorStr = value.replace(/[^\d]+/g, '')
+    const valor = parseFloat(valorStr) / 100
+
+    if (extratoEdit) setExtratoEdit({ ...extratoEdit, valor })
+  }
 
   useEffect(() => {
+    console.log('useEffect[], arquivoData', arquivoData)
+    console.log('useEffect[], extratoEdit', extratoEdit)
+    console.log('useEffect[], extratoData', extratoData)
+
+    if (extratoData) {
+      setExtratoEdit(extratoData)
+    }
+
     if (arquivoData?.token) {
       //precisa recuperar por aqui pois tem que ser via axios por causa da validação de seção
       //precisa recuperar por aqui pois tem que ser via axios por causa da validação de seção
@@ -210,23 +319,63 @@ const ArquivoEdit = ({ arquivoData, handleClose, setRefreshArquivoList }: props)
                         select
                         fullWidth
                         label='Tipo'
+                        disabled={disableSelectTipo}
                         value={arquivoEdit?.tipoDocumento ? arquivoEdit?.tipoDocumento : ''}
                         onChange={e => setArquivoEdit({ ...arquivoEdit, tipoDocumento: e.target.value })}
                       >
-                        {TipoDocumentoEnumList.map(
-                          (tipo, index) =>
-                            (tipo.tipoPessoa === 'A' || tipo.tipoPessoa === arquivoEdit.cliente?.tipoPessoa) && (
-                              <MenuItem
-                                key={index}
-                                value={tipo.value}
-                                selected={arquivoEdit?.tipoDocumento === tipo.value}
-                              >
-                                {tipo.label}
-                              </MenuItem>
-                            )
-                        )}
+                        {arquivoData.tipoRegistro === TipoArquivoRegistroEnum.CLIENTE &&
+                          arquivoEdit.cliente?.tipoPessoa == 'F' &&
+                          TipoDocumentoPessoFisicaEnumList.map((tipo, index) => (
+                            <MenuItem
+                              key={index}
+                              value={tipo.value}
+                              selected={arquivoEdit?.tipoDocumento === tipo.value}
+                            >
+                              {tipo.label}
+                            </MenuItem>
+                          ))}
+
+                        {arquivoData.tipoRegistro === TipoArquivoRegistroEnum.CLIENTE &&
+                          arquivoEdit.cliente?.tipoPessoa == 'J' &&
+                          TipoDocumentoPessoaJuridicaEnumList.map((tipo, index) => (
+                            <MenuItem
+                              key={index}
+                              value={tipo.value}
+                              selected={arquivoEdit?.tipoDocumento === tipo.value}
+                            >
+                              {tipo.label}
+                            </MenuItem>
+                          ))}
+
+                        {arquivoData.tipoRegistro === TipoArquivoRegistroEnum.EXTRATO &&
+                          TipoDocumentoExtratoEnumList.map((tipo, index) => (
+                            <MenuItem
+                              key={index}
+                              value={tipo.value}
+                              selected={arquivoEdit?.tipoDocumento === tipo.value}
+                            >
+                              {tipo.label}
+                            </MenuItem>
+                          ))}
                       </CustomTextField>
                     </Grid>
+                    {arquivoEdit.tipoDocumento === TipoDocumentoEnum.APORTE && (
+                      <Grid item xs={12} sm={12}>
+                        <CustomTextField
+                          fullWidth
+                          label='Valor'
+                          value={
+                            extratoEdit?.valor
+                              ? extratoEdit?.valor.toLocaleString('pt-BR', {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2
+                                })
+                              : 0
+                          }
+                          onChange={e => onChangeValor(e.target.value)}
+                        />
+                      </Grid>
+                    )}
                     <Grid item xs={12} sm={12}>
                       <CustomTextField
                         fullWidth
@@ -290,4 +439,4 @@ const ArquivoEdit = ({ arquivoData, handleClose, setRefreshArquivoList }: props)
   )
 }
 
-export default ArquivoEdit
+export default DocumentoContratoEdit

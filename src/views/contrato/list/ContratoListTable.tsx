@@ -8,7 +8,6 @@ import {
   Button,
   Card,
   CardHeader,
-  Checkbox,
   Chip,
   Dialog,
   DialogContent,
@@ -44,8 +43,6 @@ import moment, { locale } from 'moment'
 
 import CustomTextField from '@/@core/components/mui/TextField'
 import { type ContratoType, type ContratoTypeWithAction } from '@/types/ContratoType'
-import CustomAvatar from '@/@core/components/mui/Avatar'
-import { getInitials } from '@/utils/getInitials'
 
 // Style Imports
 import tableStyles from '@core/styles/table.module.css'
@@ -55,9 +52,12 @@ import type { DialogConfirmaType } from '@/types/utilTypes'
 import ContratoService from '@/services/ContratoService'
 import { trataErro } from '@/utils/erro'
 import { StatusContratoEnum, getStatusContratoEnumColor } from '@/utils/enums/StatusContratoEnum'
-import type { ClienteType } from '@/types/ClienteType'
 import ContratoEdit from '../ContratoEdit'
-import { cpfCnpjMask } from '@/utils/string'
+import { cpfCnpjMask, valorBr } from '@/utils/string'
+import ExtratoEdit from '../extrato/ExtratoEdit'
+import type { ExtratoType } from '@/types/ExtratoType'
+import { TipoExtratoEnum } from '@/utils/enums/TipoExtratoEnum'
+import { TipoDocumentoEnum } from '@/utils/enums/TipoDocumentoEnum'
 
 locale('pt-br')
 
@@ -118,6 +118,33 @@ const ContratoListTable = () => {
   const [refreshTable, setRefreshTable] = useState<boolean>(true)
   const [openDlgContrato, setOpenDlgContrato] = useState<boolean>(false)
 
+  //state dlg arquivo
+  const [openDlgExtrato, setOpenDlgExtrato] = useState<boolean>(false)
+  const [extratoEdit, setExtratoEdit] = useState<ExtratoType>({} as ExtratoType)
+
+  //incluir um aditivo
+  const handleNovoExtrato = (contrato: ContratoType) => {
+    if (contrato) {
+      setExtratoEdit({
+        data: new Date(),
+        contrato: { id: contrato.id, token: contrato.token },
+        tipo: TipoExtratoEnum.ADITIVO,
+        arquivo: {
+          tipoDocumento: TipoDocumentoEnum.ADITIVO
+        }
+      })
+      setOpenDlgExtrato(true)
+    }
+  }
+
+  const handleCloseDlgExtrato = (refresh: boolean) => {
+    setOpenDlgExtrato(false)
+
+    if (refresh) {
+      setRefreshTable(refresh)
+    }
+  }
+
   const handleOpenDlgContrato = (contrato: ContratoType) => {
     setContratoEdit(contrato)
     setOpenDlgContrato(true)
@@ -134,25 +161,6 @@ const ContratoListTable = () => {
   const handleOpenDlgConfirmaExcluir = (contrato: ContratoType) => {
     setContratoExcluir(contrato)
   }
-
-  useEffect(() => {
-    if (contratoExcluir) {
-      setDialogConfirma({
-        open: true,
-        titulo: 'Excluir Contrato',
-        texto: (
-          <div>
-            Tem certeza que deseja excluir este contrato? <br />
-            <br />
-            {contratoExcluir.token}
-          </div>
-        ),
-        botaoConfirma: 'Confirmar Exclusão',
-        handleConfirma: handleExcluirContrato
-      } as DialogConfirmaType)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [contratoExcluir])
 
   const handleExcluirContrato = () => {
     if (contratoExcluir?.token) {
@@ -176,28 +184,6 @@ const ContratoListTable = () => {
 
   const columns = useMemo<ColumnDef<ContratoTypeWithAction, any>[]>(
     () => [
-      {
-        id: 'select',
-        header: ({ table }) => (
-          <Checkbox
-            {...{
-              checked: table.getIsAllRowsSelected(),
-              indeterminate: table.getIsSomeRowsSelected(),
-              onChange: table.getToggleAllRowsSelectedHandler()
-            }}
-          />
-        ),
-        cell: ({ row }) => (
-          <Checkbox
-            {...{
-              checked: row.getIsSelected(),
-              disabled: !row.getCanSelect(),
-              indeterminate: row.getIsSomeSelected(),
-              onChange: row.getToggleSelectedHandler()
-            }}
-          />
-        )
-      },
       columnHelper.accessor('data', {
         header: 'Data',
         cell: ({ row }) => (
@@ -214,19 +200,36 @@ const ContratoListTable = () => {
       columnHelper.accessor('cliente.nome', {
         header: 'Cliente',
         cell: ({ row }) => (
+          <div className='flex flex-col'>
+            <Link href={`/cliente/${row.original.cliente?.token}`} title='Ir para o cadastro do cliente'>
+              <Typography color='text.primary' className='font-medium'>
+                {row.original.cliente?.nome}
+              </Typography>
+            </Link>
+            <Typography variant='body2'>
+              {row.original.cliente?.tipoPessoa === 'F' ? 'CPF: ' : 'CNPJ :'}{' '}
+              {cpfCnpjMask(row.original.cliente?.cpfCnpj)}
+            </Typography>
+            <Typography variant='body2'>Celular: {row.original.cliente?.telefone}</Typography>{' '}
+          </div>
+        )
+      }),
+      columnHelper.accessor('cliente.gestor.parceiro', {
+        header: 'Parceiro',
+        cell: ({ row }) => (
           <div className='flex items-center gap-4'>
-            {getAvatar({ foto: row.original.cliente?.foto, nome: row.original.cliente?.nome })}
             <div className='flex flex-col'>
-              <Link href={`/cliente/${row.original.cliente?.token}`} title='Ir para o cadastro do cliente'>
-                <Typography color='text.primary' className='font-medium'>
-                  {row.original.cliente?.nome}
-                </Typography>
-              </Link>
-              <Typography variant='body2'>{cpfCnpjMask(row.original.cliente?.cpfCnpj)}</Typography>
+              <Typography color='text.primary' className='font-medium'>
+                {row.original.cliente?.gestor?.parceiro?.nomeFantasia}
+              </Typography>
+              <Typography variant='body2'>CNPJ: {cpfCnpjMask(row.original.cliente?.gestor?.parceiro?.cnpj)}</Typography>
+              <Typography variant='body2'>Celular: {row.original.cliente?.gestor?.parceiro?.telefone}</Typography>
             </div>
           </div>
         )
       }),
+
+      /*
       columnHelper.accessor('cliente.email', {
         header: 'Contato',
         cell: ({ row }) => (
@@ -240,6 +243,7 @@ const ContratoListTable = () => {
           </div>
         )
       }),
+      */
       columnHelper.accessor('cliente.gestor', {
         header: 'Gestor',
         cell: ({ row }) => (
@@ -248,15 +252,26 @@ const ContratoListTable = () => {
               <Typography color='text.primary' className='font-medium'>
                 {row.original.cliente?.gestor?.nome}
               </Typography>
+              <Typography variant='body2'>{row.original.cliente?.gestor?.email}</Typography>
               <Typography variant='body2'>celular: {row.original.cliente?.gestor?.telefone}</Typography>
             </div>
+          </div>
+        )
+      }),
+      columnHelper.accessor('saldo', {
+        header: 'Saldo',
+        cell: ({ row }) => (
+          <div className='text-center'>
+            <Typography color='text.primary' className='font-medium'>
+              {valorBr.format(Number(row.original.saldo))}
+            </Typography>
           </div>
         )
       }),
       columnHelper.accessor('status', {
         header: 'Status',
         cell: ({ row }) => (
-          <div className='flex items-center gap-3'>
+          <div className='text-center'>
             <Chip
               variant='tonal'
               className='capitalize'
@@ -272,6 +287,11 @@ const ContratoListTable = () => {
         header: 'Action',
         cell: ({ row }) => (
           <div className='flex items-center'>
+            {row.original.status == StatusContratoEnum.ATIVO && (
+              <IconButton onClick={() => handleNovoExtrato(row.original)} title='Incluir aditivo'>
+                <i className='tabler-file-type-jpg text-[22px] text-textSecondary' />
+              </IconButton>
+            )}
             <IconButton>
               <Link href={`/contrato/${row.original.token}/extrato`} title='Extrato'>
                 <i className='tabler-file-description text-[22px] text-textSecondary' />
@@ -293,16 +313,6 @@ const ContratoListTable = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   )
-
-  const getAvatar = (params: Pick<ClienteType, 'foto' | 'nome'>) => {
-    const { foto, nome } = params
-
-    if (foto) {
-      return <CustomAvatar src={foto} size={34} />
-    } else {
-      return <CustomAvatar size={34}>{getInitials(nome as string)}</CustomAvatar>
-    }
-  }
 
   const table = useReactTable({
     data: data as ContratoType[],
@@ -332,6 +342,25 @@ const ContratoListTable = () => {
     getFacetedUniqueValues: getFacetedUniqueValues(),
     getFacetedMinMaxValues: getFacetedMinMaxValues()
   })
+
+  useEffect(() => {
+    if (contratoExcluir) {
+      setDialogConfirma({
+        open: true,
+        titulo: 'Excluir Contrato',
+        texto: (
+          <div>
+            Tem certeza que deseja excluir este contrato? <br />
+            <br />
+            {contratoExcluir.token}
+          </div>
+        ),
+        botaoConfirma: 'Confirmar Exclusão',
+        handleConfirma: handleExcluirContrato
+      } as DialogConfirmaType)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contratoExcluir])
 
   useEffect(() => {
     if (refreshTable) {
@@ -465,6 +494,26 @@ const ContratoListTable = () => {
         </DialogTitle>
         <DialogContent>
           <ContratoEdit contrato={contratoEdit} handleClose={handleCloseDlgContrato} />
+        </DialogContent>
+      </Dialog>
+      <Dialog
+        maxWidth='md'
+        open={openDlgExtrato}
+        aria-labelledby='form-dialog-title'
+        disableEscapeKeyDown
+        onClose={(event, reason) => {
+          if (reason !== 'backdropClick') {
+            handleCloseDlgExtrato(false)
+          }
+        }}
+      >
+        <DialogTitle id='form-dialog-title'>Novo Lançamento</DialogTitle>
+        <DialogContent>
+          <ExtratoEdit
+            extratoData={extratoEdit}
+            handleClose={handleCloseDlgExtrato}
+            tipoExtrato={TipoExtratoEnum.ADITIVO}
+          />
         </DialogContent>
       </Dialog>
     </>

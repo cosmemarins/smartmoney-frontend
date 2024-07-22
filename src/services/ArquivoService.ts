@@ -23,7 +23,6 @@ const ArquivoService = {
   },
 
   salvarArquivo: async function salvarArquivo(formData: any): Promise<ArquivoType> {
-    console.log('salvarArquivo: ', formData)
     const { data } = await api.post<ArquivoType>(`${path}`, formData)
 
     return data
@@ -44,6 +43,12 @@ const ArquivoService = {
 
   getListUsuario: async function getListUsuario(token: string): Promise<ArquivoType[]> {
     const { data } = await api.get<ArquivoType[]>(`${path}/usuario/${token}`)
+
+    return data
+  },
+
+  getListContrato: async function getListContrato(token: string): Promise<ArquivoType[]> {
+    const { data } = await api.get<ArquivoType[]>(`${path}/contrato/${token}`)
 
     return data
   },

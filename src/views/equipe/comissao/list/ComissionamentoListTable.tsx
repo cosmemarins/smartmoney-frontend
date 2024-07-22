@@ -37,7 +37,7 @@ import { type ComissionamentoType, type ComissionamentoTypeAction } from '@/type
 import tableStyles from '@core/styles/table.module.css'
 import TablePaginationComponent from '@/components/TablePaginationComponent'
 import type { ValidationError } from '@/services/api'
-import { getComissionamento } from '@/services/UsuarioService'
+import ParceiroService from '@/services/ParceiroService'
 import { valorBr } from '@/utils/string'
 
 locale('pt-br')
@@ -186,7 +186,7 @@ const ComissionamentoListTable = () => {
   useEffect(() => {
     if (refreshTable) {
       setRefreshTable(false)
-      getComissionamento()
+      ParceiroService.getComissionamento()
         .then(respListComissao => {
           console.log('respListComissao', respListComissao)
           setData(respListComissao)

@@ -55,12 +55,14 @@ const ArquivoItem = ({ arquivo, handleEditArquivo }: props) => {
             {erro}
           </Alert>
         )}
-        <CardMedia
-          key={arquivo?.token}
-          sx={{ minHeight: 250 }}
-          image={`data:image/jpeg;base64, ${fileDocumento}`}
-          title={titulo}
-        />
+        {fileDocumento && (
+          <CardMedia
+            key={arquivo?.token}
+            sx={{ minHeight: 250 }}
+            image={`data:image/jpeg;base64, ${fileDocumento}`}
+            title={titulo}
+          />
+        )}
       </CardContent>
       <CardActions className='card-actions-dense'>
         <small className='w-full '>{arquivo.descricao}</small>

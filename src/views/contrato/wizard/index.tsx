@@ -41,7 +41,7 @@ const steps = [
   {
     icon: 'tabler-user',
     title: 'Passo 1 - Dados Pessoais do Cliente',
-    subtitle: 'Informe os dados do cliente para este novo contrato'
+    subtitle: 'Informe os dados do cliente para o contrato'
   },
   {
     icon: 'tabler-map',
@@ -54,19 +54,19 @@ const steps = [
     subtitle: 'Informe os dados bancários do cliente'
   },
   {
-    icon: 'tabler-id',
-    title: 'Passo 4 - Documentação do Cliente',
-    subtitle: 'Envie a documentação para habilitar o cliente'
+    icon: 'tabler-checkbox',
+    title: 'Passo 4 - Dados do contrato',
+    subtitle: 'Informe os dados para o novo contrato'
   },
   {
-    icon: 'tabler-checkbox',
-    title: 'Passo 5 - Dados do contrato',
-    subtitle: 'Informe os dados para o novo contrato'
+    icon: 'tabler-id',
+    title: 'Passo 5 - Documentação',
+    subtitle: 'Envie a documentação para habilitar o contrato'
   },
   {
     icon: 'tabler-send',
     title: 'Passo 6 - Conferir contrato e enviar',
-    subtitle: 'Confira os dados do contrato e envie para o banco'
+    subtitle: 'Confira os dados e envie para o banco'
   }
 ]
 
@@ -89,9 +89,9 @@ const getStepContent = (step: number, handleNext: () => void, handlePrev: () => 
           : step === 3
             ? DadosBancariosCliente
             : step === 4
-              ? Documentacao
+              ? ContratoCliente
               : step === 5
-                ? ContratoCliente
+                ? Documentacao
                 : Preview
 
   return <Tag activeStep={step} handleNext={handleNext} handlePrev={handlePrev} steps={steps} />

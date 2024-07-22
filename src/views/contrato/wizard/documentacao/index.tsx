@@ -10,13 +10,18 @@ import { toast } from 'react-toastify'
 
 import { useClienteContext } from '@/contexts/ClienteContext'
 
-import ArquivoEdit from './ArquivoEdit'
+import DocumentoContratoEdit from '../../components/DocumentoContratoEdit'
 import type { ArquivoType } from '@/types/ArquivoType'
-import ArquivoService from '@/services/ArquivoService'
 import { trataErro } from '@/utils/erro'
 import ArquivoItem from './ArquivoItem'
 
 import DirectionalIcon from '@/components/DirectionalIcon'
+import { TipoArquivoRegistroEnum } from '@/utils/enums/TipoArquivoRegistroEnum'
+import { useContratoContext } from '@/contexts/ContratoContext'
+import { TipoDocumentoEnum } from '@/utils/enums/TipoDocumentoEnum'
+import type { ExtratoType } from '@/types/ExtratoType'
+import ExtratoService from '@/services/ExtratoService'
+import ContratoService from '@/services/ContratoService'
 
 type Props = {
   activeStep: number
@@ -28,6 +33,7 @@ type Props = {
 const Documentacao = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
   //contexto
   const { cliente, setLoadingContext } = useClienteContext()
+  const { contrato } = useContratoContext()
 
   const [openDlgArquivo, setOpenDlgArquivo] = useState<boolean>(false)
   const [tituloDlgArquivo, setTituloDlgArquivo] = useState('Novo Upload de Arquivo')
@@ -36,8 +42,9 @@ const Documentacao = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
 
   const arquivoInit = {
     data: new Date(),
-    tipoUsuario: 'C',
-    idUsuario: cliente?.id,
+    tipoRegistro: TipoArquivoRegistroEnum.CLIENTE,
+    idRegistro: cliente?.id,
+    tokenRegistro: cliente?.token,
     cliente: {
       id: cliente?.id,
       token: cliente?.token,
@@ -47,8 +54,21 @@ const Documentacao = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
 
   const [arquivoEdit, setArquivoEdit] = useState<ArquivoType>(arquivoInit)
 
+  const extratoInit = {
+    data: new Date(),
+    contrato: { id: contrato?.id, token: contrato?.token },
+    tipo: TipoDocumentoEnum.APORTE,
+    valor: contrato?.valor,
+    arquivo: {
+      tipoDocumento: TipoDocumentoEnum.APORTE
+    }
+  }
+
+  console.log('extratoInit', extratoInit)
+  const [extratoEdit, setExtratoEdit] = useState<ExtratoType>(extratoInit)
+
   const handleNovoArquivo = () => {
-    setTituloDlgArquivo('Novo Upload de Arquivo')
+    setTituloDlgArquivo('Novo documento para este contrato')
     setArquivoEdit(arquivoInit)
     setOpenDlgArquivo(true)
   }
@@ -56,7 +76,26 @@ const Documentacao = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
   const handleEditArquivo = (arquivo: ArquivoType) => {
     setTituloDlgArquivo('Edição de Arquivo')
     setArquivoEdit(arquivo)
-    setOpenDlgArquivo(true)
+
+    if (arquivo.idRegistro && arquivo.tipoDocumento === TipoDocumentoEnum.APORTE) {
+      ExtratoService.getById(Number(arquivo.idRegistro))
+        .then(respExtrato => {
+          setExtratoEdit({
+            ...respExtrato,
+            contrato: { id: contrato?.id, token: contrato?.token }
+          })
+          setArquivoEdit({
+            ...arquivo,
+            descricao: respExtrato.historico
+          })
+          setOpenDlgArquivo(true)
+        })
+        .catch(err => {
+          toast.error(trataErro(err))
+        })
+    } else {
+      setOpenDlgArquivo(true)
+    }
   }
 
   const handleCloseDlgArquivo = () => {
@@ -66,11 +105,11 @@ const Documentacao = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
   useEffect(() => {
     setRefreshArquivoList(false)
 
-    if (cliente?.token) {
+    if (contrato?.token) {
       setLoadingContext(true)
 
       //precisa recuperar por aqui pois tem que ser via axios por causa da validação de seção
-      ArquivoService.getListCliente(cliente.token)
+      ContratoService.listDocumentos(contrato.token)
         .then(respList => {
           setArquivoList(respList)
         })
@@ -105,10 +144,27 @@ const Documentacao = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
               <Grid container spacing={4}>
                 {arquivoList.map((arquivo, key) => (
                   <Grid key={key} item xs={12} sm={4}>
-                    <ArquivoItem
-                      arquivo={{ ...arquivo, cliente: { id: cliente?.id, token: cliente?.token } }}
-                      handleEditArquivo={handleEditArquivo}
-                    />
+                    {arquivo.tipoDocumento === TipoDocumentoEnum.APORTE ? (
+                      <ArquivoItem
+                        arquivo={{
+                          ...arquivo,
+                          tipoRegistro: TipoArquivoRegistroEnum.CLIENTE,
+
+                          //tokenRegistro: cliente?.token, //esse token tem que ser do extrato, mas não tem extrato aqui
+                          cliente: { id: cliente?.id, token: cliente?.token, tipoPessoa: cliente?.tipoPessoa }
+                        }}
+                        handleEditArquivo={handleEditArquivo}
+                      />
+                    ) : (
+                      <ArquivoItem
+                        arquivo={{
+                          ...arquivo,
+                          tokenRegistro: cliente?.token,
+                          cliente: { id: cliente?.id, token: cliente?.token, tipoPessoa: cliente?.tipoPessoa }
+                        }}
+                        handleEditArquivo={handleEditArquivo}
+                      />
+                    )}
                   </Grid>
                 ))}
               </Grid>
@@ -156,10 +212,11 @@ const Documentacao = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
       >
         <DialogTitle id='form-dialog-title'>{tituloDlgArquivo}</DialogTitle>
         <DialogContent>
-          <ArquivoEdit
+          <DocumentoContratoEdit
             arquivoData={arquivoEdit}
+            extratoData={extratoEdit}
             handleClose={handleCloseDlgArquivo}
-            setRefreshArquivoList={setRefreshArquivoList}
+            setRefresh={setRefreshArquivoList}
           />
         </DialogContent>
       </Dialog>

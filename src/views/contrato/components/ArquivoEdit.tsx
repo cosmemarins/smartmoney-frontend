@@ -15,21 +15,27 @@ import CustomTextField from '@core/components/mui/TextField'
 import type { ArquivoType } from '@/types/ArquivoType'
 import type { ArquivoUploadType, DialogConfirmaType, erroType } from '@/types/utilTypes'
 import ArquivoService from '@/services/ArquivoService'
-import { TipoDocumentoEnumList } from '@/utils/enums/TipoDocumentoEnum'
+import {
+  TipoDocumentoExtratoEnumList,
+  TipoDocumentoPessoaJuridicaEnumList,
+  TipoDocumentoPessoFisicaEnumList
+} from '@/utils/enums/TipoDocumentoEnum'
 import ComprovanteUpload from '@/components/DocumentoUpload'
 import { trataErro } from '@/utils/erro'
 import DialogConfirma from '@/components/DialogConfirma'
 import { useClienteContext } from '@/contexts/ClienteContext'
+import { TipoArquivoRegistroEnum } from '@/utils/enums/TipoArquivoRegistroEnum'
 
 locale('pt-br')
 
 interface props {
   arquivoData: ArquivoType
   handleClose?: any
-  setRefreshArquivoList?: any
+  setRefresh?: any
+  disableSelectTipo?: boolean
 }
 
-const ArquivoEdit = ({ arquivoData, handleClose, setRefreshArquivoList }: props) => {
+const ArquivoEdit = ({ arquivoData, handleClose, setRefresh, disableSelectTipo }: props) => {
   // States
   const [erro, setErro] = useState<erroType>()
   const [reload, setReload] = useState(false)
@@ -59,7 +65,7 @@ const ArquivoEdit = ({ arquivoData, handleClose, setRefreshArquivoList }: props)
       ArquivoService.excluir(arquivoEdit?.token)
         .then(() => {
           //console.log('respContrato', respContrato)
-          setRefreshArquivoList(true)
+          setRefresh(true)
           toast.success(`Arquivo ${arquivoEdit?.token} excluído!`)
           setArquivoEdit({})
           handleClose(true)
@@ -91,7 +97,7 @@ const ArquivoEdit = ({ arquivoData, handleClose, setRefreshArquivoList }: props)
     ArquivoService.salvarArquivo(formData)
       .then(() => {
         //console.log(resp)
-        setRefreshArquivoList(true)
+        setRefresh(true)
         toast.success('Arquivo salvo com sucesso!')
 
         //setArquivoEdit(respExtrato)
@@ -109,7 +115,7 @@ const ArquivoEdit = ({ arquivoData, handleClose, setRefreshArquivoList }: props)
     ArquivoService.update(arquivoEdit)
       .then(() => {
         //console.log(resp)
-        setRefreshArquivoList(true)
+        setRefresh(true)
         toast.success('Arquivo salvo com sucesso!')
         handleClose(true)
       })
@@ -144,20 +150,9 @@ const ArquivoEdit = ({ arquivoData, handleClose, setRefreshArquivoList }: props)
     }
   }
 
-  /*
   useEffect(() => {
-    setArquivoUploadData({
-      ...arquivoUploadData,
-      token: arquivoEdit.token,
-      titulo: 'Comprovante',
-      nomeArquivo: arquivoEdit.compDeposito,
-      tipoUpload: 'COMPROVANTE'
-    })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [arquivoEdit])
-  */
+    console.log(arquivoData.tipoDocumento)
 
-  useEffect(() => {
     if (arquivoData?.token) {
       //precisa recuperar por aqui pois tem que ser via axios por causa da validação de seção
       //precisa recuperar por aqui pois tem que ser via axios por causa da validação de seção
@@ -210,14 +205,45 @@ const ArquivoEdit = ({ arquivoData, handleClose, setRefreshArquivoList }: props)
                         select
                         fullWidth
                         label='Tipo'
+                        disabled={disableSelectTipo}
                         value={arquivoEdit?.tipoDocumento ? arquivoEdit?.tipoDocumento : ''}
                         onChange={e => setArquivoEdit({ ...arquivoEdit, tipoDocumento: e.target.value })}
                       >
-                        {TipoDocumentoEnumList.map((tipo, index) => (
-                          <MenuItem key={index} value={tipo.value} selected={arquivoEdit?.tipoDocumento === tipo.value}>
-                            {tipo.label}
-                          </MenuItem>
-                        ))}
+                        {arquivoEdit.tipoRegistro === TipoArquivoRegistroEnum.CLIENTE &&
+                          arquivoEdit.cliente?.tipoPessoa == 'F' &&
+                          TipoDocumentoPessoFisicaEnumList.map((tipo, index) => (
+                            <MenuItem
+                              key={index}
+                              value={tipo.value}
+                              selected={arquivoEdit?.tipoDocumento === tipo.value}
+                            >
+                              {tipo.label}
+                            </MenuItem>
+                          ))}
+
+                        {arquivoEdit.tipoRegistro === TipoArquivoRegistroEnum.PARCEIRO || //o tipo parceiro é sempre pessoa jurídica
+                          (arquivoEdit.tipoRegistro === TipoArquivoRegistroEnum.CLIENTE &&
+                            arquivoEdit.cliente?.tipoPessoa == 'J' &&
+                            TipoDocumentoPessoaJuridicaEnumList.map((tipo, index) => (
+                              <MenuItem
+                                key={index}
+                                value={tipo.value}
+                                selected={arquivoEdit?.tipoDocumento === tipo.value}
+                              >
+                                {tipo.label}
+                              </MenuItem>
+                            )))}
+
+                        {arquivoEdit.tipoRegistro === TipoArquivoRegistroEnum.EXTRATO &&
+                          TipoDocumentoExtratoEnumList.map((tipo, index) => (
+                            <MenuItem
+                              key={index}
+                              value={tipo.value}
+                              selected={arquivoEdit?.tipoDocumento === tipo.value}
+                            >
+                              {tipo.label}
+                            </MenuItem>
+                          ))}
                       </CustomTextField>
                     </Grid>
                     <Grid item xs={12} sm={12}>
@@ -239,17 +265,19 @@ const ArquivoEdit = ({ arquivoData, handleClose, setRefreshArquivoList }: props)
 
           <Divider />
           <Grid item xs={12} sm={12} className='text-right'>
-            <Button
-              type='button'
-              variant='contained'
-              className='mie-2'
-              sx={{ float: 'left' }}
-              onClick={() => {
-                handleOpenDlgConfirmaExcluir()
-              }}
-            >
-              Excluir
-            </Button>
+            {arquivoEdit.token && (
+              <Button
+                type='button'
+                variant='contained'
+                className='mie-2'
+                sx={{ float: 'left' }}
+                onClick={() => {
+                  handleOpenDlgConfirmaExcluir()
+                }}
+              >
+                Excluir
+              </Button>
+            )}
             <Button
               type='button'
               variant='contained'

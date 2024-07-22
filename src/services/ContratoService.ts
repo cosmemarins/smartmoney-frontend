@@ -2,6 +2,7 @@ import type { ContratoType } from '@/types/ContratoType'
 import api from './api'
 import type { ExtratoType } from '@/types/ExtratoType'
 import type TamanhoEquipeDTO from '@/types/TamanhoEquipe.dto'
+import type { ArquivoType } from '@/types/ArquivoType'
 
 const path = 'contratos'
 
@@ -20,6 +21,12 @@ const ContratoService = {
 
   get: async function get(token: string): Promise<ContratoType> {
     const { data } = await api.get<ContratoType>(`${path}/${token}`)
+
+    return data
+  },
+
+  getAporte: async function getAporte(token: string): Promise<ExtratoType> {
+    const { data } = await api.get<ExtratoType>(`${path}/aporte/${token}`)
 
     return data
   },
@@ -92,6 +99,24 @@ const ContratoService = {
 
   getExtrato: async function getExtrato(token: string): Promise<ExtratoType[]> {
     const { data } = await api.get<ExtratoType[]>(`${path}/extrato/${token}`)
+
+    return data
+  },
+
+  getSaldo: async function getSaldo(token: string): Promise<number> {
+    const { data } = await api.get<number>(`${path}/saldo/${token}`)
+
+    return data
+  },
+
+  getExtratoComArquivos: async function getExtrato(token: string): Promise<ExtratoType[]> {
+    const { data } = await api.get<ExtratoType[]>(`${path}/extrato-arquivos/${token}`)
+
+    return data
+  },
+
+  listDocumentos: async function listDocumentos(token: string): Promise<ArquivoType[]> {
+    const { data } = await api.get<ArquivoType[]>(`${path}/documentos/${token}`)
 
     return data
   },

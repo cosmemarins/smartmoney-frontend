@@ -1,5 +1,6 @@
 // Typos para o objoto Cliente
 
+import type { ArquivoType } from './ArquivoType'
 import type { ContratoType } from './ContratoType'
 
 export type ExtratoType = {
@@ -11,6 +12,7 @@ export type ExtratoType = {
   historico?: string
   valor?: number
   compDeposito?: string
+  arquivo?: ArquivoType
 }
 
 export const ExtratoInit = {

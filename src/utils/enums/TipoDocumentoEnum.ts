@@ -33,7 +33,7 @@ export function getTipoDocumentoEnumDesc(item: TipoDocumentoEnum) {
 }
 
 export const TipoDocumentoEnumList = [
-  { value: 'ADITIVO', label: 'Aditivo', tipoPessoa: '' },
+  { value: 'ADITIVO', label: 'Aditivo', tipoPessoa: 'E' },
   { value: 'APORTE', label: 'Comprovante de transferência', tipoPessoa: 'A' },
   { value: 'CARTAO_CNPJ', label: 'Cartão CNPJ', tipoPessoa: 'J' },
   { value: 'COMPROVANTE_RESIDENCIA', label: 'Comprovante de residência', tipoPessoa: 'F' },
@@ -42,3 +42,20 @@ export const TipoDocumentoEnumList = [
   { value: 'IDENTIDADE', label: 'RG ou CNH do sócio administrador', tipoPessoa: 'J' },
   { value: 'OUTROS', label: 'Outros', tipoPessoa: 'A' }
 ]
+
+export const TipoDocumentoPessoFisicaEnumList = [
+  { value: 'APORTE', label: 'Comprovante de transferência' },
+  { value: 'COMPROVANTE_RESIDENCIA', label: 'Comprovante de residência' },
+  { value: 'IDENTIDADE', label: 'Identidade' },
+  { value: 'OUTROS', label: 'Outros' }
+]
+
+export const TipoDocumentoPessoaJuridicaEnumList = [
+  { value: 'APORTE', label: 'Comprovante de transferência' },
+  { value: 'CARTAO_CNPJ', label: 'Cartão CNPJ' },
+  { value: 'CONTRATO_SOCIAL', label: 'Contrato Social' },
+  { value: 'IDENTIDADE', label: 'RG ou CNH do sócio administrador' },
+  { value: 'OUTROS', label: 'Outros' }
+]
+
+export const TipoDocumentoExtratoEnumList = [{ value: 'ADITIVO', label: 'Aditivo' }]

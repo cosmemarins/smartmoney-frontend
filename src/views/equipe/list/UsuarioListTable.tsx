@@ -52,6 +52,8 @@ import type { DialogConfirmaType } from '@/types/utilTypes'
 import type { ValidationError } from '@/services/api'
 import { excluirUsuario, getListUsuario } from '@/services/UsuarioService'
 import { cpfCnpjMask } from '@/utils/string'
+import { trataErro } from '@/utils/erro'
+import { getCargoEnumDesc } from '@/utils/enums/CargoEnum'
 
 // Column Definitions
 const columnHelper = createColumnHelper<UsuarioTypeWithAction>()
@@ -181,6 +183,17 @@ const UsuarioListTable = () => {
           />
         )
       },
+      columnHelper.accessor('parceiro.nomeFantasia', {
+        header: 'Parceiro',
+        cell: ({ row }) => (
+          <div className='flex flex-col'>
+            <Typography color='text.primary' className='font-medium'>
+              {row.original.parceiro?.nomeFantasia}
+            </Typography>
+            <Typography variant='body2'>{cpfCnpjMask(row.original.parceiro?.cnpj)}</Typography>
+          </div>
+        )
+      }),
       columnHelper.accessor('nome', {
         header: 'Usuário',
         cell: ({ row }) => (
@@ -196,12 +209,19 @@ const UsuarioListTable = () => {
         )
       }),
       columnHelper.accessor('email', {
-        header: 'Email',
-        cell: ({ row }) => <Typography color='text.primary'>{row.original.email}</Typography>
+        header: 'Contato',
+        cell: ({ row }) => (
+          <div className='flex flex-col'>
+            <Typography color='text.primary' className='font-medium'>
+              {row.original.email}
+            </Typography>
+            <Typography color='text.primary'>{row.original.telefone}</Typography>
+          </div>
+        )
       }),
-      columnHelper.accessor('telefone', {
-        header: 'Telefone',
-        cell: ({ row }) => <Typography color='text.primary'>{row.original.telefone}</Typography>
+      columnHelper.accessor('cargo', {
+        header: 'Cargo',
+        cell: ({ row }) => <Typography color='text.primary'>{getCargoEnumDesc(row.original.cargo)}</Typography>
       }),
       columnHelper.accessor('status', {
         header: 'Status',
@@ -282,17 +302,11 @@ const UsuarioListTable = () => {
       setRefreshTable(false)
       getListUsuario()
         .then(respListUsuario => {
+          //console.log(respListUsuario)
           setData(respListUsuario)
         })
         .catch((err: any) => {
-          if (axios.isAxiosError<ValidationError, Record<string, unknown>>(err)) {
-            console.log(err.status)
-            console.error(err.response)
-            toast.error(`Erro, ${err.status}`)
-          } else {
-            console.error(err)
-            toast.error(`Erro`, err)
-          }
+          toast.error(trataErro(err))
         })
     }
   }, [refreshTable])
