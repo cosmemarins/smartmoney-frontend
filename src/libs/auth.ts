@@ -40,7 +40,7 @@ export const authOptions: NextAuthOptions = {
             body: JSON.stringify({ email, password, rememberMe })
           })
 
-          console.log('res auth', res)
+          //console.log('res auth', res)
           const data = await res.json()
 
           if (res.status === 400 || res.status === 401) {
@@ -66,8 +66,8 @@ export const authOptions: NextAuthOptions = {
               //role: data.userData.roles
             }
 
-            console.log('data', data)
-            console.log('return user', user)
+            //console.log('data', data)
+            //console.log('return user', user)
 
             return user
           }
