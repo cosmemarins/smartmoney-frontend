@@ -23,6 +23,8 @@ import ContratoService from '@/services/ContratoService'
 import type { ContratoType } from '@/types/ContratoType'
 import type { ClienteType } from '@/types/ClienteType'
 import { getCliente } from '@/services/ClienteService'
+import { cpfCnpjMask, valorEmReal } from '@/utils/string'
+import isCPF from '@/utils/cpf'
 
 locale('pt-br')
 
@@ -83,20 +85,15 @@ const ContratoPrint = ({ token }: props) => {
         <div className='p-6 bg-actionHover rounded'>
           <div className='flex justify-between gap-y-4 flex-col sm:flex-row'>
             <div className='flex flex-col gap-6'>
-              <div className='flex items-center gap-2.5'>
-                <Logo />
-              </div>
-              <div>
-                <Typography color='text.primary'>Endereço da smart money</Typography>
-                <Typography color='text.primary'>Cidade, estado, cep</Typography>
-                <Typography color='text.primary'>+1 (123) 456 7891, +44 (876) 543 2198</Typography>
-              </div>
-            </div>
-            <div className='flex flex-col gap-6'>
               <Typography variant='h5'>{`Contrato #${contrato?.token}`}</Typography>
               <div className='flex flex-col gap-1'>
                 <Typography color='text.primary'>{cliente?.nome}</Typography>
                 <Typography color='text.primary'>{cliente?.cpfCnpj}</Typography>
+              </div>
+            </div>
+            <div className='flex flex-col gap-6'>
+              <div className='flex items-center gap-2.5'>
+                <Logo />
               </div>
             </div>
           </div>
@@ -117,8 +114,10 @@ const ContratoPrint = ({ token }: props) => {
                   </Typography>
                 </div>
                 <div className='flex items-center gap-4'>
-                  <Typography className='min-is-[100px]'>CPF/CNPJ:</Typography>
-                  <Typography>{cliente?.cpfCnpj}</Typography>
+                  <Typography className='min-is-[100px]'>
+                    {cliente?.cpfCnpj && isCPF(cliente?.cpfCnpj) ? 'CPF' : 'CNPJ'}
+                  </Typography>
+                  <Typography>{cpfCnpjMask(cliente?.cpfCnpj)}</Typography>
                 </div>
                 <div className='flex items-center gap-4'>
                   <Typography className='min-is-[100px]'>Nascimento: </Typography>
@@ -145,23 +144,32 @@ const ContratoPrint = ({ token }: props) => {
               </div>
             </div>
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid item xs={12} sm={5}>
             <div className='flex flex-col gap-4'>
               <Typography className='font-medium' color='text.primary'>
                 Dados do contrato:
               </Typography>
               <div>
                 <div className='flex items-center gap-4'>
+                  <Typography className='min-is-[100px]'>Contrato:</Typography>
+                  <Typography>{contrato?.token}</Typography>
+                </div>
+                <div className='flex items-center gap-4'>
                   <Typography className='min-is-[100px]'>Data:</Typography>
                   <Typography>{contrato?.data ? moment(contrato?.data).format('DD/MM/YYYY HH:mm') : ''}</Typography>
                 </div>
                 <div className='flex items-center gap-4'>
                   <Typography className='min-is-[100px]'>Valor:</Typography>
-                  <Typography>{contrato?.valor}</Typography>
+                  <Typography>{valorEmReal.format(contrato?.valor || 0)}</Typography>
                 </div>
                 <div className='flex items-center gap-4'>
                   <Typography className='min-is-[100px]'>CCB:</Typography>
-                  <Typography>{contrato?.taxaCcb} % - R$ 0,00 (calcular?)</Typography>
+                  <Typography>
+                    {contrato?.taxaCcb}% -
+                    {contrato && contrato.valor && contrato.taxaCcb
+                      ? valorEmReal.format(contrato.valor * (contrato.taxaCcb / 100))
+                      : 'R$ 0,00'}{' '}
+                  </Typography>
                 </div>
                 <div className='flex items-center gap-4'>
                   <Typography className='min-is-[100px]'>Rentabilidade:</Typography>
@@ -176,6 +184,7 @@ const ContratoPrint = ({ token }: props) => {
           </Grid>
         </Grid>
       </Grid>
+
       <Grid item xs={12} className='gap-4'>
         <Divider className='border-dashed' />
       </Grid>

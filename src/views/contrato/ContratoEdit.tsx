@@ -48,7 +48,6 @@ import DialogConfirma from '@/components/DialogConfirma'
 import { useContratoContext } from '@/contexts/ContratoContext'
 import { trataErro } from '@/utils/erro'
 import { valorBr } from '@/utils/string'
-import type { ClienteType } from '@/types/ClienteType'
 
 locale('pt-br')
 
@@ -72,7 +71,6 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
   const [trocaContrato, setTrocaContrato] = useState(false)
   const [dialogConfirma, setDialogConfirma] = useState<DialogConfirmaType>({ open: false })
   const [sending, setSending] = useState<boolean>(false)
-  const [clienteContrato, setClienteContrato] = useState<ClienteType>()
   const [maxTaxa, setMaxTaxa] = useState<number>(3)
 
   type FormData = v.InferInput<typeof schema>
@@ -315,9 +313,6 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
   }
 
   useEffect(() => {
-    console.log('useeffect contrato', contrato)
-    console.log('useeffect contratoEdit', contratoEdit)
-
     if (contratoEdit && contratoEdit.cliente && contratoEdit.cliente.token) {
       setMaxTaxa(
         contratoEdit.cliente?.gestor?.parceiro?.taxaDistribuicao &&
@@ -326,9 +321,8 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
           : 3
       )
 
-      setClienteContrato(contratoEdit.cliente)
-
       /*
+      setClienteContrato(contratoEdit.cliente)
       getCliente(contratoEdit.cliente.token)
         .then(respCliente => {
           if (respCliente) setClienteContrato(respCliente)

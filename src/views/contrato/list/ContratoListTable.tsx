@@ -10,6 +10,7 @@ import {
   CardHeader,
   Chip,
   Dialog,
+  DialogActions,
   DialogContent,
   DialogTitle,
   IconButton,
@@ -54,10 +55,7 @@ import { trataErro } from '@/utils/erro'
 import { StatusContratoEnum, getStatusContratoEnumColor } from '@/utils/enums/StatusContratoEnum'
 import ContratoEdit from '../ContratoEdit'
 import { cpfCnpjMask, valorBr } from '@/utils/string'
-import ExtratoEdit from '../extrato/ExtratoEdit'
-import type { ExtratoType } from '@/types/ExtratoType'
-import { TipoExtratoEnum } from '@/utils/enums/TipoExtratoEnum'
-import { TipoDocumentoEnum } from '@/utils/enums/TipoDocumentoEnum'
+import Documentacao from './documentacao'
 
 locale('pt-br')
 
@@ -114,36 +112,10 @@ const ContratoListTable = () => {
   const [globalFilter, setGlobalFilter] = useState('')
   const [dialogConfirma, setDialogConfirma] = useState<DialogConfirmaType>({ open: false })
   const [contratoExcluir, setContratoExcluir] = useState<ContratoType | undefined>()
-  const [contratoEdit, setContratoEdit] = useState<ContratoType | undefined>()
+  const [contratoEdit, setContratoEdit] = useState<ContratoType>()
   const [refreshTable, setRefreshTable] = useState<boolean>(true)
   const [openDlgContrato, setOpenDlgContrato] = useState<boolean>(false)
-
-  //state dlg arquivo
-  const [openDlgExtrato, setOpenDlgExtrato] = useState<boolean>(false)
-  const [extratoEdit, setExtratoEdit] = useState<ExtratoType>({} as ExtratoType)
-
-  //incluir um aditivo
-  const handleNovoExtrato = (contrato: ContratoType) => {
-    if (contrato) {
-      setExtratoEdit({
-        data: new Date(),
-        contrato: { id: contrato.id, token: contrato.token },
-        tipo: TipoExtratoEnum.ADITIVO,
-        arquivo: {
-          tipoDocumento: TipoDocumentoEnum.ADITIVO
-        }
-      })
-      setOpenDlgExtrato(true)
-    }
-  }
-
-  const handleCloseDlgExtrato = (refresh: boolean) => {
-    setOpenDlgExtrato(false)
-
-    if (refresh) {
-      setRefreshTable(refresh)
-    }
-  }
+  const [openDlgDocumentacao, setOpenDlgDocumentacao] = useState<boolean>(false)
 
   const handleOpenDlgContrato = (contrato: ContratoType) => {
     setContratoEdit(contrato)
@@ -155,6 +127,19 @@ const ContratoListTable = () => {
 
     if (refresh) {
       setRefreshTable(true)
+    }
+  }
+
+  const handleOpenDlgDocumentacao = (contrato: ContratoType) => {
+    setContratoEdit(contrato)
+    setOpenDlgDocumentacao(true)
+  }
+
+  const handleCloseDlgDocumentacao = (refresh: boolean) => {
+    setOpenDlgDocumentacao(false)
+
+    if (refresh) {
+      setRefreshTable(refresh)
     }
   }
 
@@ -284,12 +269,14 @@ const ContratoListTable = () => {
         )
       }),
       columnHelper.accessor('action', {
-        header: 'Action',
+        header: 'Ação',
         cell: ({ row }) => (
           <div className='flex items-center'>
-            {row.original.status == StatusContratoEnum.ATIVO && (
-              <IconButton onClick={() => handleNovoExtrato(row.original)} title='Incluir aditivo'>
-                <i className='tabler-file-type-jpg text-[22px] text-textSecondary' />
+            {(row.original.status == StatusContratoEnum.ATIVO ||
+              row.original.status == StatusContratoEnum.AGUARDANDO ||
+              row.original.status == StatusContratoEnum.NOVO) && (
+              <IconButton onClick={() => handleOpenDlgDocumentacao(row.original)} title='Documentação do contrato'>
+                <i className='tabler-paperclip text-[22px] text-textSecondary' />
               </IconButton>
             )}
             <IconButton>
@@ -496,26 +483,41 @@ const ContratoListTable = () => {
           <ContratoEdit contrato={contratoEdit} handleClose={handleCloseDlgContrato} />
         </DialogContent>
       </Dialog>
-      <Dialog
-        maxWidth='md'
-        open={openDlgExtrato}
-        aria-labelledby='form-dialog-title'
-        disableEscapeKeyDown
-        onClose={(event, reason) => {
-          if (reason !== 'backdropClick') {
-            handleCloseDlgExtrato(false)
-          }
-        }}
-      >
-        <DialogTitle id='form-dialog-title'>Novo Lançamento</DialogTitle>
-        <DialogContent>
-          <ExtratoEdit
-            extratoData={extratoEdit}
-            handleClose={handleCloseDlgExtrato}
-            tipoExtrato={TipoExtratoEnum.ADITIVO}
-          />
-        </DialogContent>
-      </Dialog>
+      {contratoEdit && (
+        <Dialog
+          open={openDlgDocumentacao}
+          maxWidth='xl'
+          fullWidth={true}
+          aria-labelledby='form-dialog-title'
+          disableEscapeKeyDown
+          onClose={(event, reason) => {
+            if (reason !== 'backdropClick') {
+              handleCloseDlgDocumentacao(false)
+            }
+          }}
+        >
+          <DialogTitle id='form-dialog-title'>
+            <Typography sx={{ fontSize: '20px', fontWeight: 'bold', float: 'left' }}>
+              Cliente: {contratoEdit?.cliente?.nome}
+            </Typography>
+            <Typography sx={{ fontSize: '20px', fontWeight: 'bold', float: 'right' }}>
+              Contrato: {contratoEdit?.token}
+            </Typography>
+          </DialogTitle>
+          <DialogContent>
+            <Documentacao contrato={contratoEdit} cliente={contratoEdit.cliente} />
+          </DialogContent>
+          <DialogActions className='dialog-actions-dense'>
+            <Button
+              variant='contained'
+              startIcon={<i className='tabler-x' />}
+              onClick={() => handleCloseDlgDocumentacao(false)}
+            >
+              Fechar
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
     </>
   )
 }

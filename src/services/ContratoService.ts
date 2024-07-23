@@ -3,6 +3,7 @@ import api from './api'
 import type { ExtratoType } from '@/types/ExtratoType'
 import type TamanhoEquipeDTO from '@/types/TamanhoEquipe.dto'
 import type { ArquivoType } from '@/types/ArquivoType'
+import type { ResumoContratoType } from '@/types/ResumoContratoType'
 
 const path = 'contratos'
 
@@ -146,6 +147,13 @@ const ContratoService = {
     return data
   },
 
+  excluirExtratoById: async function excluirExtratoById(id: number) {
+    //console.log('Excluindo o extrato: ', token)
+    const { data } = await api.delete<string>(`${path}/extrato-id/${id}`)
+
+    return data
+  },
+
   getThumbnail: async function getThumbnail(token: string) {
     //console.log('Excluindo o extrato: ', token)
     const response = await api.get(`${path}/extrato/thumbnail/${token}`, {
@@ -161,6 +169,12 @@ const ContratoService = {
   //estatisticas
   getTotalContratos: async function getTotalClientes(token: string): Promise<TamanhoEquipeDTO> {
     const { data } = await api.get<TamanhoEquipeDTO>(`${path}/statistics/total-contratos/${token}`)
+
+    return data
+  },
+
+  getResumo: async function getResumo(token: string): Promise<ResumoContratoType> {
+    const { data } = await api.get<ResumoContratoType>(`${path}/resumo/${token}`)
 
     return data
   }

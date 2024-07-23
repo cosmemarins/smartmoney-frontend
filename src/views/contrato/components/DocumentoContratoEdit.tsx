@@ -16,6 +16,7 @@ import type { ArquivoType } from '@/types/ArquivoType'
 import type { ArquivoUploadType, DialogConfirmaType, erroType } from '@/types/utilTypes'
 import ArquivoService from '@/services/ArquivoService'
 import {
+  getTipoDocumentoEnumDesc,
   TipoDocumentoEnum,
   TipoDocumentoExtratoEnumList,
   TipoDocumentoPessoaJuridicaEnumList,
@@ -49,7 +50,6 @@ const DocumentoContratoEdit = ({ arquivoData, extratoData, handleClose, setRefre
   const [arquivoEdit, setArquivoEdit] = useState<ArquivoType>(arquivoData)
   const [extratoEdit, setExtratoEdit] = useState<ExtratoType>(extratoData)
   const [dialogConfirma, setDialogConfirma] = useState<DialogConfirmaType>({ open: false })
-  const [temAporte, setTemAporte] = useState(false)
 
   const { setLoadingContext } = useClienteContext()
 
@@ -67,21 +67,44 @@ const DocumentoContratoEdit = ({ arquivoData, extratoData, handleClose, setRefre
     setLoadingContext(true)
     setErro(undefined)
 
+    console.log('handleExcluirArquivo', arquivoEdit)
+
     if (arquivoEdit.token) {
-      ArquivoService.excluir(arquivoEdit?.token)
-        .then(() => {
-          //console.log('respContrato', respContrato)
-          setRefresh(true)
-          toast.success(`Arquivo ${arquivoEdit?.token} excluído!`)
-          setArquivoEdit({})
-          handleClose(true)
-        })
-        .catch(err => {
-          setErro({ msg: trataErro(err) })
-        })
-        .finally(() => {
-          setLoadingContext(false)
-        })
+      if (arquivoEdit.tipoRegistro === TipoArquivoRegistroEnum.EXTRATO) {
+        if (arquivoEdit.idRegistro) {
+          //neste momento eu só tenho o id do registro, pois o token é do extrato e não do arquivo
+          ContratoService.excluirExtratoById(Number(arquivoEdit.idRegistro))
+            .then(() => {
+              //console.log('respContrato', respContrato)
+              setRefresh(true)
+              toast.success(`Arquivo ${arquivoEdit?.token} excluído!`)
+              setArquivoEdit({})
+              setExtratoEdit({ contrato: extratoEdit.contrato })
+              handleClose(true)
+            })
+            .catch(err => {
+              setErro({ msg: trataErro(err) })
+            })
+            .finally(() => {
+              setLoadingContext(false)
+            })
+        }
+      } else {
+        ArquivoService.excluir(arquivoEdit?.token)
+          .then(() => {
+            //console.log('respContrato', respContrato)
+            setRefresh(true)
+            toast.success(`Arquivo ${arquivoEdit?.token} excluído!`)
+            setArquivoEdit({})
+            handleClose(true)
+          })
+          .catch(err => {
+            setErro({ msg: trataErro(err) })
+          })
+          .finally(() => {
+            setLoadingContext(false)
+          })
+      }
     }
   }
 
@@ -249,20 +272,7 @@ const DocumentoContratoEdit = ({ arquivoData, extratoData, handleClose, setRefre
   }
 
   useEffect(() => {
-    //verificar se o contrato já tem um aporte para não deixar incluir um novo aporte
-    if (extratoEdit.contrato.token && arquivoEdit.tipoDocumento != TipoDocumentoEnum.APORTE) {
-      ContratoService.getAporte(extratoEdit.contrato.token)
-        .then(respAporte => {
-          console.log(respAporte)
-          if (respAporte.token) setTemAporte(true)
-        })
-        .catch(err => {
-          setErro({ msg: trataErro(err) })
-        })
-        .finally(() => {
-          //setLoadFile(false)
-        })
-    }
+    console.log('useeffect arquivoData', arquivoData)
 
     if (arquivoData?.token) {
       //precisa recuperar por aqui pois tem que ser via axios por causa da validação de seção
@@ -319,21 +329,28 @@ const DocumentoContratoEdit = ({ arquivoData, extratoData, handleClose, setRefre
                         value={arquivoEdit?.tipoDocumento ? arquivoEdit?.tipoDocumento : ''}
                         onChange={e => setArquivoEdit({ ...arquivoEdit, tipoDocumento: e.target.value })}
                       >
-                        {arquivoData.tipoRegistro === TipoArquivoRegistroEnum.CLIENTE &&
+                        {arquivoData?.token &&
+                          arquivoData.tipoDocumento && ( //se for edicão então não deixa mudar o tipo de documento
+                            <MenuItem value={arquivoData.tipoDocumento} selected={true}>
+                              {getTipoDocumentoEnumDesc(arquivoData.tipoDocumento)}
+                            </MenuItem>
+                          )}
+
+                        {!arquivoData?.token &&
+                          arquivoData.tipoRegistro === TipoArquivoRegistroEnum.CLIENTE &&
                           arquivoEdit.cliente?.tipoPessoa == 'F' &&
                           TipoDocumentoPessoFisicaEnumList.map((tipo, index) => (
                             <MenuItem
                               key={index}
                               value={tipo.value}
-                              disabled={temAporte && tipo.value === TipoDocumentoEnum.APORTE}
                               selected={arquivoEdit?.tipoDocumento === tipo.value}
                             >
-                              {tipo.label}{' '}
-                              {temAporte && tipo.value === TipoDocumentoEnum.APORTE ? ' - Já tem um aporte' : ''}
+                              {tipo.label}
                             </MenuItem>
                           ))}
 
-                        {arquivoData.tipoRegistro === TipoArquivoRegistroEnum.CLIENTE &&
+                        {!arquivoData?.token &&
+                          arquivoData.tipoRegistro === TipoArquivoRegistroEnum.CLIENTE &&
                           arquivoEdit.cliente?.tipoPessoa == 'J' &&
                           TipoDocumentoPessoaJuridicaEnumList.map((tipo, index) => (
                             <MenuItem
@@ -345,7 +362,9 @@ const DocumentoContratoEdit = ({ arquivoData, extratoData, handleClose, setRefre
                             </MenuItem>
                           ))}
 
-                        {arquivoData.tipoRegistro === TipoArquivoRegistroEnum.EXTRATO &&
+                        {!arquivoData?.token &&
+                          arquivoData.tipoRegistro === TipoArquivoRegistroEnum.EXTRATO &&
+                          arquivoData.tipoDocumento != TipoDocumentoEnum.APORTE &&
                           TipoDocumentoExtratoEnumList.map((tipo, index) => (
                             <MenuItem
                               key={index}
@@ -355,6 +374,14 @@ const DocumentoContratoEdit = ({ arquivoData, extratoData, handleClose, setRefre
                               {tipo.label}
                             </MenuItem>
                           ))}
+
+                        {!arquivoData?.token &&
+                          arquivoData.tipoRegistro === TipoArquivoRegistroEnum.EXTRATO &&
+                          arquivoData.tipoDocumento === TipoDocumentoEnum.APORTE && (
+                            <MenuItem value='APORTE' selected={true}>
+                              Comprovante de transferência
+                            </MenuItem>
+                          )}
                       </CustomTextField>
                     </Grid>
                     {arquivoEdit.tipoDocumento === TipoDocumentoEnum.APORTE && (

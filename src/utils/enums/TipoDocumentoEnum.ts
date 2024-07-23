@@ -9,7 +9,7 @@ export enum TipoDocumentoEnum {
   OUTROS = 'OUTROS'
 }
 
-export function getTipoDocumentoEnumDesc(item: TipoDocumentoEnum) {
+export function getTipoDocumentoEnumDesc(item: TipoDocumentoEnum | string) {
   switch (item) {
     case TipoDocumentoEnum.ADITIVO:
       return 'Aditivo'
@@ -53,9 +53,13 @@ export const TipoDocumentoPessoFisicaEnumList = [
 export const TipoDocumentoPessoaJuridicaEnumList = [
   { value: 'APORTE', label: 'Comprovante de transferência' },
   { value: 'CARTAO_CNPJ', label: 'Cartão CNPJ' },
+  { value: 'COMPROVANTE_RESIDENCIA', label: 'Comprovante de residência' },
   { value: 'CONTRATO_SOCIAL', label: 'Contrato Social' },
   { value: 'IDENTIDADE', label: 'RG ou CNH do sócio administrador' },
   { value: 'OUTROS', label: 'Outros' }
 ]
 
-export const TipoDocumentoExtratoEnumList = [{ value: 'ADITIVO', label: 'Aditivo' }]
+export const TipoDocumentoExtratoEnumList = [
+  { value: 'APORTE', label: 'Comprovante de transferência' },
+  { value: 'ADITIVO', label: 'Aditivo' }
+]

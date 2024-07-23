@@ -1,5 +1,3 @@
-'use client'
-
 // Next Imports
 import { useState } from 'react'
 
@@ -21,18 +19,26 @@ import ContratoService from '@/services/ContratoService'
 const PreviewActions = () => {
   // context
   const { contrato, setContratoContext } = useContratoContext()
+  const { resumoContrato, setResumoContratoContext } = useContratoContext()
 
   //state
   const [dialogConfirma, setDialogConfirma] = useState<DialogConfirmaType>({ open: false })
 
   const handleOpenDlgConfirmaEnviar = () => {
-    setDialogConfirma({
-      open: true,
-      titulo: 'Enviar Contrato',
-      texto: 'Confirma o envio deste contrato?',
-      botaoConfirma: 'Confirmar Envio',
-      handleConfirma: handleEnviarContrato
-    })
+    if (resumoContrato?.podeEnviar) {
+      setDialogConfirma({
+        open: true,
+        titulo: 'Enviar Contrato',
+        texto: 'Confirma o envio deste contrato?',
+        botaoConfirma: 'Confirmar Envio',
+        handleConfirma: handleEnviarContrato
+      })
+    } else {
+      toast.success('Contrato salvo com sucesso!')
+      setContratoContext({})
+      setResumoContratoContext(undefined)
+      window.location.reload()
+    }
   }
 
   const handleEnviarContrato = () => {
@@ -42,6 +48,7 @@ const PreviewActions = () => {
           //console.log('respContrato', respContrato)
           toast.success('Contrato enviado!')
           setContratoContext({})
+          setResumoContratoContext(undefined)
           window.location.reload()
           setDialogConfirma({
             open: false
@@ -63,15 +70,6 @@ const PreviewActions = () => {
               fullWidth
               color='secondary'
               variant='tonal'
-              startIcon={<i className='tabler-file-filled' />}
-              onClick={() => toast.success('Contrato salvo com sucesso')}
-            >
-              Salvar
-            </Button>
-            <Button
-              fullWidth
-              color='secondary'
-              variant='tonal'
               startIcon={<i className='tabler-printer' />}
               href={`./print/${contrato?.token}`}
             >
@@ -80,10 +78,12 @@ const PreviewActions = () => {
             <Button
               fullWidth
               variant='contained'
-              startIcon={<i className='tabler-send' />}
+              startIcon={
+                resumoContrato?.podeEnviar ? <i className='tabler-send' /> : <i className='tabler-file-filled' />
+              }
               onClick={() => handleOpenDlgConfirmaEnviar()}
             >
-              Enviar contrato
+              {resumoContrato?.podeEnviar ? 'Salvar e enviar contrato' : 'Salvar'}
             </Button>
           </div>
         </CardContent>
