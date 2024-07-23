@@ -162,8 +162,8 @@ const DocumentoContratoEdit = ({ arquivoData, extratoData, handleClose, setRefre
     formData.append(
       'arquivo',
       JSON.stringify({
-        ...extratoEdit.arquivo,
-        tipoDocumento: extratoEdit.tipo,
+        ...extratoEdit?.arquivo,
+        tipoDocumento: extratoEdit?.tipo,
         tipoRegistro: TipoArquivoRegistroEnum.EXTRATO
       })
     )
@@ -175,7 +175,7 @@ const DocumentoContratoEdit = ({ arquivoData, extratoData, handleClose, setRefre
         historico: arquivoEdit.descricao,
         contrato: {
           //so precisa enviar o token do contrato
-          token: extratoEdit.contrato.token
+          token: extratoEdit?.contrato.token
         }
       })
     )
