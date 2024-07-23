@@ -122,7 +122,7 @@ const ArquivoEdit = ({ arquivoData, handleClose, setRefreshArquivoList }: props)
   }
 
   const handleSubmit = () => {
-    if (!arquivoEdit.idUsuario || arquivoEdit.idUsuario <= 0) {
+    if (!arquivoEdit.idRegistro || arquivoEdit.idRegistro <= 0) {
       toast.error('É preciso informar um cliente ou usuário')
 
       return
