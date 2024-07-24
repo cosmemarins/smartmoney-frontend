@@ -15,6 +15,7 @@ import type { ArquivoType } from '@/types/ArquivoType'
 import ArquivoService from '@/services/ArquivoService'
 import { trataErro } from '@/utils/erro'
 import ArquivoItem from './ArquivoItem'
+import { TipoArquivoRegistroEnum } from '@/utils/enums/TipoArquivoRegistroEnum'
 
 const DocumentacaoTab = () => {
   //contexto
@@ -27,8 +28,8 @@ const DocumentacaoTab = () => {
 
   const arquivoInit = {
     data: new Date(),
-    tipoUsuario: 'C',
-    idUsuario: cliente?.id,
+    tipoRegistro: TipoArquivoRegistroEnum.CLIENTE,
+    idRegistro: cliente?.id,
     cliente: { id: cliente?.id, token: cliente?.token }
   }
 

@@ -290,8 +290,8 @@ const ArquivoEdit = ({ arquivoData, handleClose, setRefresh, disableSelectTipo }
             </Button>
             <Button
               type='reset'
-              variant='tonal'
-              color='secondary'
+              variant='contained'
+              className='mie-2'
               onClick={() => {
                 handleClose(false)
               }}

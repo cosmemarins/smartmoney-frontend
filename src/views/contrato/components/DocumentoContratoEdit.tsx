@@ -142,7 +142,7 @@ const DocumentoContratoEdit = ({ arquivoData, extratoData, handleClose, setRefre
 
   const salvarExtratoSemDocumento = () => {
     if (!extratoEdit) {
-      toast.error('Dados do aporte não localizado')
+      toast.error('Dados não localizado')
 
       return
     }
@@ -166,7 +166,7 @@ const DocumentoContratoEdit = ({ arquivoData, extratoData, handleClose, setRefre
 
   const salvarExtratoComDocumento = () => {
     if (!extratoEdit) {
-      toast.error('Dados do aporte não localizado')
+      toast.error('Dados não localizado')
 
       return
     }
@@ -233,17 +233,21 @@ const DocumentoContratoEdit = ({ arquivoData, extratoData, handleClose, setRefre
 
   const handleSubmit = () => {
     if (!arquivoEdit.idRegistro || arquivoEdit.idRegistro <= 0) {
-      toast.error('É preciso informar um cliente ou usuário')
+      toast.error('É preciso informar um cliente')
 
       return
     }
 
-    if (arquivoEdit.tipoDocumento === TipoDocumentoEnum.APORTE) {
+    if (
+      arquivoEdit.tipoDocumento === TipoDocumentoEnum.APORTE ||
+      arquivoEdit.tipoDocumento === TipoDocumentoEnum.ADITIVO
+    ) {
       if (!extratoEdit || !extratoEdit.valor || extratoEdit.valor <= 0) {
-        toast.error('É preciso informar um valor para o aporte')
+        toast.error('É preciso informar um valor para o documento')
 
         return
       }
+    } else {
     }
 
     if (!arquivoEdit?.token && files.length <= 0) {
@@ -255,7 +259,10 @@ const DocumentoContratoEdit = ({ arquivoData, extratoData, handleClose, setRefre
     setReload(true)
     setErro(undefined)
 
-    if (arquivoEdit.tipoDocumento === TipoDocumentoEnum.APORTE) {
+    if (
+      arquivoEdit.tipoDocumento === TipoDocumentoEnum.APORTE ||
+      arquivoEdit.tipoDocumento === TipoDocumentoEnum.ADITIVO
+    ) {
       if (files.length > 0) salvarExtratoComDocumento()
       else salvarExtratoSemDocumento()
     } else {
@@ -365,6 +372,7 @@ const DocumentoContratoEdit = ({ arquivoData, extratoData, handleClose, setRefre
                         {!arquivoData?.token &&
                           arquivoData.tipoRegistro === TipoArquivoRegistroEnum.EXTRATO &&
                           arquivoData.tipoDocumento != TipoDocumentoEnum.APORTE &&
+                          arquivoData.tipoDocumento != TipoDocumentoEnum.ADITIVO &&
                           TipoDocumentoExtratoEnumList.map((tipo, index) => (
                             <MenuItem
                               key={index}
@@ -382,9 +390,18 @@ const DocumentoContratoEdit = ({ arquivoData, extratoData, handleClose, setRefre
                               Comprovante de transferência
                             </MenuItem>
                           )}
+
+                        {!arquivoData?.token &&
+                          arquivoData.tipoRegistro === TipoArquivoRegistroEnum.EXTRATO &&
+                          arquivoData.tipoDocumento === TipoDocumentoEnum.ADITIVO && (
+                            <MenuItem value='ADITIVO' selected={true}>
+                              Aditivo
+                            </MenuItem>
+                          )}
                       </CustomTextField>
                     </Grid>
-                    {arquivoEdit.tipoDocumento === TipoDocumentoEnum.APORTE && (
+                    {(arquivoEdit.tipoDocumento === TipoDocumentoEnum.APORTE ||
+                      arquivoEdit.tipoDocumento === TipoDocumentoEnum.ADITIVO) && (
                       <Grid item xs={12} sm={12}>
                         <CustomTextField
                           fullWidth
@@ -445,8 +462,8 @@ const DocumentoContratoEdit = ({ arquivoData, extratoData, handleClose, setRefre
             </Button>
             <Button
               type='reset'
-              variant='tonal'
-              color='secondary'
+              variant='contained'
+              className='mie-2'
               onClick={() => {
                 handleClose(false)
               }}

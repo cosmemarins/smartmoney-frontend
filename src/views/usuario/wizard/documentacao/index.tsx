@@ -17,6 +17,7 @@ import { trataErro } from '@/utils/erro'
 import ArquivoItem from './ArquivoItem'
 
 import DirectionalIcon from '@/components/DirectionalIcon'
+import { TipoArquivoRegistroEnum } from '@/utils/enums/TipoArquivoRegistroEnum'
 
 type Props = {
   activeStep: number
@@ -36,8 +37,8 @@ const Documentacao = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
 
   const arquivoInit = {
     data: new Date(),
-    tipoUsuario: 'U',
-    idUsuario: usuario?.id,
+    tipoRegistro: TipoArquivoRegistroEnum.USUARIO,
+    idRegistro: usuario?.id,
     usuario: { id: usuario?.id, token: usuario?.token }
   }
 

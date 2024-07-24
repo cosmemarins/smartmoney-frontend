@@ -56,6 +56,9 @@ import { StatusContratoEnum, getStatusContratoEnumColor } from '@/utils/enums/St
 import ContratoEdit from '../ContratoEdit'
 import { cpfCnpjMask, valorBr } from '@/utils/string'
 import Documentacao from './documentacao'
+import DocumentoContratoEdit from '../components/DocumentoContratoEdit'
+import { TipoArquivoRegistroEnum } from '@/utils/enums/TipoArquivoRegistroEnum'
+import { TipoDocumentoEnum } from '@/utils/enums/TipoDocumentoEnum'
 
 locale('pt-br')
 
@@ -116,6 +119,7 @@ const ContratoListTable = () => {
   const [refreshTable, setRefreshTable] = useState<boolean>(true)
   const [openDlgContrato, setOpenDlgContrato] = useState<boolean>(false)
   const [openDlgDocumentacao, setOpenDlgDocumentacao] = useState<boolean>(false)
+  const [openDlgArquivo, setOpenDlgArquivo] = useState<boolean>(false)
 
   const handleOpenDlgContrato = (contrato: ContratoType) => {
     setContratoEdit(contrato)
@@ -132,7 +136,12 @@ const ContratoListTable = () => {
 
   const handleOpenDlgDocumentacao = (contrato: ContratoType) => {
     setContratoEdit(contrato)
-    setOpenDlgDocumentacao(true)
+
+    if (contrato.status === StatusContratoEnum.ATIVO) {
+      setOpenDlgArquivo(true)
+    } else {
+      setOpenDlgDocumentacao(true)
+    }
   }
 
   const handleCloseDlgDocumentacao = (refresh: boolean) => {
@@ -141,6 +150,10 @@ const ContratoListTable = () => {
     if (refresh) {
       setRefreshTable(refresh)
     }
+  }
+
+  const handleCloseDlgArquivo = () => {
+    setOpenDlgArquivo(false)
   }
 
   const handleOpenDlgConfirmaExcluir = (contrato: ContratoType) => {
@@ -207,8 +220,8 @@ const ContratoListTable = () => {
               <Typography color='text.primary' className='font-medium'>
                 {row.original.cliente?.gestor?.parceiro?.nomeFantasia}
               </Typography>
-              <Typography variant='body2'>CNPJ: {cpfCnpjMask(row.original.cliente?.gestor?.parceiro?.cnpj)}</Typography>
-              <Typography variant='body2'>Celular: {row.original.cliente?.gestor?.parceiro?.telefone}</Typography>
+              <Typography variant='body2'>{row.original.cliente?.gestor?.nome}</Typography>
+              <Typography variant='body2'>celular: {row.original.cliente?.gestor?.telefone}</Typography>
             </div>
           </div>
         )
@@ -228,21 +241,21 @@ const ContratoListTable = () => {
           </div>
         )
       }),
-      */
       columnHelper.accessor('cliente.gestor', {
         header: 'Gestor',
         cell: ({ row }) => (
           <div className='flex items-center gap-4'>
-            <div className='flex flex-col'>
-              <Typography color='text.primary' className='font-medium'>
-                {row.original.cliente?.gestor?.nome}
-              </Typography>
-              <Typography variant='body2'>{row.original.cliente?.gestor?.email}</Typography>
-              <Typography variant='body2'>celular: {row.original.cliente?.gestor?.telefone}</Typography>
-            </div>
+          <div className='flex flex-col'>
+          <Typography color='text.primary' className='font-medium'>
+          {row.original.cliente?.gestor?.nome}
+          </Typography>
+          <Typography variant='body2'>{row.original.cliente?.gestor?.email}</Typography>
+          <Typography variant='body2'>celular: {row.original.cliente?.gestor?.telefone}</Typography>
+          </div>
           </div>
         )
       }),
+      */
       columnHelper.accessor('saldo', {
         header: 'Saldo',
         cell: ({ row }) => (
@@ -518,6 +531,40 @@ const ContratoListTable = () => {
           </DialogActions>
         </Dialog>
       )}
+
+      <Dialog
+        open={openDlgArquivo}
+        aria-labelledby='form-dialog-title'
+        disableEscapeKeyDown
+        onClose={(event, reason) => {
+          if (reason !== 'backdropClick') {
+            handleCloseDlgArquivo()
+          }
+        }}
+      >
+        <DialogTitle id='form-dialog-title'>Novo upload de ADITIVO</DialogTitle>
+        <DialogContent>
+          <DocumentoContratoEdit
+            arquivoData={{
+              data: new Date(),
+              tipoRegistro: TipoArquivoRegistroEnum.EXTRATO,
+              tipoDocumento: TipoDocumentoEnum.ADITIVO,
+              idRegistro: contratoEdit?.id
+            }}
+            extratoData={{
+              data: new Date(),
+              contrato: { id: contratoEdit?.id, token: contratoEdit?.token },
+              tipo: TipoDocumentoEnum.ADITIVO,
+              arquivo: {
+                tipoDocumento: TipoDocumentoEnum.ADITIVO
+              }
+            }}
+            handleClose={handleCloseDlgArquivo}
+            setRefresh={setRefreshTable}
+            disableSelectTipo={true}
+          />
+        </DialogContent>
+      </Dialog>
     </>
   )
 }

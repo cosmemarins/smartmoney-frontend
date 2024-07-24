@@ -30,6 +30,8 @@ export const authOptions: NextAuthOptions = {
          */
         const { email, password, rememberMe } = credentials as { email: string; password: string; rememberMe: boolean }
 
+        console.log('credentialProvider authorize credentials', credentials)
+
         try {
           // ** Login API Call to match the user credentials and receive user data in response along with his role
           const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL_API}/auth/login`, {
@@ -113,7 +115,7 @@ export const authOptions: NextAuthOptions = {
      * via `jwt()` callback to make them accessible in the `session()` callback
      */
     async jwt({ token, user }) {
-      //console.log('callback jwt entrada: ', 'token: ', token, 'user: ', user)
+      console.log('callback jwt entrada: ', 'token: ', token, 'user: ', user)
 
       if (user) {
         /*
@@ -154,7 +156,7 @@ export const authOptions: NextAuthOptions = {
       return token
     },
     async session({ session, token }) {
-      //console.log('callback session entrada', 'token: ', token, 'session: ', session)
+      console.log('callback session entrada', 'token: ', token, 'session: ', session)
 
       if (session.user) {
         // ** Add custom params to user in session which are added in `jwt()` callback via `token` parameter

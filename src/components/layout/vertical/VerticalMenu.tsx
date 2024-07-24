@@ -82,10 +82,12 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
         {session?.user.podeCriarEquipe && (
           <SubMenu label='Equipe' icon={<i className='tabler-users' />}>
             <MenuItem href={`/equipe/list`}>Listar equipe</MenuItem>
-            <MenuItem href={`/equipe/comissao/list`}>Comissionamento</MenuItem>
             <MenuItem href={`/equipe/new`}>Novo parceiro</MenuItem>
           </SubMenu>
         )}
+        <SubMenu label='Financeiro' icon={<i className='tabler-currency-dollar' />}>
+          <MenuItem href={`/equipe/comissao/list`}>Comissionamento</MenuItem>
+        </SubMenu>
         <SubMenu label='Clientes' icon={<i className='tabler-users' />}>
           <MenuItem href={`/cliente/list`}>Listar Clientes</MenuItem>
           <MenuItem href={`/cliente/new`}>Novo cliente</MenuItem>
