@@ -7,6 +7,9 @@ export type ComissionamentoType = {
   gestor?: number
   tokenGestor?: string
   nomeGestor?: string
+  parceiro?: number
+  tokenParceiro?: string
+  nomeParceiro?: string
   valor?: number
   saldo?: number
   valorRepasse?: number

@@ -135,9 +135,9 @@ const ComissionamentoListTable = () => {
           </Typography>
         )
       }),
-      columnHelper.accessor('nomeGestor', {
+      columnHelper.accessor('nomeParceiro', {
         header: 'Broker',
-        cell: ({ row }) => <Typography color='text.primary'>{row.original.nomeGestor}</Typography>
+        cell: ({ row }) => <Typography color='text.primary'>{row.original.nomeParceiro}</Typography>
       }),
       columnHelper.accessor('taxaAgente', {
         header: 'Taxa',
@@ -227,12 +227,12 @@ const ComissionamentoListTable = () => {
               className='is-full sm:is-auto'
             />
             <Button
-              href='/equipe/new'
+              href='/equipe/comissao/list'
               variant='contained'
-              startIcon={<i className='tabler-plus' />}
+              startIcon={<i className='tabler-refresh' />}
               className='is-full sm:is-auto'
             >
-              Adicionar Usuário
+              Atualizar
             </Button>
           </div>
         </div>
