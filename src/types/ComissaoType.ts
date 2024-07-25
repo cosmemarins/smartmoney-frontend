@@ -1,4 +1,4 @@
-export type ComissionamentoType = {
+export type ComissaoType = {
   id?: number
   token?: string
   cliente?: number
@@ -12,16 +12,19 @@ export type ComissionamentoType = {
   nomeParceiro?: string
   valor?: number
   saldo?: number
-  valorRepasse?: number
   prazo?: number
+  taxaGestor?: number
+  valorRepasseDiretor?: number
   taxaCliente?: number
+  valorRepasseCliente?: number
   taxaParceiro?: number
   taxaAgente?: number
+  valorRepasseAgente?: number
   dataAporte?: Date
   dataCredito?: Date
   dataVencimento?: Date
 }
 
-export type ComissionamentoTypeAction = ComissionamentoType & {
+export type ComissaoTypeAction = ComissaoType & {
   action?: string
 }

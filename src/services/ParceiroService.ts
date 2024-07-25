@@ -5,7 +5,6 @@ import type { DataOptionsType } from '@/types/utilTypes'
 import { TipoDocumentoEnum } from '@/utils/enums/TipoDocumentoEnum'
 import type TamanhoEquipeDTO from '@/types/TamanhoEquipe.dto'
 import type { ConfiguracoesParceiroType } from '../types/ConfiguracoesParceiroType'
-import type { ComissionamentoType } from '@/types/ComissionamentoType'
 import type { UsuarioType } from '@/types/UsuarioType'
 import type UsuarioSenhaDTO from '@/types/UsuarioSenha.dto'
 
@@ -122,12 +121,6 @@ const ParceiroService = {
   //estatisticas
   getTotalParceiros: async function (token: string): Promise<TamanhoEquipeDTO> {
     const { data } = await api.get<TamanhoEquipeDTO>(`${path}/statistics/total-parceiros/${token}`)
-
-    return data
-  },
-
-  getComissionamento: async function (token?: string): Promise<ComissionamentoType[]> {
-    const { data } = await api.get<ComissionamentoType[]>(`${path}/comissionamento/${token}`)
 
     return data
   }

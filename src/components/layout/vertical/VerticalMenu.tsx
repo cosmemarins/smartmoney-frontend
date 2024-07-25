@@ -85,9 +85,6 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
             <MenuItem href={`/equipe/new`}>Novo parceiro</MenuItem>
           </SubMenu>
         )}
-        <SubMenu label='Financeiro' icon={<i className='tabler-currency-dollar' />}>
-          <MenuItem href={`/equipe/comissao/list`}>Comissionamento</MenuItem>
-        </SubMenu>
         <SubMenu label='Clientes' icon={<i className='tabler-users' />}>
           <MenuItem href={`/cliente/list`}>Listar Clientes</MenuItem>
           <MenuItem href={`/cliente/new`}>Novo cliente</MenuItem>
@@ -95,6 +92,13 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
         <SubMenu label='Contratos' icon={<i className='tabler-files' />}>
           <MenuItem href={`/contrato/list`}>Listar Contratos</MenuItem>
           <MenuItem href={`/contrato/new`}>Novo contrato</MenuItem>
+        </SubMenu>
+        <SubMenu label='Financeiro' icon={<i className='tabler-currency-dollar' />}>
+          <SubMenu label='Comissionamento' icon={<i className='tabler-file-dollar' />}>
+            <MenuItem href={`/financeiro/comissao/investidores`}>Investidores</MenuItem>
+            <MenuItem href={`/financeiro/comissao/agentes`}>Agentes</MenuItem>
+            <MenuItem href={`/financeiro/comissao/diretor`}>Diretor</MenuItem>
+          </SubMenu>
         </SubMenu>
         <MenuItem href='/about' icon={<i className='tabler-info-circle' />}>
           About

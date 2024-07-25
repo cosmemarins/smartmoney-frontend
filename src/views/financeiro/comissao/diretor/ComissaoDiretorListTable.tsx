@@ -31,19 +31,19 @@ import moment, { locale } from 'moment'
 import 'moment/locale/pt-br'
 
 import CustomTextField from '@/@core/components/mui/TextField'
-import { type ComissionamentoType, type ComissionamentoTypeAction } from '@/types/ComissionamentoType'
+import { type ComissaoType, type ComissaoTypeAction } from '@/types/ComissaoType'
 
 // Style Imports
 import tableStyles from '@core/styles/table.module.css'
 import TablePaginationComponent from '@/components/TablePaginationComponent'
 import type { ValidationError } from '@/services/api'
-import ParceiroService from '@/services/ParceiroService'
 import { valorBr } from '@/utils/string'
+import FinanceiroService from '@/services/FinanceiroService'
 
 locale('pt-br')
 
 // Column Definitions
-const columnHelper = createColumnHelper<ComissionamentoTypeAction>()
+const columnHelper = createColumnHelper<ComissaoTypeAction>()
 
 const fuzzyFilter: FilterFn<any> = (row, columnId, value, addMeta) => {
   // Rank the item
@@ -87,16 +87,28 @@ const DebouncedInput = ({
   return <CustomTextField {...props} value={value} onChange={e => setValue(e.target.value)} />
 }
 
-const ComissionamentoListTable = () => {
+const ComissaoDiretorListTable = () => {
   // States
   const [rowSelection, setRowSelection] = useState({})
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [data, setData] = useState<ComissionamentoType[]>([])
+  const [data, setData] = useState<ComissaoType[]>([])
   const [globalFilter, setGlobalFilter] = useState('')
   const [refreshTable, setRefreshTable] = useState<boolean>(true)
 
-  const columns = useMemo<ColumnDef<ComissionamentoTypeAction, any>[]>(
+  const columns = useMemo<ColumnDef<ComissaoTypeAction, any>[]>(
     () => [
+      columnHelper.accessor('nomeParceiro', {
+        header: 'Diretor',
+        cell: ({}) => (
+          <div className='flex items-center gap-4'>
+            <div className='flex flex-col'>
+              <Typography color='text.primary' className='font-medium'>
+                Smart Money Group
+              </Typography>
+            </div>
+          </div>
+        )
+      }),
       columnHelper.accessor('nomeCliente', {
         header: 'Cliente',
         cell: ({ row }) => (
@@ -105,13 +117,10 @@ const ComissionamentoListTable = () => {
               <Typography color='text.primary' className='font-medium'>
                 {row.original.nomeCliente}
               </Typography>
+              <Typography variant='body2'>{row.original.nomeParceiro}</Typography>
             </div>
           </div>
         )
-      }),
-      columnHelper.accessor('valor', {
-        header: 'Valor',
-        cell: ({ row }) => <Typography color='text.primary'>{valorBr.format(row.original.valor || 0)}</Typography>
       }),
       columnHelper.accessor('dataAporte', {
         header: 'Data Aporte',
@@ -135,18 +144,18 @@ const ComissionamentoListTable = () => {
           </Typography>
         )
       }),
-      columnHelper.accessor('nomeParceiro', {
-        header: 'Broker',
-        cell: ({ row }) => <Typography color='text.primary'>{row.original.nomeParceiro}</Typography>
+      columnHelper.accessor('valor', {
+        header: 'Valor',
+        cell: ({ row }) => <Typography color='text.primary'>{valorBr.format(row.original.valor || 0)}</Typography>
       }),
-      columnHelper.accessor('taxaAgente', {
+      columnHelper.accessor('taxaGestor', {
         header: 'Taxa',
-        cell: ({ row }) => <Typography color='text.primary'>{valorBr.format(row.original.taxaAgente || 0)}%</Typography>
+        cell: ({ row }) => <Typography color='text.primary'>{valorBr.format(row.original.taxaGestor || 0)}%</Typography>
       }),
-      columnHelper.accessor('valorRepasse', {
+      columnHelper.accessor('valorRepasseDiretor', {
         header: 'Valor Repasse',
         cell: ({ row }) => (
-          <Typography color='text.primary'>{valorBr.format(row.original.valorRepasse || 0)}</Typography>
+          <Typography color='text.primary'>{valorBr.format(row.original.valorRepasseDiretor || 0)}</Typography>
         )
       })
     ],
@@ -155,7 +164,7 @@ const ComissionamentoListTable = () => {
   )
 
   const table = useReactTable({
-    data: data as ComissionamentoType[],
+    data: data as ComissaoType[],
     columns,
     filterFns: {
       fuzzy: fuzzyFilter
@@ -186,7 +195,7 @@ const ComissionamentoListTable = () => {
   useEffect(() => {
     if (refreshTable) {
       setRefreshTable(false)
-      ParceiroService.getComissionamento()
+      FinanceiroService.getComissaoDiretor()
         .then(respListComissao => {
           console.log('respListComissao', respListComissao)
           setData(respListComissao)
@@ -207,7 +216,7 @@ const ComissionamentoListTable = () => {
   return (
     <>
       <Card>
-        <CardHeader title='Comissionamento' className='pbe-4' />
+        <CardHeader title='Comissões do Diretor' className='pbe-4' />
         <div className='flex justify-between flex-col items-start md:flex-row md:items-center p-6 border-bs gap-4'>
           <CustomTextField
             select
@@ -305,4 +314,4 @@ const ComissionamentoListTable = () => {
   )
 }
 
-export default ComissionamentoListTable
+export default ComissaoDiretorListTable

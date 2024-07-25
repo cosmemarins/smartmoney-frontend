@@ -8,7 +8,6 @@ import { TipoDocumentoEnum } from '@/utils/enums/TipoDocumentoEnum'
 import type UsuarioSenhaDTO from '@/types/UsuarioSenha.dto'
 import type TamanhoEquipeDTO from '@/types/TamanhoEquipe.dto'
 import type { ConfiguracoesUsuarioType } from './../types/ConfiguracoesUsuarioType'
-import type { ComissionamentoType } from '@/types/ComissionamentoType'
 
 const path = 'usuarios'
 
@@ -122,13 +121,6 @@ async function getTotalUsuarios(token: string): Promise<TamanhoEquipeDTO> {
   return data
 }
 
-//estatisticas
-async function getComissionamento(token?: string): Promise<ComissionamentoType[]> {
-  const { data } = await api.get<ComissionamentoType[]>(`${path}/comissionamento/${token}`)
-
-  return data
-}
-
 export {
   getListUsuario,
   getUsuario,
@@ -141,6 +133,5 @@ export {
   salvarSenha,
   resetarSenha,
   getTotalUsuarios,
-  getUsuarioByCpfCnpj,
-  getComissionamento
+  getUsuarioByCpfCnpj
 }
