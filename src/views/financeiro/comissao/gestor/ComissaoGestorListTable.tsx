@@ -87,7 +87,7 @@ const DebouncedInput = ({
   return <CustomTextField {...props} value={value} onChange={e => setValue(e.target.value)} />
 }
 
-const ComissaoAgentesListTable = () => {
+const ComissaoGestorListTable = () => {
   // States
   const [rowSelection, setRowSelection] = useState({})
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -97,13 +97,13 @@ const ComissaoAgentesListTable = () => {
 
   const columns = useMemo<ColumnDef<ComissaoTypeAction, any>[]>(
     () => [
-      columnHelper.accessor('nomeGestor', {
-        header: 'Agente',
+      columnHelper.accessor('nomeCliente', {
+        header: 'Cliente',
         cell: ({ row }) => (
           <div className='flex items-center gap-4'>
             <div className='flex flex-col'>
               <Typography color='text.primary' className='font-medium'>
-                {row.original.nomeGestor}
+                {row.original.nomeParceiro}
               </Typography>
               <Typography variant='body2'>Cliente: {row.original.nomeCliente}</Typography>
             </div>
@@ -136,14 +136,16 @@ const ComissaoAgentesListTable = () => {
         header: 'Valor',
         cell: ({ row }) => <Typography color='text.primary'>{valorBr.format(row.original.valor || 0)}</Typography>
       }),
-      columnHelper.accessor('taxaAgente', {
+      columnHelper.accessor('taxaParceiro', {
         header: 'Taxa',
-        cell: ({ row }) => <Typography color='text.primary'>{valorBr.format(row.original.taxaAgente || 0)}%</Typography>
+        cell: ({ row }) => (
+          <Typography color='text.primary'>{valorBr.format(row.original.taxaParceiro || 0)}%</Typography>
+        )
       }),
-      columnHelper.accessor('valorRepasseAgente', {
+      columnHelper.accessor('valorRepasseParceiro', {
         header: 'Valor Repasse',
         cell: ({ row }) => (
-          <Typography color='text.primary'>{valorBr.format(row.original.valorRepasseAgente || 0)}</Typography>
+          <Typography color='text.primary'>{valorBr.format(row.original.valorRepasseParceiro || 0)}</Typography>
         )
       })
     ],
@@ -302,4 +304,4 @@ const ComissaoAgentesListTable = () => {
   )
 }
 
-export default ComissaoAgentesListTable
+export default ComissaoGestorListTable

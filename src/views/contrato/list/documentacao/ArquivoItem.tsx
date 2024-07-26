@@ -56,12 +56,14 @@ const ArquivoItem = ({ arquivo, handleEditArquivo }: props) => {
           </Alert>
         )}
         {fileDocumento && (
-          <CardMedia
-            key={arquivo?.token}
-            sx={{ minHeight: 250 }}
-            image={`data:image/jpeg;base64, ${fileDocumento}`}
-            title={titulo}
-          />
+          <a target='_blank' href={`/arquivos/${arquivo.token}/view`} rel='noopener noreferrer'>
+            <CardMedia
+              key={arquivo?.token}
+              sx={{ minHeight: 250 }}
+              image={`data:image/jpeg;base64, ${fileDocumento}`}
+              title={titulo}
+            />
+          </a>
         )}
       </CardContent>
       <CardActions className='card-actions-dense'>

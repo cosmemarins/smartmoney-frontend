@@ -18,6 +18,7 @@ export type ComissaoType = {
   taxaCliente?: number
   valorRepasseCliente?: number
   taxaParceiro?: number
+  valorRepasseParceiro?: number
   taxaAgente?: number
   valorRepasseAgente?: number
   dataAporte?: Date

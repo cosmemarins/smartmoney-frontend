@@ -54,6 +54,8 @@ const ArquivoService = {
   },
 
   getThumbnail: async function getThumbnail(token: string) {
+    console.log(`${path}/thumb/${token}`)
+
     const response = await api.get(`${path}/thumb/${token}`, {
       responseType: 'arraybuffer'
     })
