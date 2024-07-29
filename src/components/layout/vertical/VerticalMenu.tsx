@@ -97,7 +97,7 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
           <SubMenu label='Comissionamento' icon={<i className='tabler-file-dollar' />}>
             <MenuItem href={`/financeiro/comissao/investidores`}>Investidores</MenuItem>
             <MenuItem href={`/financeiro/comissao/agentes`}>Agentes</MenuItem>
-            <MenuItem href={`/financeiro/comissao/gestor`}>Gestor</MenuItem>
+            <MenuItem href={`/financeiro/comissao/parceiros`}>Parceiro</MenuItem>
             <MenuItem href={`/financeiro/comissao/diretor`}>Diretor</MenuItem>
           </SubMenu>
         </SubMenu>

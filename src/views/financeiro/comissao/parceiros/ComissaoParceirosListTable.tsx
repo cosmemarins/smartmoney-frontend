@@ -87,7 +87,7 @@ const DebouncedInput = ({
   return <CustomTextField {...props} value={value} onChange={e => setValue(e.target.value)} />
 }
 
-const ComissaoGestorListTable = () => {
+const ComissaoParceirosListTable = () => {
   // States
   const [rowSelection, setRowSelection] = useState({})
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -98,7 +98,7 @@ const ComissaoGestorListTable = () => {
   const columns = useMemo<ColumnDef<ComissaoTypeAction, any>[]>(
     () => [
       columnHelper.accessor('nomeCliente', {
-        header: 'Cliente',
+        header: 'Parceiro',
         cell: ({ row }) => (
           <div className='flex items-center gap-4'>
             <div className='flex flex-col'>
@@ -206,7 +206,7 @@ const ComissaoGestorListTable = () => {
   return (
     <>
       <Card>
-        <CardHeader title='Comissisões dos Agentes' className='pbe-4' />
+        <CardHeader title='Comissisões dos Parceiros' className='pbe-4' />
         <div className='flex justify-between flex-col items-start md:flex-row md:items-center p-6 border-bs gap-4'>
           <CustomTextField
             select
@@ -304,4 +304,4 @@ const ComissaoGestorListTable = () => {
   )
 }
 
-export default ComissaoGestorListTable
+export default ComissaoParceirosListTable
