@@ -23,11 +23,11 @@ import {
 
 import axios from 'axios'
 
-import UsuarioService from '@/services/UsuarioService'
+import { getThumbnailCliente, uploadDocumento } from '@/services/ClienteService'
 import type { erroType } from '@/types/utilTypes'
 import type { ValidationError } from '@/services/api'
 import { TipoDocumentoEnum } from '@/utils/enums/TipoDocumentoEnum'
-import { useUsuarioContext } from '@/contexts/UsuarioContext'
+import { useClienteContext } from '@/contexts/ClienteContext'
 
 interface props {
   titulo: string
@@ -46,9 +46,9 @@ const DocumentoUploadDropzone = ({ titulo, tipoUpload }: props) => {
   const [loadFile, setLoadFile] = useState(false)
   const [files, setFiles] = useState<File[]>([])
   const [uploadStatus, setUploadStatus] = useState('Salvar arquivo')
-  const [fileDocumento] = useState<any>()
+  const [fileDocumento, setFileDocumento] = useState<any>()
 
-  const { usuario, setUsuarioContext } = useUsuarioContext()
+  const { cliente, setClienteContext } = useClienteContext()
 
   // Hooks
   const { getRootProps, getInputProps } = useDropzone({
@@ -78,14 +78,14 @@ const DocumentoUploadDropzone = ({ titulo, tipoUpload }: props) => {
   ))
 
   const handleUpload = () => {
-    if (!usuario) {
-      toast.error('Usuario não informado!')
+    if (!cliente) {
+      toast.error('Cliente não informado!')
 
       return
     }
 
-    if (!usuario.token) {
-      toast.error('Token do usuario não informado!')
+    if (!cliente.token) {
+      toast.error('Token do cliente não informado!')
 
       return
     }
@@ -98,35 +98,32 @@ const DocumentoUploadDropzone = ({ titulo, tipoUpload }: props) => {
 
     //os parametros devem ser appendados antes do file, senão não recupera lá no request do server
     formData.append('tipoDocumento', tipoUpload)
-    formData.append('token', `${usuario.token}`)
+    formData.append('token', `${cliente?.token}`)
     files.forEach(image => {
       formData.append('file', image)
     })
 
-    UsuarioService.uploadDocumento(formData)
+    uploadDocumento(formData)
       .then(respUpload => {
         console.log('respUpload', respUpload)
 
         switch (tipoUpload) {
           case TipoDocumentoEnum.IDENTIDADE:
-            setUsuarioContext({
-              ...usuario
-
-              //docIdentidade: respUpload.docIdentidade
+            setClienteContext({
+              ...cliente,
+              docIdentidade: respUpload.docIdentidade
             })
             break
           case TipoDocumentoEnum.COMPROVANTE_RESIDENCIA:
-            setUsuarioContext({
-              ...usuario
-
-              //compResidencia: respUpload.compResidencia
+            setClienteContext({
+              ...cliente,
+              compResidencia: respUpload.compResidencia
             })
             break
           case TipoDocumentoEnum.COMPROVANTE_FINANCEIRO:
-            setUsuarioContext({
-              ...usuario
-
-              // compFinanceiro: respUpload.compFinanceiro
+            setClienteContext({
+              ...cliente,
+              compFinanceiro: respUpload.compFinanceiro
             })
             break
         }
@@ -150,17 +147,16 @@ const DocumentoUploadDropzone = ({ titulo, tipoUpload }: props) => {
   }
 
   useEffect(() => {
-    if (usuario && usuario.token) {
-      /*
+    if (cliente?.token) {
       if (
-        (usuario.docIdentidade && tipoUpload === TipoDocumentoEnum.IDENTIDADE) ||
-        (usuario.compResidencia && tipoUpload === TipoDocumentoEnum.COMPROVANTE_RESIDENCIA) ||
-        (usuario.compFinanceiro && tipoUpload === TipoDocumentoEnum.COMPROVANTE_FINANCEIRO)
+        (cliente.docIdentidade && tipoUpload === TipoDocumentoEnum.IDENTIDADE) ||
+        (cliente.compResidencia && tipoUpload === TipoDocumentoEnum.COMPROVANTE_RESIDENCIA) ||
+        (cliente.compFinanceiro && tipoUpload === TipoDocumentoEnum.COMPROVANTE_FINANCEIRO)
       ) {
         setLoadFile(true)
 
         //precisa recuperar por aqui pois tem que ser via axios por causa da validação de seção
-        UsuarioService.getThumbnail(usuario.token, tipoUpload)
+        getThumbnailCliente(cliente.token, tipoUpload)
           .then(dataImg => {
             setFileDocumento(dataImg)
           })
@@ -171,7 +167,6 @@ const DocumentoUploadDropzone = ({ titulo, tipoUpload }: props) => {
             setLoadFile(false)
           })
       }
-          */
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -193,7 +188,7 @@ const DocumentoUploadDropzone = ({ titulo, tipoUpload }: props) => {
             img
           ) : fileDocumento && !loadFile ? (
             <CardMedia
-              key={usuario?.token}
+              key={cliente?.token}
               sx={{ minHeight: 250 }}
               image={`data:image/jpeg;base64, ${fileDocumento}`}
               title={titulo}

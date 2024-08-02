@@ -27,7 +27,7 @@ import { pipe } from 'valibot'
 import { valibotResolver } from '@hookform/resolvers/valibot'
 import type { SubmitHandler } from 'react-hook-form'
 
-import { salvarConfiguracoesUsuario } from '@/services/UsuarioService'
+import UsuarioService from '@/services/UsuarioService'
 
 import { useUsuarioContext } from '@/contexts/UsuarioContext'
 import { trataErro } from '@/utils/erro'
@@ -57,7 +57,7 @@ const ConfiguracoesUsuario = () => {
   } = useForm<FormData>({
     resolver: valibotResolver(schema),
     defaultValues: {
-      taxaDistribuicao: usuario?.parceiro?.taxaDistribuicao
+      taxaDistribuicao: usuario?.gestor?.taxaDistribuicao
     }
   })
 
@@ -66,12 +66,12 @@ const ConfiguracoesUsuario = () => {
 
     if (usuario && usuario.token && configuracoesUsuario) {
       setSending(true)
-      salvarConfiguracoesUsuario(configuracoesUsuario)
+      UsuarioService.salvarConfiguracoes(configuracoesUsuario)
         .then(respConfig => {
           setUsuarioContext({
             ...usuario,
-            parceiro: {
-              ...usuario.parceiro,
+            gestor: {
+              ...usuario.gestor,
               taxaDistribuicao: respConfig.taxaDistribuicao
             },
             podeCriarEquipe: respConfig.podeCriarEquipe
@@ -94,7 +94,7 @@ const ConfiguracoesUsuario = () => {
       setConfiguracoesUsuario({
         id: usuario.id,
         token: usuario.token,
-        taxaDistribuicao: usuario.parceiro?.taxaDistribuicao,
+        taxaDistribuicao: usuario.gestor?.taxaDistribuicao,
         podeCriarEquipe: usuario.podeCriarEquipe
       })
     }

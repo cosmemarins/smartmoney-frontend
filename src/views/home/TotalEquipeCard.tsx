@@ -13,9 +13,9 @@ import { Button, CircularProgress } from '@mui/material'
 import { useSession } from 'next-auth/react'
 
 import CustomAvatar from '@core/components/mui/Avatar'
-import ParceiroService from '@/services/ParceiroService'
 import { trataErro } from '@/utils/erro'
 import type TamanhoEquipeDTO from '@/types/TamanhoEquipe.dto'
+import UsuarioService from '@/services/UsuarioService'
 
 const TotalEquipeCard = () => {
   const [tamanhoEquipe, setTamanhoEquipe] = useState<TamanhoEquipeDTO>({ totalMinhaEquipe: 0, totalOutrosDaEquipe: 0 })
@@ -29,7 +29,7 @@ const TotalEquipeCard = () => {
     if (user && user.token) {
       setLoading(true)
 
-      ParceiroService.getTotalParceiros(user.token)
+      UsuarioService.getTotalEquipe(user.token)
         .then(resp => {
           setTamanhoEquipe(resp)
         })

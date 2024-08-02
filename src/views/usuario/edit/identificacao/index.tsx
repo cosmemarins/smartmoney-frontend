@@ -25,7 +25,7 @@ import type { cepType } from '@/utils/cep'
 import { estadosOptions } from '@/utils/estados'
 import { cpfCnpjMask, telefoleMask } from '@/utils/string'
 import type { erroType } from '@/types/utilTypes'
-import { salvarUsuario } from '@/services/UsuarioService'
+import UsuarioService from '@/services/UsuarioService'
 
 import { useUsuarioContext } from '@/contexts/UsuarioContext'
 
@@ -102,7 +102,7 @@ const Identificacao = () => {
     setErro(undefined)
 
     if (usuarioEdit) {
-      salvarUsuario(usuarioEdit)
+      UsuarioService.salvar(usuarioEdit)
         .then(respUsuario => {
           //console.log(respUsuario)
           setUsuarioContext(respUsuario)
@@ -166,8 +166,8 @@ const Identificacao = () => {
               <CustomTextField
                 fullWidth
                 label='CPF/CNPJ'
-                value={cpfCnpjMask(usuarioEdit?.cpf)}
-                onChange={e => setUsuarioEdit({ ...usuarioEdit, cpf: e.target.value })}
+                value={cpfCnpjMask(usuarioEdit?.cpfCnpj)}
+                onChange={e => setUsuarioEdit({ ...usuarioEdit, cpfCnpj: e.target.value })}
               />
             </Grid>
             <Grid item xs={12} sm={6}>

@@ -19,11 +19,12 @@ import { toast } from 'react-toastify'
 import { estadosOptions } from '@/utils/estados'
 import type { cepType } from '@/utils/cep'
 import CustomTextField from '@core/components/mui/TextField'
-import ParceiroService from '@/services/ParceiroService'
 
-import { useParceiroContext } from '@/contexts/ParceiroContext'
+import { useEquipeContext } from '@/contexts/EquipeContext'
 import DirectionalIcon from '@/components/DirectionalIcon'
 import { trataErro } from '@/utils/erro'
+import UsuarioService from '@/services/UsuarioService'
+import { getPerfilUsuarioEnumDesc, PerfilUsuarioEnum } from '@/utils/enums/PerfilUsuarioEnum'
 
 type Props = {
   activeStep: number
@@ -36,19 +37,22 @@ type ErrorType = {
   message: string[]
 }
 
-type FormData = v.InferInput<typeof schema>
+const EnderecoUsuario = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
+  //hooks
+  const { usuarioEquipe, setUsuarioEquipeContext } = useEquipeContext()
 
-const schema = v.object({
-  cep: v.string('É preciso digitar um CEP válido')
-})
-
-const EnderecoEmpresa = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
   // States
   const [errorState, setErrorState] = useState<ErrorType | null>(null)
   const [sending, setSending] = useState<boolean>(false)
 
-  //hooks
-  const { parceiro, setParceiroContext } = useParceiroContext()
+  type FormData = v.InferInput<typeof schema>
+
+  const schema = v.object({
+    cep:
+      usuarioEquipe?.perfil === PerfilUsuarioEnum.AGENTE || usuarioEquipe?.perfil === PerfilUsuarioEnum.PARCEIRO
+        ? v.string('É preciso digitar um CEP válido')
+        : v.optional(v.string())
+  })
 
   const {
     control,
@@ -57,16 +61,16 @@ const EnderecoEmpresa = ({ activeStep, handleNext, handlePrev, steps }: Props) =
   } = useForm<FormData>({
     resolver: valibotResolver(schema),
     defaultValues: {
-      cep: parceiro?.cep
+      cep: usuarioEquipe?.cep || undefined
     }
   })
 
   const onSubmit: SubmitHandler<FormData> = async (data: FormData) => {
-    if (parceiro && data.cep) {
+    if (usuarioEquipe && data.cep) {
       setSending(true)
-      ParceiroService.salvar(parceiro)
-        .then(respParceiro => {
-          setParceiroContext(respParceiro)
+      UsuarioService.salvar(usuarioEquipe)
+        .then(respUsuario => {
+          setUsuarioEquipeContext(respUsuario)
           handleNext()
         })
         .catch(err => {
@@ -93,8 +97,8 @@ const EnderecoEmpresa = ({ activeStep, handleNext, handlePrev, steps }: Props) =
             if (data.hasOwnProperty('erro')) {
               throw 'CEP não existe'
             } else {
-              setParceiroContext({
-                ...parceiro,
+              setUsuarioEquipeContext({
+                ...usuarioEquipe,
                 cep: data?.cep,
                 endereco: data?.logradouro,
                 bairro: data?.bairro,
@@ -112,7 +116,7 @@ const EnderecoEmpresa = ({ activeStep, handleNext, handlePrev, steps }: Props) =
   }
 
   const handleCepChange = (e: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
-    setParceiroContext({ ...parceiro, cep: e.target.value })
+    setUsuarioEquipeContext({ ...usuarioEquipe, cep: e.target.value })
     getCep(e.target.value)
   }
 
@@ -121,7 +125,7 @@ const EnderecoEmpresa = ({ activeStep, handleNext, handlePrev, steps }: Props) =
       <Grid item xs={12}>
         <Card className='relative'>
           <form onSubmit={handleSubmit(onSubmit)}>
-            <CardHeader title='Endereço da Empresa' />
+            <CardHeader title={`Endereço do ${getPerfilUsuarioEnumDesc(usuarioEquipe?.perfil)}`} />
             <CardContent className='flex flex-col gap-4'>
               <Grid container spacing={5}>
                 <Grid item xs={12}>
@@ -136,7 +140,7 @@ const EnderecoEmpresa = ({ activeStep, handleNext, handlePrev, steps }: Props) =
                         fullWidth
                         label='CEP'
                         placeholder='CEP'
-                        value={parceiro?.cep || ''}
+                        value={usuarioEquipe?.cep || ''}
                         onChange={e => {
                           field.onChange(e.target.value)
                           handleCepChange(e)
@@ -154,24 +158,24 @@ const EnderecoEmpresa = ({ activeStep, handleNext, handlePrev, steps }: Props) =
                   <CustomTextField
                     fullWidth
                     label='Número'
-                    value={parceiro?.numero || ''}
-                    onChange={e => setParceiroContext({ ...parceiro, numero: e.target.value })}
+                    value={usuarioEquipe?.numero || ''}
+                    onChange={e => setUsuarioEquipeContext({ ...usuarioEquipe, numero: e.target.value })}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <CustomTextField
                     fullWidth
                     label='Complemento'
-                    value={parceiro?.complemento || ''}
-                    onChange={e => setParceiroContext({ ...parceiro, complemento: e.target.value })}
+                    value={usuarioEquipe?.complemento || ''}
+                    onChange={e => setUsuarioEquipeContext({ ...usuarioEquipe, complemento: e.target.value })}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <CustomTextField
                     fullWidth
                     label='Logradouro'
-                    value={parceiro?.endereco || ''}
-                    onChange={e => setParceiroContext({ ...parceiro, endereco: e.target.value })}
+                    value={usuarioEquipe?.endereco || ''}
+                    onChange={e => setUsuarioEquipeContext({ ...usuarioEquipe, endereco: e.target.value })}
                     disabled
                   />
                 </Grid>
@@ -179,8 +183,8 @@ const EnderecoEmpresa = ({ activeStep, handleNext, handlePrev, steps }: Props) =
                   <CustomTextField
                     fullWidth
                     label='Bairro'
-                    value={parceiro?.bairro || ''}
-                    onChange={e => setParceiroContext({ ...parceiro, bairro: e.target.value })}
+                    value={usuarioEquipe?.bairro || ''}
+                    onChange={e => setUsuarioEquipeContext({ ...usuarioEquipe, bairro: e.target.value })}
                     disabled
                   />
                 </Grid>
@@ -188,8 +192,8 @@ const EnderecoEmpresa = ({ activeStep, handleNext, handlePrev, steps }: Props) =
                   <CustomTextField
                     fullWidth
                     label='Cidade'
-                    value={parceiro?.cidade || ''}
-                    onChange={e => setParceiroContext({ ...parceiro, cidade: e.target.value })}
+                    value={usuarioEquipe?.cidade || ''}
+                    onChange={e => setUsuarioEquipeContext({ ...usuarioEquipe, cidade: e.target.value })}
                     disabled
                   />
                 </Grid>
@@ -198,12 +202,12 @@ const EnderecoEmpresa = ({ activeStep, handleNext, handlePrev, steps }: Props) =
                     select
                     fullWidth
                     label='Estado'
-                    value={parceiro?.estado ? parceiro?.estado : ''}
-                    onChange={e => setParceiroContext({ ...parceiro, estado: e.target.value as string })}
+                    value={usuarioEquipe?.estado ? usuarioEquipe?.estado : ''}
+                    onChange={e => setUsuarioEquipeContext({ ...usuarioEquipe, estado: e.target.value as string })}
                     disabled
                   >
                     {estadosOptions.map((estado, index) => (
-                      <MenuItem key={index} value={estado.value} selected={parceiro?.estado === estado.value}>
+                      <MenuItem key={index} value={estado.value} selected={usuarioEquipe?.estado === estado.value}>
                         {estado.label}
                       </MenuItem>
                     ))}
@@ -249,4 +253,4 @@ const EnderecoEmpresa = ({ activeStep, handleNext, handlePrev, steps }: Props) =
   )
 }
 
-export default EnderecoEmpresa
+export default EnderecoUsuario

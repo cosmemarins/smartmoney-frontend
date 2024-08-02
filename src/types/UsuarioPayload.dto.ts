@@ -3,11 +3,12 @@ export default interface UsuarioPayloadDTO {
   token: string
   nome: string
   tipoPessoa: string
-  idParceiro: number
+  idGestor: number
+  tokenGestor: string
   isAdmin: boolean
   podeCriarEquipe: boolean
   roles: string
-  cargo: string
+  perfil: string
   email: string
   foto?: string
   rememberMe: boolean

@@ -22,7 +22,7 @@ import { toast } from 'react-toastify'
 
 import CustomTextField from '@core/components/mui/TextField'
 import { cpfCnpjMask, telefoleMask } from '@/utils/string'
-import { salvarUsuario } from '@/services/UsuarioService'
+import UsuarioService from '@/services/UsuarioService'
 
 import { useUsuarioContext } from '@/contexts/UsuarioContext'
 import DirectionalIcon from '@/components/DirectionalIcon'
@@ -80,7 +80,7 @@ const DadosUsuario = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
   const onSubmit: SubmitHandler<FormData> = async (data: FormData) => {
     if (usuario && data.nome && data.email) {
       setSending(true)
-      salvarUsuario(usuario)
+      UsuarioService.salvar(usuario)
         .then(respUsuario => {
           setUsuarioContext(respUsuario)
           handleNext()
@@ -157,7 +157,7 @@ const DadosUsuario = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <CustomTextField disabled fullWidth label='CPF' value={cpfCnpjMask(usuario?.cpf)} />
+                  <CustomTextField disabled fullWidth label='CPF' value={cpfCnpjMask(usuario?.cpfCnpj)} />
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <Controller

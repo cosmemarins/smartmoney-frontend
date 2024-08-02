@@ -23,7 +23,7 @@ import {
 
 import axios from 'axios'
 
-import { uploadDocumento } from '@/services/UsuarioService'
+import UsuarioService from '@/services/UsuarioService'
 import type { erroType } from '@/types/utilTypes'
 import type { ValidationError } from '@/services/api'
 import { TipoDocumentoEnum } from '@/utils/enums/TipoDocumentoEnum'
@@ -103,7 +103,7 @@ const DocumentoUploadDropzone = ({ titulo, tipoUpload }: props) => {
       formData.append('file', image)
     })
 
-    uploadDocumento(formData)
+    UsuarioService.uploadDocumento(formData)
       .then(respUpload => {
         console.log('respUpload', respUpload)
 
@@ -160,7 +160,7 @@ const DocumentoUploadDropzone = ({ titulo, tipoUpload }: props) => {
         setLoadFile(true)
 
         //precisa recuperar por aqui pois tem que ser via axios por causa da validação de seção
-        getThumbnailUsuario(usuario.token, tipoUpload)
+        UsuarioService.getThumbnail(usuario.token, tipoUpload)
           .then(dataImg => {
             setFileDocumento(dataImg)
           })

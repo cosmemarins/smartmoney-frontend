@@ -8,7 +8,7 @@ import { Backdrop, CircularProgress } from '@mui/material'
 
 import axios from 'axios'
 
-import { getUsuario } from '@/services/UsuarioService'
+import UsuarioService from '@/services/UsuarioService'
 import UsuarioEdit from './edit'
 import { useUsuarioContext } from '@/contexts/UsuarioContext'
 import type { ValidationError } from '@/services/api'
@@ -25,7 +25,7 @@ const UsuaqioPage = ({ token }: Props) => {
     if (token) {
       setLoadingContext(true)
 
-      getUsuario(token)
+      UsuarioService.get(token)
         .then(respUsuario => {
           setUsuarioContext(respUsuario)
 

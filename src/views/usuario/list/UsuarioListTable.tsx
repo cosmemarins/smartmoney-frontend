@@ -50,7 +50,7 @@ import TablePaginationComponent from '@/components/TablePaginationComponent'
 import DialogConfirma from '@/components/DialogConfirma'
 import type { DialogConfirmaType } from '@/types/utilTypes'
 import type { ValidationError } from '@/services/api'
-import { excluirUsuario, getListUsuario } from '@/services/UsuarioService'
+import UsuarioService from '@/services/UsuarioService'
 import { cpfCnpjMask } from '@/utils/string'
 
 // Column Definitions
@@ -135,7 +135,7 @@ const UsuarioListTable = () => {
     //console.log('handleExcluirUsuario usuarioExcluir', usuarioExcluir)
 
     if (usuarioExcluir?.token) {
-      excluirUsuario(usuarioExcluir.token)
+      UsuarioService.excluir(usuarioExcluir.token)
         .then(() => {
           setUsuarioExcluir(undefined)
           setRefreshTable(true)
@@ -190,7 +190,7 @@ const UsuarioListTable = () => {
               <Typography color='text.primary' className='font-medium'>
                 {row.original.nome}
               </Typography>
-              <Typography variant='body2'>{cpfCnpjMask(row.original.cpf)}</Typography>
+              <Typography variant='body2'>{cpfCnpjMask(row.original.cpfCnpj)}</Typography>
             </div>
           </div>
         )
@@ -280,7 +280,7 @@ const UsuarioListTable = () => {
   useEffect(() => {
     if (refreshTable) {
       setRefreshTable(false)
-      getListUsuario()
+      UsuarioService.getList()
         .then(respListUsuario => {
           setData(respListUsuario)
         })

@@ -19,7 +19,7 @@ import { toast } from 'react-toastify'
 import { estadosOptions } from '@/utils/estados'
 import type { cepType } from '@/utils/cep'
 import CustomTextField from '@core/components/mui/TextField'
-import { salvarUsuario } from '@/services/UsuarioService'
+import UsuarioService from '@/services/UsuarioService'
 
 import { useUsuarioContext } from '@/contexts/UsuarioContext'
 import DirectionalIcon from '@/components/DirectionalIcon'
@@ -64,7 +64,7 @@ const EnderecoUsuario = ({ activeStep, handleNext, handlePrev, steps }: Props) =
   const onSubmit: SubmitHandler<FormData> = async (data: FormData) => {
     if (usuario && data.cep) {
       setSending(true)
-      salvarUsuario(usuario)
+      UsuarioService.salvar(usuario)
         .then(respUsuario => {
           setUsuarioContext(respUsuario)
           handleNext()

@@ -1,16 +1,20 @@
 import type { BancoType } from './BancoType'
-import type { ParceiroType } from './ParceiroType'
 import type { StatusColorType } from './utilTypes'
 
 export type UsuarioType = {
   id?: number
   token?: string
-  parceiro?: ParceiroType
+  gestor?: UsuarioType
+  tipoPessoa?: string;
+  cpfCnpj?: string
   nome?: string
+  dataNascimento?: string
+  identidade?: string
+  razaoSocial?: string
+  nomeSocio?: string
+  inscricaoEstadual?: string
   email?: string
   senha?: string
-  dataNascimento?: string
-  cpf?: string
   telefone?: string
   endereco?: string
   numero?: string
@@ -31,8 +35,9 @@ export type UsuarioType = {
   status?: string
   isAdmin?: boolean
   podeCriarEquipe?: boolean
+  taxaDistribuicao?: number
   roles?: string
-  cargo?: string
+  perfil?: string
   dataUltimoAcesso?: Date
   dataUltimaModificacao?: Date
   dataSenha?: Date

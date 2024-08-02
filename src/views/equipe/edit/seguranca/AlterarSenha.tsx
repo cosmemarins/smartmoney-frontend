@@ -20,7 +20,7 @@ import { toast } from 'react-toastify'
 import axios from 'axios'
 
 import CustomTextField from '@core/components/mui/TextField'
-import { salvarSenha } from '@/services/UsuarioService'
+import UsuarioService from '@/services/UsuarioService'
 import { useUsuarioContext } from '@/contexts/UsuarioContext'
 import type UsuarioSenhaDTO from '@/types/UsuarioSenha.dto'
 import type { ValidationError } from '@/services/api'
@@ -76,7 +76,7 @@ const AlterarSenha = () => {
         confirmacaoSenha
       } as UsuarioSenhaDTO
 
-      salvarSenha(usuario?.token, usuarioSenha)
+      UsuarioService.salvarSenha(usuario?.token, usuarioSenha)
         .then(() => {
           //console.log(respUsuario)
           setNovaSenha('')

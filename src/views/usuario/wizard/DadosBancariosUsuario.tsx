@@ -16,7 +16,7 @@ import CustomTextField from '@core/components/mui/TextField'
 import { tiposContaBancaria, tiposPix } from '@/types/DadosBancariosType'
 import { useUsuarioContext } from '@/contexts/UsuarioContext'
 import DirectionalIcon from '@/components/DirectionalIcon'
-import { salvarUsuario } from '@/services/UsuarioService'
+import UsuarioService from '@/services/UsuarioService'
 import { trataErro } from '@/utils/erro'
 
 import { bancoList, getTipoChavePix } from '@/utils/banco'
@@ -46,7 +46,7 @@ const DadosBancariosUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pr
 
     if (usuario) {
       setSending(true)
-      salvarUsuario(usuario)
+      UsuarioService.salvar(usuario)
         .then(respUsuario => {
           setUsuarioContext(respUsuario)
           handleNext()

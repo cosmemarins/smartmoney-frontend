@@ -19,7 +19,7 @@ import {
 } from '@mui/material'
 import { toast } from 'react-toastify'
 
-import { salvarConfiguracoesUsuario } from '@/services/UsuarioService'
+import UsuarioService from '@/services/UsuarioService'
 
 import { useUsuarioContext } from '@/contexts/UsuarioContext'
 import { trataErro } from '@/utils/erro'
@@ -44,13 +44,13 @@ const ConfiguracoesUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pro
   const handleSubmit = () => {
     if (usuario && usuario.token && configuracoesUsuario) {
       setSending(true)
-      salvarConfiguracoesUsuario(configuracoesUsuario)
+      UsuarioService.salvarConfiguracoes(configuracoesUsuario)
         .then(respConfig => {
           setUsuarioContext({
             ...usuario,
             podeCriarEquipe: respConfig.podeCriarEquipe,
-            parceiro: {
-              ...usuario.parceiro,
+            gestor: {
+              ...usuario.gestor,
               taxaDistribuicao: respConfig.taxaDistribuicao
             }
           })
@@ -94,7 +94,7 @@ const ConfiguracoesUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pro
       setConfiguracoesUsuario({
         id: usuario.id,
         token: usuario.token,
-        taxaDistribuicao: usuario.parceiro?.taxaDistribuicao,
+        taxaDistribuicao: usuario.gestor?.taxaDistribuicao,
         podeCriarEquipe: usuario.podeCriarEquipe
       })
     }

@@ -14,12 +14,13 @@ import { toast } from 'react-toastify'
 import CustomTextField from '@core/components/mui/TextField'
 
 import { tiposContaBancaria, tiposPix } from '@/types/DadosBancariosType'
-import { useParceiroContext } from '@/contexts/ParceiroContext'
+import { useEquipeContext } from '@/contexts/EquipeContext'
 import DirectionalIcon from '@/components/DirectionalIcon'
-import ParceiroService from '@/services/ParceiroService'
 import { trataErro } from '@/utils/erro'
 
 import { bancoList, getTipoChavePix } from '@/utils/banco'
+import UsuarioService from '@/services/UsuarioService'
+import { getPerfilUsuarioEnumDesc } from '@/utils/enums/PerfilUsuarioEnum'
 
 type Props = {
   activeStep: number
@@ -28,9 +29,9 @@ type Props = {
   steps: { title: string; subtitle: string }[]
 }
 
-const DadosBancariosEmpresa = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
+const DadosBancarios = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
   //contexto
-  const { parceiro, setParceiroContext } = useParceiroContext()
+  const { usuarioEquipe, setUsuarioEquipeContext } = useEquipeContext()
 
   // States
   const [sending, setSending] = useState<boolean>(false)
@@ -38,17 +39,17 @@ const DadosBancariosEmpresa = ({ activeStep, handleNext, handlePrev, steps }: Pr
   const onChageCavePix = (chave: string) => {
     const tipoChave = getTipoChavePix(chave)
 
-    setParceiroContext({ ...parceiro, chavePix: chave, tipoPix: tipoChave })
+    setUsuarioEquipeContext({ ...usuarioEquipe, chavePix: chave, tipoPix: tipoChave })
   }
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement> | undefined) => {
     e?.preventDefault()
 
-    if (parceiro) {
+    if (usuarioEquipe) {
       setSending(true)
-      ParceiroService.salvar(parceiro)
-        .then(respParceiro => {
-          setParceiroContext(respParceiro)
+      UsuarioService.salvar(usuarioEquipe)
+        .then(respUsuario => {
+          setUsuarioEquipeContext(respUsuario)
           handleNext()
         })
         .catch(err => {
@@ -67,7 +68,7 @@ const DadosBancariosEmpresa = ({ activeStep, handleNext, handlePrev, steps }: Pr
       <Grid item xs={12}>
         <Card>
           <form onSubmit={e => onSubmit(e)}>
-            <CardHeader title='Dados Bancários da Empresa' />
+            <CardHeader title={`Dados Bancários do ${getPerfilUsuarioEnumDesc(usuarioEquipe?.perfil)}`} />
             <CardContent className='flex flex-col gap-4'>
               <Grid container spacing={5}>
                 <Grid item xs={12} sm={6}>
@@ -75,12 +76,12 @@ const DadosBancariosEmpresa = ({ activeStep, handleNext, handlePrev, steps }: Pr
                     select
                     fullWidth
                     label='Banco'
-                    value={bancoList.length > 0 ? parceiro?.banco?.codigo || '' : ''}
-                    onChange={e => setParceiroContext({ ...parceiro, banco: { codigo: e.target.value } })}
+                    value={bancoList.length > 0 ? usuarioEquipe?.banco?.codigo || '' : ''}
+                    onChange={e => setUsuarioEquipeContext({ ...usuarioEquipe, banco: { codigo: e.target.value } })}
                     placeholder='Selecione um banco'
                   >
                     {bancoList.map((banco, index) => (
-                      <MenuItem key={index} value={banco.codigo} selected={parceiro?.banco === banco.codigo}>
+                      <MenuItem key={index} value={banco.codigo} selected={usuarioEquipe?.banco === banco.codigo}>
                         {banco.codigo} - {banco.nome}
                       </MenuItem>
                     ))}
@@ -90,8 +91,8 @@ const DadosBancariosEmpresa = ({ activeStep, handleNext, handlePrev, steps }: Pr
                   <CustomTextField
                     fullWidth
                     label='Agência'
-                    value={parceiro?.agencia || ''}
-                    onChange={e => setParceiroContext({ ...parceiro, agencia: e.target.value })}
+                    value={usuarioEquipe?.agencia || ''}
+                    onChange={e => setUsuarioEquipeContext({ ...usuarioEquipe, agencia: e.target.value })}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -99,24 +100,24 @@ const DadosBancariosEmpresa = ({ activeStep, handleNext, handlePrev, steps }: Pr
                     select
                     fullWidth
                     label='Tipo Conta'
-                    value={parceiro?.tipoConta || ''}
-                    onChange={e => setParceiroContext({ ...parceiro, tipoConta: e.target.value })}
+                    value={usuarioEquipe?.tipoConta || ''}
+                    onChange={e => setUsuarioEquipeContext({ ...usuarioEquipe, tipoConta: e.target.value })}
                     placeholder='Selecione um tipo de conta'
                   >
                     {tiposContaBancaria.map((tipoConta, index) => (
-                      <MenuItem key={index} value={tipoConta} selected={parceiro?.tipoConta === tipoConta}>
+                      <MenuItem key={index} value={tipoConta} selected={usuarioEquipe?.tipoConta === tipoConta}>
                         {tipoConta}
                       </MenuItem>
                     ))}
                   </CustomTextField>
                 </Grid>
-                {parceiro?.tipoConta === 'Poupança' && (
+                {usuarioEquipe?.tipoConta === 'Poupança' && (
                   <Grid item xs={12} sm={6}>
                     <CustomTextField
                       fullWidth
                       label='Tipo poupança'
-                      value={parceiro?.tipoPoupanca || ''}
-                      onChange={e => setParceiroContext({ ...parceiro, tipoPoupanca: e.target.value })}
+                      value={usuarioEquipe?.tipoPoupanca || ''}
+                      onChange={e => setUsuarioEquipeContext({ ...usuarioEquipe, tipoPoupanca: e.target.value })}
                     />
                   </Grid>
                 )}
@@ -124,8 +125,8 @@ const DadosBancariosEmpresa = ({ activeStep, handleNext, handlePrev, steps }: Pr
                   <CustomTextField
                     fullWidth
                     label='Número da conta (com dv)'
-                    value={parceiro?.conta || ''}
-                    onChange={e => setParceiroContext({ ...parceiro, conta: e.target.value })}
+                    value={usuarioEquipe?.conta || ''}
+                    onChange={e => setUsuarioEquipeContext({ ...usuarioEquipe, conta: e.target.value })}
                   />
                 </Grid>
               </Grid>
@@ -138,7 +139,7 @@ const DadosBancariosEmpresa = ({ activeStep, handleNext, handlePrev, steps }: Pr
                   <CustomTextField
                     fullWidth
                     label='Chave pix'
-                    value={parceiro?.chavePix || ''}
+                    value={usuarioEquipe?.chavePix || ''}
                     onChange={e => onChageCavePix(e.target.value)}
                   />
                 </Grid>
@@ -147,12 +148,12 @@ const DadosBancariosEmpresa = ({ activeStep, handleNext, handlePrev, steps }: Pr
                     select
                     fullWidth
                     label='Tipo pix'
-                    value={parceiro?.tipoPix || ''}
-                    onChange={e => setParceiroContext({ ...parceiro, tipoPix: e.target.value })}
+                    value={usuarioEquipe?.tipoPix || ''}
+                    onChange={e => setUsuarioEquipeContext({ ...usuarioEquipe, tipoPix: e.target.value })}
                   >
                     <MenuItem>Selecione um tipo de pix</MenuItem>
                     {tiposPix.map((tipoPix, index) => (
-                      <MenuItem key={index} value={tipoPix} selected={parceiro?.tipoPix === tipoPix}>
+                      <MenuItem key={index} value={tipoPix} selected={usuarioEquipe?.tipoPix === tipoPix}>
                         {tipoPix === 'Random' ? 'Chave aleatória' : tipoPix}
                       </MenuItem>
                     ))}
@@ -198,4 +199,4 @@ const DadosBancariosEmpresa = ({ activeStep, handleNext, handlePrev, steps }: Pr
   )
 }
 
-export default DadosBancariosEmpresa
+export default DadosBancarios

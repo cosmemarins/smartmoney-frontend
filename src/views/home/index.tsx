@@ -15,7 +15,7 @@ const HomePage = () => {
     if (token) {
       setLoadingContext(true)
 
-      getUsuario(token)
+      UsuarioService.get(token)
         .then(respUsuario => {
           setUsuarioContext(respUsuario)
 

@@ -20,9 +20,8 @@ import { toast } from 'react-toastify'
 import { CircularProgress, FormControlLabel, Radio, RadioGroup } from '@mui/material'
 
 import CustomTextField from '@core/components/mui/TextField'
-import { salvarSenha } from '@/services/UsuarioService'
-import ParcveiroService from '@/services/ParceiroService'
-import { useParceiroContext } from '@/contexts/ParceiroContext'
+import UsuarioService from '@/services/UsuarioService'
+import { useEquipeContext } from '@/contexts/EquipeContext'
 import type UsuarioSenhaDTO from '@/types/UsuarioSenha.dto'
 import DirectionalIcon from '@/components/DirectionalIcon'
 import { trataErro } from '@/utils/erro'
@@ -35,7 +34,10 @@ type Props = {
   steps: { title: string; subtitle: string }[]
 }
 
-const FinalizarCadastroParceiro = ({ activeStep, handlePrev, steps }: Props) => {
+const FinalizarCadastroUsuario = ({ activeStep, handlePrev, steps }: Props) => {
+  //contexto
+  const { usuarioEquipe } = useEquipeContext()
+
   // States
   const [isPasswordShown, setIsPasswordShown] = useState(false)
   const [isConfirmPasswordShown, setIsConfirmPasswordShown] = useState(false)
@@ -46,9 +48,6 @@ const FinalizarCadastroParceiro = ({ activeStep, handlePrev, steps }: Props) => 
   const [senhaAutomatica, setSenhaAutomatica] = useState(true)
 
   //const [erroSenha, setErroSenha] = useState(false)
-
-  //contexto
-  const { parceiro } = useParceiroContext()
 
   function handleSalvarSenha() {
     // Password requirements
@@ -84,25 +83,24 @@ const FinalizarCadastroParceiro = ({ activeStep, handlePrev, steps }: Props) => 
       return
     }
 
-    const tokenParceiro = parceiro?.token
-    const tokenSocio = parceiro?.socioResponsavel?.token
+    const tokenUsuarioEquipe = usuarioEquipe?.token
 
-    if (tokenParceiro && tokenSocio) {
+    if (tokenUsuarioEquipe) {
       setSending(true)
 
       const senhaRandom = geraSenha()
 
       const usuarioSenha = {
-        token: tokenSocio,
+        token: tokenUsuarioEquipe,
         novaSenha: senhaAutomatica ? senhaRandom : novaSenha,
         confirmacaoSenha: senhaAutomatica ? senhaRandom : confirmacaoSenha,
         senhaAutomatica
       } as UsuarioSenhaDTO
 
-      salvarSenha(tokenSocio, usuarioSenha)
+      UsuarioService.salvarSenha(tokenUsuarioEquipe, usuarioSenha)
         .then(() => {
           toast.success('Dados salvo com sucesso!')
-          ParcveiroService.finalizarNovo(tokenParceiro, usuarioSenha)
+          UsuarioService.finalizarNovo(tokenUsuarioEquipe, usuarioSenha)
             .then(() => {
               toast.success('Cadastro finalizado e email enviado!')
               window.location.reload()
@@ -221,7 +219,7 @@ const FinalizarCadastroParceiro = ({ activeStep, handlePrev, steps }: Props) => 
               )
             }
           >
-            {activeStep === steps.length - 1 ? 'Finalizar cadastro do parceiro' : 'Próximo'}
+            {activeStep === steps.length - 1 ? 'Finalizar cadastro do usuário' : 'Próximo'}
           </Button>
         </div>
       </Grid>
@@ -229,4 +227,4 @@ const FinalizarCadastroParceiro = ({ activeStep, handlePrev, steps }: Props) => 
   )
 }
 
-export default FinalizarCadastroParceiro
+export default FinalizarCadastroUsuario

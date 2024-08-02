@@ -21,12 +21,14 @@ import { Button, CardActions, CircularProgress } from '@mui/material'
 import { toast } from 'react-toastify'
 
 import CustomTextField from '@core/components/mui/TextField'
-import { telefoleMask } from '@/utils/string'
-import ParceiroService from '@/services/ParceiroService'
+import { cpfCnpjMask, telefoleMask } from '@/utils/string'
 
-import { useParceiroContext } from '@/contexts/ParceiroContext'
+import { useEquipeContext } from '@/contexts/EquipeContext'
 import DirectionalIcon from '@/components/DirectionalIcon'
 import { trataErro } from '@/utils/erro'
+import isCPF from '@/utils/cpf'
+import isCNPJ from '@/utils/cnpj'
+import UsuarioService from '@/services/UsuarioService'
 
 locale('pt-br')
 
@@ -44,18 +46,27 @@ type ErrorType = {
 type FormData = v.InferInput<typeof schema>
 
 const schema = v.object({
-  nomeFantasia: v.string('É preciso digitar um nome'),
+  cpfCnpj: pipe(
+    v.string('É preciso digitar um CPF'),
+    v.check(input => isCPF(input) || isCNPJ(input), 'Cpf inválido, é preciso digitar um CPF válido.')
+  ),
+  nome: v.string('É preciso digitar um nome'),
   email: pipe(v.string('É preciso digitar um email'), v.email('Email inválido')),
-  telefone: v.string('É preciso informar um celular')
+  telefone: v.string('É preciso informar um celular'),
+  dataNascimento: pipe(
+    v.date('É preciso infromar uma data válida'),
+    v.minValue(moment().subtract(110, 'years').toDate(), 'Não pode ser tão velho'),
+    v.maxValue(moment().subtract(18, 'years').toDate(), 'Preciser ser maior de 18 anos')
+  )
 })
 
-const DadosEmpresa = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
+const DadosSocio = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
   // States
   const [errorState, setErrorState] = useState<ErrorType | null>(null)
   const [sending, setSending] = useState<boolean>(false)
 
   //hooks
-  const { parceiro, setParceiroContext } = useParceiroContext()
+  const { usuarioEquipe, setUsuarioEquipeContext } = useEquipeContext()
 
   const {
     control,
@@ -64,18 +75,21 @@ const DadosEmpresa = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
   } = useForm<FormData>({
     resolver: valibotResolver(schema),
     defaultValues: {
-      nomeFantasia: parceiro?.nomeFantasia,
-      email: parceiro?.email,
-      telefone: parceiro?.telefone
+      cpfCnpj: usuarioEquipe?.cpfCnpj,
+      nome: usuarioEquipe?.nome,
+      email: usuarioEquipe?.email,
+      telefone: usuarioEquipe?.telefone,
+      dataNascimento: moment(usuarioEquipe?.dataNascimento).toDate()
     }
   })
 
   const onSubmit: SubmitHandler<FormData> = async (data: FormData) => {
-    if (parceiro && data.nomeFantasia && data.email) {
+    if (usuarioEquipe?.token && data.nome && data.email) {
       setSending(true)
-      ParceiroService.salvar(parceiro)
-        .then(respParceiro => {
-          setParceiroContext(respParceiro)
+
+      UsuarioService.salvar(usuarioEquipe)
+        .then(respUsuario => {
+          setUsuarioEquipeContext(respUsuario)
           handleNext()
         })
         .catch(err => {
@@ -94,12 +108,12 @@ const DadosEmpresa = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
       <Grid item xs={12}>
         <Card className='relative'>
           <form onSubmit={handleSubmit(onSubmit)}>
-            <CardHeader title='Dados da Empresa' />
+            <CardHeader title='Dados Pessoais do Sócio Responsável' />
             <CardContent className='flex flex-col gap-4'>
               <Grid container spacing={5}>
                 <Grid item xs={12} sm={6}>
                   <Controller
-                    name='nomeFantasia'
+                    name='cpfCnpj'
                     control={control}
                     rules={{ required: true }}
                     render={({ field }) => (
@@ -107,32 +121,51 @@ const DadosEmpresa = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
                         {...field}
                         autoFocus
                         fullWidth
-                        label='Nome Fantasia'
-                        placeholder='Nome fantasia'
-                        value={parceiro?.nomeFantasia || ''}
+                        label='CPF'
+                        disabled={sending}
+                        value={cpfCnpjMask(usuarioEquipe?.cpfCnpj)}
                         onChange={e => {
                           field.onChange(e.target.value)
-                          setParceiroContext({ ...parceiro, nomeFantasia: e.target.value })
+                          setUsuarioEquipeContext({
+                            ...usuarioEquipe,
+                            cpfCnpj: e.target.value
+                          })
                           errorState !== null && setErrorState(null)
                         }}
-                        {...((errors.nomeFantasia || errorState !== null) && {
+                        {...((errors.cpfCnpj || errorState !== null) && {
                           error: true,
-                          helperText: errors?.nomeFantasia?.message || errorState?.message
+                          helperText: errors?.cpfCnpj?.message || errorState?.message
                         })}
                       />
                     )}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <CustomTextField
-                    name='razaoSocial'
-                    fullWidth
-                    label='Razão Social'
-                    placeholder='razão social'
-                    value={parceiro?.razaoSocial || ''}
-                    onChange={e => {
-                      setParceiroContext({ ...parceiro, razaoSocial: e.target.value })
-                    }}
+                  <Controller
+                    name='nome'
+                    control={control}
+                    rules={{ required: true }}
+                    render={({ field }) => (
+                      <CustomTextField
+                        {...field}
+                        fullWidth
+                        label='Nome'
+                        placeholder='nome'
+                        value={usuarioEquipe?.nome || ''}
+                        onChange={e => {
+                          field.onChange(e.target.value)
+                          setUsuarioEquipeContext({
+                            ...usuarioEquipe,
+                            nome: e.target.value
+                          })
+                          errorState !== null && setErrorState(null)
+                        }}
+                        {...((errors.nome || errorState !== null) && {
+                          error: true,
+                          helperText: errors?.nome?.message || errorState?.message
+                        })}
+                      />
+                    )}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -145,12 +178,15 @@ const DadosEmpresa = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
                         {...field}
                         fullWidth
                         type='email'
-                        label='Email da Empresa'
+                        label='Email'
                         placeholder='email'
-                        value={parceiro?.email || ''}
+                        value={usuarioEquipe?.email || ''}
                         onChange={e => {
                           field.onChange(e.target.value)
-                          setParceiroContext({ ...parceiro, email: e.target.value })
+                          setUsuarioEquipeContext({
+                            ...usuarioEquipe,
+                            email: e.target.value
+                          })
                           errorState !== null && setErrorState(null)
                         }}
                         {...((errors.email || errorState !== null) && {
@@ -171,12 +207,15 @@ const DadosEmpresa = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
                         {...field}
                         type='tel'
                         fullWidth
-                        label='Telefone da Empresa'
+                        label='Celular'
                         placeholder='(00) 00000-0000'
-                        value={telefoleMask(parceiro?.telefone)}
+                        value={telefoleMask(usuarioEquipe?.telefone)}
                         onChange={e => {
                           field.onChange(e.target.value)
-                          setParceiroContext({ ...parceiro, telefone: e.target.value })
+                          setUsuarioEquipeContext({
+                            ...usuarioEquipe,
+                            telefone: e.target.value
+                          })
                           errorState !== null && setErrorState(null)
                         }}
                         {...((errors.telefone || errorState !== null) && {
@@ -188,27 +227,35 @@ const DadosEmpresa = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <CustomTextField
-                    name='Inscrição Estadual'
-                    fullWidth
-                    label='Inscrição Estadual'
-                    placeholder='Inscrição estadual'
-                    value={parceiro?.inscricaoEstadual || ''}
-                    onChange={e => {
-                      setParceiroContext({ ...parceiro, inscricaoEstadual: e.target.value })
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <CustomTextField
-                    name='dataAbertura'
-                    type='date'
-                    fullWidth
-                    label='Data de Abertura'
-                    value={parceiro?.dataAbertura ? moment(parceiro?.dataAbertura).format('YYYY-MM-DD') : ''}
-                    onChange={e => {
-                      setParceiroContext({ ...parceiro, dataAbertura: moment(e.target.value).toDate() })
-                    }}
+                  <Controller
+                    name='dataNascimento'
+                    control={control}
+                    rules={{ required: true }}
+                    render={({ field }) => (
+                      <CustomTextField
+                        {...field}
+                        type='date'
+                        fullWidth
+                        label='Data de Nascimento'
+                        value={
+                          usuarioEquipe?.dataNascimento
+                            ? moment(usuarioEquipe?.dataNascimento).format('YYYY-MM-DD')
+                            : ''
+                        }
+                        onChange={e => {
+                          field.onChange(new Date(e.target.value))
+                          setUsuarioEquipeContext({
+                            ...usuarioEquipe,
+                            dataNascimento: e.target.value
+                          })
+                          errorState !== null && setErrorState(null)
+                        }}
+                        {...((errors.dataNascimento || errorState !== null) && {
+                          error: true,
+                          helperText: errors?.dataNascimento?.message || errorState?.message
+                        })}
+                      />
+                    )}
                   />
                 </Grid>
               </Grid>
@@ -250,4 +297,4 @@ const DadosEmpresa = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
   )
 }
 
-export default DadosEmpresa
+export default DadosSocio

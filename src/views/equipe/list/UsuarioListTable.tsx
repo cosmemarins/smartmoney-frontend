@@ -37,8 +37,6 @@ import { rankItem } from '@tanstack/match-sorter-utils'
 
 import { toast } from 'react-toastify'
 
-import axios from 'axios'
-
 import CustomTextField from '@/@core/components/mui/TextField'
 import { usuarioStatusColors, type UsuarioType, type UsuarioTypeWithAction } from '@/types/UsuarioType'
 import CustomAvatar from '@/@core/components/mui/Avatar'
@@ -49,11 +47,10 @@ import tableStyles from '@core/styles/table.module.css'
 import TablePaginationComponent from '@/components/TablePaginationComponent'
 import DialogConfirma from '@/components/DialogConfirma'
 import type { DialogConfirmaType } from '@/types/utilTypes'
-import type { ValidationError } from '@/services/api'
-import { excluirUsuario, getListUsuario } from '@/services/UsuarioService'
+import UsuarioService from '@/services/UsuarioService'
 import { cpfCnpjMask } from '@/utils/string'
 import { trataErro } from '@/utils/erro'
-import { getCargoEnumDesc } from '@/utils/enums/CargoEnum'
+import { getPerfilUsuarioEnumDesc, PerfilUsuarioEnum } from '@/utils/enums/PerfilUsuarioEnum'
 
 // Column Definitions
 const columnHelper = createColumnHelper<UsuarioTypeWithAction>()
@@ -100,7 +97,11 @@ const DebouncedInput = ({
   return <CustomTextField {...props} value={value} onChange={e => setValue(e.target.value)} />
 }
 
-const UsuarioListTable = () => {
+interface Props {
+  perfil: string
+}
+
+const UsuarioListTable = ({ perfil }: Props) => {
   // States
   const [rowSelection, setRowSelection] = useState({})
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -137,7 +138,7 @@ const UsuarioListTable = () => {
     //console.log('handleExcluirUsuario usuarioExcluir', usuarioExcluir)
 
     if (usuarioExcluir?.token) {
-      excluirUsuario(usuarioExcluir.token)
+      UsuarioService.excluir(usuarioExcluir.token)
         .then(() => {
           setUsuarioExcluir(undefined)
           setRefreshTable(true)
@@ -146,14 +147,7 @@ const UsuarioListTable = () => {
           toast.success(`Usuário ${usuarioExcluir.nome} excluído!`)
         })
         .catch((err: any) => {
-          if (axios.isAxiosError<ValidationError, Record<string, unknown>>(err)) {
-            console.log(err.status)
-            console.error(err.response)
-            toast.error(`Erro, ${err.status}`)
-          } else {
-            console.error(err)
-            toast.error(`Erro`, err)
-          }
+          toast.error(trataErro(err))
         })
         .finally(() => {})
     }
@@ -183,14 +177,14 @@ const UsuarioListTable = () => {
           />
         )
       },
-      columnHelper.accessor('parceiro.nomeFantasia', {
-        header: 'Parceiro',
+      columnHelper.accessor('gestor.nome', {
+        header: 'Gestor',
         cell: ({ row }) => (
           <div className='flex flex-col'>
             <Typography color='text.primary' className='font-medium'>
-              {row.original.parceiro?.nomeFantasia}
+              {row.original.gestor?.nome}
             </Typography>
-            <Typography variant='body2'>{cpfCnpjMask(row.original.parceiro?.cnpj)}</Typography>
+            <Typography variant='body2'>{cpfCnpjMask(row.original.gestor?.cpfCnpj)}</Typography>
           </div>
         )
       }),
@@ -203,7 +197,7 @@ const UsuarioListTable = () => {
               <Typography color='text.primary' className='font-medium'>
                 {row.original.nome}
               </Typography>
-              <Typography variant='body2'>{cpfCnpjMask(row.original.cpf)}</Typography>
+              <Typography variant='body2'>{cpfCnpjMask(row.original.cpfCnpj)}</Typography>
             </div>
           </div>
         )
@@ -219,9 +213,9 @@ const UsuarioListTable = () => {
           </div>
         )
       }),
-      columnHelper.accessor('cargo', {
-        header: 'Cargo',
-        cell: ({ row }) => <Typography color='text.primary'>{getCargoEnumDesc(row.original.cargo)}</Typography>
+      columnHelper.accessor('perfil', {
+        header: 'Perfil',
+        cell: ({ row }) => <Typography color='text.primary'>{getPerfilUsuarioEnumDesc(row.original.perfil)}</Typography>
       }),
       columnHelper.accessor('status', {
         header: 'Status',
@@ -300,7 +294,7 @@ const UsuarioListTable = () => {
   useEffect(() => {
     if (refreshTable) {
       setRefreshTable(false)
-      getListUsuario()
+      UsuarioService.getList(perfil)
         .then(respListUsuario => {
           //console.log(respListUsuario)
           setData(respListUsuario)
@@ -309,6 +303,7 @@ const UsuarioListTable = () => {
           toast.error(trataErro(err))
         })
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshTable])
 
   return (
@@ -334,12 +329,12 @@ const UsuarioListTable = () => {
               className='is-full sm:is-auto'
             />
             <Button
-              href='/equipe/new'
+              href={`/equipe/${perfil === PerfilUsuarioEnum.AGENTE ? 'agentes' : perfil === PerfilUsuarioEnum.PARCEIRO ? 'parceiros' : 'colaboradores'}/new`}
               variant='contained'
               startIcon={<i className='tabler-plus' />}
               className='is-full sm:is-auto'
             >
-              Adicionar Usuário
+              Novo {getPerfilUsuarioEnumDesc(perfil)}
             </Button>
           </div>
         </div>

@@ -21,7 +21,7 @@ import type { DadosBancariosType } from '@/types/DadosBancariosType'
 import type { BancoType } from '@/types/BancoType'
 import BancoService from '@/services/BancoService'
 import type { erroType } from '@/types/utilTypes'
-import { salvarDadosBancarios } from '@/services/UsuarioService'
+import UsuarioService from '@/services/UsuarioService'
 
 import { useUsuarioContext } from '@/contexts/UsuarioContext'
 
@@ -62,7 +62,7 @@ const DadosBancarios = () => {
     setReload(true)
     setErro(undefined)
 
-    salvarDadosBancarios(dadosBancariosEdit)
+    UsuarioService.salvarDadosBancarios(dadosBancariosEdit)
       .then(respUsuario => {
         //console.log(respUsuario)
         setUsuarioContext({

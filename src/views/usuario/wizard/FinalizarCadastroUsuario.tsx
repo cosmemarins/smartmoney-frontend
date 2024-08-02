@@ -22,7 +22,7 @@ import axios from 'axios'
 import { CircularProgress } from '@mui/material'
 
 import CustomTextField from '@core/components/mui/TextField'
-import { salvarSenha } from '@/services/UsuarioService'
+import UsuarioService from '@/services/UsuarioService'
 import { useUsuarioContext } from '@/contexts/UsuarioContext'
 import type UsuarioSenhaDTO from '@/types/UsuarioSenha.dto'
 import type { ValidationError } from '@/services/api'
@@ -89,7 +89,7 @@ const FinalizarCadastroUsuario = ({ activeStep, handlePrev, steps }: Props) => {
         confirmacaoSenha
       } as UsuarioSenhaDTO
 
-      salvarSenha(usuario?.token, usuarioSenha)
+      UsuarioService.salvarSenha(usuario?.token, usuarioSenha)
         .then(() => {
           //console.log(respUsuario)
           setNovaSenha('')
