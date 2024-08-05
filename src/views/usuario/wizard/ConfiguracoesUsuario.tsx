@@ -19,13 +19,13 @@ import {
 } from '@mui/material'
 import { toast } from 'react-toastify'
 
-import UsuarioService from '@/services/UsuarioService'
-
-import { useUsuarioContext } from '@/contexts/UsuarioContext'
+import { useEquipeContext } from '@/contexts/EquipeContext'
 import { trataErro } from '@/utils/erro'
-import type { ConfiguracoesUsuarioType } from '@/types/ConfiguracoesUsuarioType'
 import DirectionalIcon from '@/components/DirectionalIcon'
 import { taxaContratoMarks } from '@/types/ContratoType'
+import type { ConfiguracoesUsuarioType } from '@/types/ConfiguracoesUsuarioType'
+import UsuarioService from '@/services/UsuarioService'
+import { getPerfilUsuarioEnumDesc, PerfilUsuarioEnum } from '@/utils/enums/PerfilUsuarioEnum'
 
 type Props = {
   activeStep: number
@@ -35,25 +35,26 @@ type Props = {
 }
 
 const ConfiguracoesUsuario = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
-  // States
-  const [configuracoesUsuario, setConfiguracoesUsuario] = useState<ConfiguracoesUsuarioType>({ podeCriarEquipe: false })
-  const [sending, setSending] = useState<boolean>(false)
+  //contexto
+  const { usuarioEquipe, setUsuarioEquipeContext } = useEquipeContext()
 
-  const { usuario, setUsuarioContext } = useUsuarioContext()
+  // States
+  const [configuracoesUsuario, setConfiguracoesUsuario] = useState<ConfiguracoesUsuarioType>({
+    id: usuarioEquipe?.id,
+    token: usuarioEquipe?.token,
+    taxaDistribuicao: usuarioEquipe?.perfil === PerfilUsuarioEnum.PARCEIRO ? 5 : 3,
+    podeCriarEquipe: false
+  })
+
+  const [sending, setSending] = useState<boolean>(false)
+  const [maxTaxa, setMaxTaxa] = useState<number>(Number(process.env.NEXT_PUBLIC_MAX_TAXA_PARCEIRO) || 5)
 
   const handleSubmit = () => {
-    if (usuario && usuario.token && configuracoesUsuario) {
+    if (usuarioEquipe && usuarioEquipe.token && configuracoesUsuario) {
       setSending(true)
       UsuarioService.salvarConfiguracoes(configuracoesUsuario)
-        .then(respConfig => {
-          setUsuarioContext({
-            ...usuario,
-            podeCriarEquipe: respConfig.podeCriarEquipe,
-            gestor: {
-              ...usuario.gestor,
-              taxaDistribuicao: respConfig.taxaDistribuicao
-            }
-          })
+        .then(respUsuario => {
+          setUsuarioEquipeContext(respUsuario)
           toast.success('Dados salvo com sucesso!')
           handleNext()
         })
@@ -69,43 +70,57 @@ const ConfiguracoesUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pro
   }
 
   function handleSlideChange(event: any, sliderValue: number | number[]) {
-    console.log(event.target.value)
-    console.log(sliderValue)
+    //console.log(event.target.value)
+    //console.log(sliderValue)
 
     if (typeof sliderValue === 'number') {
-      setConfiguracoesUsuario({
-        ...configuracoesUsuario,
-        taxaDistribuicao: sliderValue
-      })
+      if (sliderValue < 5) {
+        setConfiguracoesUsuario({
+          ...configuracoesUsuario,
+          taxaDistribuicao: sliderValue,
+          podeCriarEquipe: false
+        })
+      } else {
+        setConfiguracoesUsuario({
+          ...configuracoesUsuario,
+          taxaDistribuicao: sliderValue
+        })
+      }
     }
-
-    /*
-    if (typeof sliderValue === "number") {
-      const newEndDate = getCloseDate({
-        date: addDays(startDate, sliderValue),
-      });
-      setEndDate(newPayoutDate); // set the state
-    }
-      */
   }
 
   useEffect(() => {
-    if (usuario && usuario.token) {
+    if (usuarioEquipe && usuarioEquipe.token) {
       setConfiguracoesUsuario({
-        id: usuario.id,
-        token: usuario.token,
-        taxaDistribuicao: usuario.gestor?.taxaDistribuicao,
-        podeCriarEquipe: usuario.podeCriarEquipe
+        ...configuracoesUsuario,
+        id: usuarioEquipe.id,
+        token: usuarioEquipe.token,
+        podeCriarEquipe:
+          usuarioEquipe.taxaDistribuicao && usuarioEquipe.taxaDistribuicao < 5 ? false : usuarioEquipe.podeCriarEquipe
+      })
+
+      //definindo a taxa máxima padrao default para o novo usuario
+      if (usuarioEquipe.gestor?.taxaDistribuicao) setMaxTaxa(usuarioEquipe.gestor?.taxaDistribuicao)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    if (usuarioEquipe && usuarioEquipe.token) {
+      setConfiguracoesUsuario({
+        ...configuracoesUsuario,
+        taxaDistribuicao: maxTaxa - 1
       })
     }
-  }, [usuario])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [maxTaxa])
 
   return (
     <Grid container spacing={6}>
       <Grid item xs={12}>
         <Card className='relative'>
           <form onSubmit={e => e.preventDefault()}>
-            <CardHeader title='Configurações' />
+            <CardHeader title={`Configurações do ${getPerfilUsuarioEnumDesc(usuarioEquipe?.perfil)}`} />
             <CardContent className='flex flex-col gap-4'>
               <Grid container spacing={5}>
                 <Grid item xs={12} sm={12}>
@@ -116,31 +131,47 @@ const ConfiguracoesUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pro
                     key={`slider-${configuracoesUsuario?.taxaDistribuicao}`} /* fixed issue */
                     marks={taxaContratoMarks}
                     min={0}
-                    max={5}
+                    max={maxTaxa}
                     step={0.1}
-                    defaultValue={configuracoesUsuario?.taxaDistribuicao || 1}
+                    defaultValue={configuracoesUsuario?.taxaDistribuicao || 5}
                     valueLabelDisplay='auto'
                     aria-labelledby='continuous-slider'
                     onChangeCommitted={(e, value) => handleSlideChange(e, value)}
                   />
                 </Grid>
-                <Grid item xs={12} sm={6}>
-                  <label>Este parceiro pode criar equipe?</label>
-                  <RadioGroup
-                    row
-                    name='radio-buttons-group'
-                    value={configuracoesUsuario.podeCriarEquipe ? 1 : 0}
-                    onChange={e =>
-                      setConfiguracoesUsuario({
-                        ...configuracoesUsuario,
-                        podeCriarEquipe: e.target.value == '1' ? true : false
-                      })
-                    }
-                  >
-                    <FormControlLabel value='0' control={<Radio />} label='Não' />
-                    <FormControlLabel value='1' control={<Radio />} label='Sim' />
-                  </RadioGroup>
-                </Grid>
+                {usuarioEquipe?.perfil === PerfilUsuarioEnum.PARCEIRO && (
+                  <Grid item xs={12} sm={6}>
+                    <label>Este usuário pode criar equipe?</label>
+                    <RadioGroup
+                      row
+                      name='radio-buttons-group'
+                      value={configuracoesUsuario.podeCriarEquipe ? 1 : 0}
+                      onChange={e =>
+                        setConfiguracoesUsuario({
+                          ...configuracoesUsuario,
+                          podeCriarEquipe: e.target.value == '1' ? true : false
+                        })
+                      }
+                    >
+                      <FormControlLabel
+                        value='0'
+                        control={<Radio />}
+                        label='Não'
+                        disabled={
+                          (configuracoesUsuario.taxaDistribuicao && configuracoesUsuario.taxaDistribuicao < 5) || false
+                        }
+                      />
+                      <FormControlLabel
+                        value='1'
+                        control={<Radio />}
+                        label='Sim'
+                        disabled={
+                          (configuracoesUsuario.taxaDistribuicao && configuracoesUsuario.taxaDistribuicao < 5) || false
+                        }
+                      />
+                    </RadioGroup>
+                  </Grid>
+                )}
               </Grid>
             </CardContent>
             <Divider />
@@ -173,7 +204,7 @@ const ConfiguracoesUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pro
               )
             }
           >
-            {activeStep === steps.length - 1 ? 'Salvar Parceiro' : 'Próximo'}
+            {activeStep === steps.length - 1 ? 'Salvar usuário' : 'Próximo'}
           </Button>
         </div>
       </Grid>

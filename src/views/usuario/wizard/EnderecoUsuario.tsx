@@ -19,11 +19,12 @@ import { toast } from 'react-toastify'
 import { estadosOptions } from '@/utils/estados'
 import type { cepType } from '@/utils/cep'
 import CustomTextField from '@core/components/mui/TextField'
-import UsuarioService from '@/services/UsuarioService'
 
-import { useUsuarioContext } from '@/contexts/UsuarioContext'
+import { useEquipeContext } from '@/contexts/EquipeContext'
 import DirectionalIcon from '@/components/DirectionalIcon'
 import { trataErro } from '@/utils/erro'
+import UsuarioService from '@/services/UsuarioService'
+import { getPerfilUsuarioEnumDesc, PerfilUsuarioEnum } from '@/utils/enums/PerfilUsuarioEnum'
 
 type Props = {
   activeStep: number
@@ -36,19 +37,22 @@ type ErrorType = {
   message: string[]
 }
 
-type FormData = v.InferInput<typeof schema>
-
-const schema = v.object({
-  cep: v.string('É preciso digitar um CEP válido')
-})
-
 const EnderecoUsuario = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
+  //hooks
+  const { usuarioEquipe, setUsuarioEquipeContext } = useEquipeContext()
+
   // States
   const [errorState, setErrorState] = useState<ErrorType | null>(null)
   const [sending, setSending] = useState<boolean>(false)
 
-  //hooks
-  const { usuario, setUsuarioContext } = useUsuarioContext()
+  type FormData = v.InferInput<typeof schema>
+
+  const schema = v.object({
+    cep:
+      usuarioEquipe?.perfil === PerfilUsuarioEnum.AGENTE || usuarioEquipe?.perfil === PerfilUsuarioEnum.PARCEIRO
+        ? v.string('É preciso digitar um CEP válido')
+        : v.optional(v.string())
+  })
 
   const {
     control,
@@ -57,16 +61,20 @@ const EnderecoUsuario = ({ activeStep, handleNext, handlePrev, steps }: Props) =
   } = useForm<FormData>({
     resolver: valibotResolver(schema),
     defaultValues: {
-      cep: usuario?.cep
+      cep: usuarioEquipe?.cep || undefined
     }
   })
 
   const onSubmit: SubmitHandler<FormData> = async (data: FormData) => {
-    if (usuario && data.cep) {
+    if (
+      usuarioEquipe &&
+      (data.cep ||
+        (usuarioEquipe?.perfil != PerfilUsuarioEnum.AGENTE && usuarioEquipe?.perfil != PerfilUsuarioEnum.PARCEIRO))
+    ) {
       setSending(true)
-      UsuarioService.salvar(usuario)
+      UsuarioService.salvar(usuarioEquipe)
         .then(respUsuario => {
-          setUsuarioContext(respUsuario)
+          setUsuarioEquipeContext(respUsuario)
           handleNext()
         })
         .catch(err => {
@@ -93,8 +101,8 @@ const EnderecoUsuario = ({ activeStep, handleNext, handlePrev, steps }: Props) =
             if (data.hasOwnProperty('erro')) {
               throw 'CEP não existe'
             } else {
-              setUsuarioContext({
-                ...usuario,
+              setUsuarioEquipeContext({
+                ...usuarioEquipe,
                 cep: data?.cep,
                 endereco: data?.logradouro,
                 bairro: data?.bairro,
@@ -112,7 +120,7 @@ const EnderecoUsuario = ({ activeStep, handleNext, handlePrev, steps }: Props) =
   }
 
   const handleCepChange = (e: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
-    setUsuarioContext({ ...usuario, cep: e.target.value })
+    setUsuarioEquipeContext({ ...usuarioEquipe, cep: e.target.value })
     getCep(e.target.value)
   }
 
@@ -121,7 +129,7 @@ const EnderecoUsuario = ({ activeStep, handleNext, handlePrev, steps }: Props) =
       <Grid item xs={12}>
         <Card className='relative'>
           <form onSubmit={handleSubmit(onSubmit)}>
-            <CardHeader title='Endereço' />
+            <CardHeader title={`Endereço do ${getPerfilUsuarioEnumDesc(usuarioEquipe?.perfil)}`} />
             <CardContent className='flex flex-col gap-4'>
               <Grid container spacing={5}>
                 <Grid item xs={12}>
@@ -136,7 +144,7 @@ const EnderecoUsuario = ({ activeStep, handleNext, handlePrev, steps }: Props) =
                         fullWidth
                         label='CEP'
                         placeholder='CEP'
-                        value={usuario?.cep || ''}
+                        value={usuarioEquipe?.cep || ''}
                         onChange={e => {
                           field.onChange(e.target.value)
                           handleCepChange(e)
@@ -154,24 +162,24 @@ const EnderecoUsuario = ({ activeStep, handleNext, handlePrev, steps }: Props) =
                   <CustomTextField
                     fullWidth
                     label='Número'
-                    value={usuario?.numero || ''}
-                    onChange={e => setUsuarioContext({ ...usuario, numero: e.target.value })}
+                    value={usuarioEquipe?.numero || ''}
+                    onChange={e => setUsuarioEquipeContext({ ...usuarioEquipe, numero: e.target.value })}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <CustomTextField
                     fullWidth
                     label='Complemento'
-                    value={usuario?.complemento || ''}
-                    onChange={e => setUsuarioContext({ ...usuario, complemento: e.target.value })}
+                    value={usuarioEquipe?.complemento || ''}
+                    onChange={e => setUsuarioEquipeContext({ ...usuarioEquipe, complemento: e.target.value })}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <CustomTextField
                     fullWidth
                     label='Logradouro'
-                    value={usuario?.endereco || ''}
-                    onChange={e => setUsuarioContext({ ...usuario, endereco: e.target.value })}
+                    value={usuarioEquipe?.endereco || ''}
+                    onChange={e => setUsuarioEquipeContext({ ...usuarioEquipe, endereco: e.target.value })}
                     disabled
                   />
                 </Grid>
@@ -179,8 +187,8 @@ const EnderecoUsuario = ({ activeStep, handleNext, handlePrev, steps }: Props) =
                   <CustomTextField
                     fullWidth
                     label='Bairro'
-                    value={usuario?.bairro || ''}
-                    onChange={e => setUsuarioContext({ ...usuario, bairro: e.target.value })}
+                    value={usuarioEquipe?.bairro || ''}
+                    onChange={e => setUsuarioEquipeContext({ ...usuarioEquipe, bairro: e.target.value })}
                     disabled
                   />
                 </Grid>
@@ -188,8 +196,8 @@ const EnderecoUsuario = ({ activeStep, handleNext, handlePrev, steps }: Props) =
                   <CustomTextField
                     fullWidth
                     label='Cidade'
-                    value={usuario?.cidade || ''}
-                    onChange={e => setUsuarioContext({ ...usuario, cidade: e.target.value })}
+                    value={usuarioEquipe?.cidade || ''}
+                    onChange={e => setUsuarioEquipeContext({ ...usuarioEquipe, cidade: e.target.value })}
                     disabled
                   />
                 </Grid>
@@ -198,12 +206,12 @@ const EnderecoUsuario = ({ activeStep, handleNext, handlePrev, steps }: Props) =
                     select
                     fullWidth
                     label='Estado'
-                    value={usuario?.estado ? usuario?.estado : ''}
-                    onChange={e => setUsuarioContext({ ...usuario, estado: e.target.value as string })}
+                    value={usuarioEquipe?.estado ? usuarioEquipe?.estado : ''}
+                    onChange={e => setUsuarioEquipeContext({ ...usuarioEquipe, estado: e.target.value as string })}
                     disabled
                   >
                     {estadosOptions.map((estado, index) => (
-                      <MenuItem key={index} value={estado.value} selected={usuario?.estado === estado.value}>
+                      <MenuItem key={index} value={estado.value} selected={usuarioEquipe?.estado === estado.value}>
                         {estado.label}
                       </MenuItem>
                     ))}

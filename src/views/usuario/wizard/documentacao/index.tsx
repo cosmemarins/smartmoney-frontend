@@ -8,8 +8,6 @@ import { Button, Card, CardContent, CardHeader, Dialog, DialogContent, DialogTit
 
 import { toast } from 'react-toastify'
 
-import { useUsuarioContext } from '@/contexts/UsuarioContext'
-
 import ArquivoEdit from './ArquivoEdit'
 import type { ArquivoType } from '@/types/ArquivoType'
 import ArquivoService from '@/services/ArquivoService'
@@ -18,6 +16,7 @@ import ArquivoItem from './ArquivoItem'
 
 import DirectionalIcon from '@/components/DirectionalIcon'
 import { TipoArquivoRegistroEnum } from '@/utils/enums/TipoArquivoRegistroEnum'
+import { useEquipeContext } from '@/contexts/EquipeContext'
 
 type Props = {
   activeStep: number
@@ -28,7 +27,7 @@ type Props = {
 
 const Documentacao = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
   //contexto
-  const { usuario, setLoadingContext } = useUsuarioContext()
+  const { usuarioEquipe, setLoadingContext } = useEquipeContext()
 
   const [openDlgArquivo, setOpenDlgArquivo] = useState<boolean>(false)
   const [tituloDlgArquivo, setTituloDlgArquivo] = useState('Novo Upload de Arquivo')
@@ -38,8 +37,9 @@ const Documentacao = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
   const arquivoInit = {
     data: new Date(),
     tipoRegistro: TipoArquivoRegistroEnum.USUARIO,
-    idRegistro: usuario?.id,
-    usuario: { id: usuario?.id, token: usuario?.token }
+    idRegistro: usuarioEquipe?.id,
+    tokenRegistro: usuarioEquipe?.token,
+    usuario: { id: usuarioEquipe?.id, token: usuarioEquipe?.token, tipoPessoa: usuarioEquipe?.tipoPessoa }
   }
 
   const [arquivoEdit, setArquivoEdit] = useState<ArquivoType>(arquivoInit)
@@ -63,11 +63,11 @@ const Documentacao = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
   useEffect(() => {
     setRefreshArquivoList(false)
 
-    if (usuario?.token) {
+    if (usuarioEquipe?.token) {
       setLoadingContext(true)
 
       //precisa recuperar por aqui pois tem que ser via axios por causa da validação de seção
-      ArquivoService.getListUsuario(usuario.token)
+      ArquivoService.getListUsuario(usuarioEquipe.token)
         .then(respList => {
           setArquivoList(respList)
         })
@@ -103,7 +103,7 @@ const Documentacao = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
                 {arquivoList.map((arquivo, key) => (
                   <Grid key={key} item xs={12} sm={4}>
                     <ArquivoItem
-                      arquivo={{ ...arquivo, usuario: { id: usuario?.id, token: usuario?.token } }}
+                      arquivo={{ ...arquivo, usuario: { id: usuarioEquipe?.id, token: usuarioEquipe?.token } }}
                       handleEditArquivo={handleEditArquivo}
                     />
                   </Grid>

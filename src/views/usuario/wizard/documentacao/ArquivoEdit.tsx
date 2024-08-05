@@ -6,7 +6,6 @@ import Grid from '@mui/material/Grid'
 import Alert from '@mui/material/Alert'
 import AlertTitle from '@mui/material/AlertTitle'
 import { Backdrop, Button, Card, CardContent, CircularProgress, Divider, MenuItem } from '@mui/material'
-import moment, { locale } from 'moment'
 import 'moment/locale/pt-br'
 
 import { toast } from 'react-toastify'
@@ -15,13 +14,11 @@ import CustomTextField from '@core/components/mui/TextField'
 import type { ArquivoType } from '@/types/ArquivoType'
 import type { ArquivoUploadType, DialogConfirmaType, erroType } from '@/types/utilTypes'
 import ArquivoService from '@/services/ArquivoService'
-import { TipoDocumentoEnum, TipoDocumentoEnumList } from '@/utils/enums/TipoDocumentoEnum'
+import { TipoDocumentoEnum } from '@/utils/enums/TipoDocumentoEnum'
 import ComprovanteUpload from '@/components/DocumentoUpload'
 import { trataErro } from '@/utils/erro'
 import DialogConfirma from '@/components/DialogConfirma'
 import { useClienteContext } from '@/contexts/ClienteContext'
-
-locale('pt-br')
 
 interface props {
   arquivoData: ArquivoType
@@ -39,6 +36,7 @@ const ArquivoEdit = ({ arquivoData, handleClose, setRefreshArquivoList }: props)
   const [arquivoEdit, setArquivoEdit] = useState<ArquivoType>(arquivoData)
   const [dialogConfirma, setDialogConfirma] = useState<DialogConfirmaType>({ open: false })
 
+  console.log('arquivoData', arquivoData)
   const { setLoadingContext } = useClienteContext()
 
   const handleOpenDlgConfirmaExcluir = () => {
@@ -198,39 +196,56 @@ const ArquivoEdit = ({ arquivoData, handleClose, setRefreshArquivoList }: props)
                   <Grid container spacing={4}>
                     <Grid item xs={12} sm={12}>
                       <CustomTextField
-                        type='datetime-local'
-                        fullWidth
-                        label='Data'
-                        value={arquivoEdit?.data ? moment(arquivoEdit?.data).format('YYYY-MM-DD HH:mm') : ''}
-                        onChange={e => setArquivoEdit({ ...arquivoEdit, data: new Date(e.target.value) })}
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={12}>
-                      <CustomTextField
                         select
                         fullWidth
                         label='Tipo'
                         value={arquivoEdit?.tipoDocumento ? arquivoEdit?.tipoDocumento : ''}
                         onChange={e => setArquivoEdit({ ...arquivoEdit, tipoDocumento: e.target.value })}
                       >
-                        {TipoDocumentoEnumList.map(
-                          (tipo, index) =>
-                            tipo.value != TipoDocumentoEnum.ADITIVO && (
-                              <MenuItem
-                                key={index}
-                                value={tipo.value}
-                                selected={arquivoEdit?.tipoDocumento === tipo.value}
-                              >
-                                {tipo.label}
-                              </MenuItem>
-                            )
+                        {arquivoData?.usuario?.tipoPessoa === 'J' && (
+                          <MenuItem
+                            value='CARTAO_CNPJ'
+                            selected={arquivoEdit.tipoDocumento === TipoDocumentoEnum.CARTAO_CNPJ}
+                          >
+                            Cartão CNPJ
+                          </MenuItem>
                         )}
+
+                        <MenuItem
+                          value='COMPROVANTE_RESIDENCIA'
+                          selected={arquivoEdit.tipoDocumento === TipoDocumentoEnum.COMPROVANTE_RESIDENCIA}
+                        >
+                          Comprovante de residência
+                        </MenuItem>
+
+                        {arquivoData?.usuario?.tipoPessoa === 'J' && (
+                          <MenuItem
+                            value='CONTRATO_SOCIAL'
+                            selected={arquivoEdit.tipoDocumento === TipoDocumentoEnum.CONTRATO_SOCIAL}
+                          >
+                            Contrato social
+                          </MenuItem>
+                        )}
+
+                        {arquivoData?.usuario?.tipoPessoa === 'F' && (
+                          <MenuItem
+                            value='IDENTIDADE'
+                            selected={arquivoEdit.tipoDocumento === TipoDocumentoEnum.IDENTIDADE}
+                          >
+                            Identidade
+                          </MenuItem>
+                        )}
+
+                        <MenuItem value='OUTROS' selected={arquivoEdit.tipoDocumento === TipoDocumentoEnum.OUTROS}>
+                          Outros
+                        </MenuItem>
                       </CustomTextField>
                     </Grid>
                     <Grid item xs={12} sm={12}>
                       <CustomTextField
                         fullWidth
-                        label='Histórico'
+                        type='text'
+                        label='Observação'
                         value={arquivoEdit?.descricao}
                         onChange={e => setArquivoEdit({ ...arquivoEdit, descricao: e.target.value })}
                       />

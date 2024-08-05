@@ -17,16 +17,15 @@ import Button from '@mui/material/Button'
 // Component Imports
 import { toast } from 'react-toastify'
 
-import axios from 'axios'
-
-import { CircularProgress } from '@mui/material'
+import { CircularProgress, FormControlLabel, Radio, RadioGroup } from '@mui/material'
 
 import CustomTextField from '@core/components/mui/TextField'
 import UsuarioService from '@/services/UsuarioService'
-import { useUsuarioContext } from '@/contexts/UsuarioContext'
+import { useEquipeContext } from '@/contexts/EquipeContext'
 import type UsuarioSenhaDTO from '@/types/UsuarioSenha.dto'
-import type { ValidationError } from '@/services/api'
 import DirectionalIcon from '@/components/DirectionalIcon'
+import { trataErro } from '@/utils/erro'
+import { geraSenha } from '@/utils/string'
 
 type Props = {
   activeStep: number
@@ -36,6 +35,9 @@ type Props = {
 }
 
 const FinalizarCadastroUsuario = ({ activeStep, handlePrev, steps }: Props) => {
+  //contexto
+  const { usuarioEquipe } = useEquipeContext()
+
   // States
   const [isPasswordShown, setIsPasswordShown] = useState(false)
   const [isConfirmPasswordShown, setIsConfirmPasswordShown] = useState(false)
@@ -43,11 +45,9 @@ const FinalizarCadastroUsuario = ({ activeStep, handlePrev, steps }: Props) => {
 
   const [novaSenha, setNovaSenha] = useState('')
   const [confirmacaoSenha, setConfirmacaoSenha] = useState('')
+  const [senhaAutomatica, setSenhaAutomatica] = useState(true)
 
   //const [erroSenha, setErroSenha] = useState(false)
-
-  //contexto
-  const { usuario } = useUsuarioContext()
 
   function handleSalvarSenha() {
     // Password requirements
@@ -56,10 +56,13 @@ const FinalizarCadastroUsuario = ({ activeStep, handlePrev, steps }: Props) => {
       novaSenha.length >= 6,
 
       // Must contain at least 1 uppercase letter
-      /[A-Z]/.test(novaSenha),
+      ///[A-Z]/.test(novaSenha),
 
       // Must contain at least 1 lowercase letter
-      /[a-z]/.test(novaSenha),
+      ///[a-z]/.test(novaSenha),
+
+      // Must contain at least 1 letter
+      /[a-zA-Z]/.test(novaSenha),
 
       // Must contain at least 1 number
       /\d/.test(novaSenha)
@@ -68,46 +71,46 @@ const FinalizarCadastroUsuario = ({ activeStep, handlePrev, steps }: Props) => {
     // If all requirements are met, password is valid
     const isValid = requirements.every(Boolean)
 
-    if (!isValid) {
-      toast.error(`Senha inválida, veja a regra de formação da senha`)
+    if (!isValid && !senhaAutomatica) {
+      toast.error(`Senha inválida, a senha precisa conter letras e números e ter ao menos 6 caracteres`)
 
       return
     }
 
-    if (novaSenha != confirmacaoSenha) {
+    if (novaSenha != confirmacaoSenha && !senhaAutomatica) {
       toast.error(`Senha inválida, a confirmação de senha não é igual a senha`)
 
       return
     }
 
-    if (usuario?.token) {
+    const tokenUsuarioEquipe = usuarioEquipe?.token
+
+    if (tokenUsuarioEquipe) {
       setSending(true)
 
+      const senhaRandom = geraSenha()
+
       const usuarioSenha = {
-        token: usuario?.token,
-        novaSenha,
-        confirmacaoSenha
+        token: tokenUsuarioEquipe,
+        novaSenha: senhaAutomatica ? senhaRandom : novaSenha,
+        confirmacaoSenha: senhaAutomatica ? senhaRandom : confirmacaoSenha,
+        senhaAutomatica
       } as UsuarioSenhaDTO
 
-      UsuarioService.salvarSenha(usuario?.token, usuarioSenha)
+      UsuarioService.salvarSenha(tokenUsuarioEquipe, usuarioSenha)
         .then(() => {
-          //console.log(respUsuario)
-          setNovaSenha('')
-          setConfirmacaoSenha('')
-          setIsPasswordShown(false)
-          setIsConfirmPasswordShown(false)
           toast.success('Dados salvo com sucesso!')
-          window.location.reload()
+          UsuarioService.finalizarNovo(tokenUsuarioEquipe, usuarioSenha)
+            .then(() => {
+              toast.success('Cadastro finalizado e email enviado!')
+              window.location.reload()
+            })
+            .catch(err => {
+              toast.error(trataErro(err))
+            })
         })
         .catch(err => {
-          if (axios.isAxiosError<ValidationError, Record<string, unknown>>(err)) {
-            console.log(err.status)
-            console.error(err.response)
-            toast.error(`Erro, ${err.status}`)
-          } else {
-            console.error(err)
-            toast.error(`Erro`, err)
-          }
+          toast.error(trataErro(err))
         })
         .finally(() => {
           setSending(false)
@@ -119,20 +122,36 @@ const FinalizarCadastroUsuario = ({ activeStep, handlePrev, steps }: Props) => {
     <Grid container spacing={6}>
       <Grid item xs={12}>
         <Card>
-          <CardHeader title='Alterar senha' />
+          <CardHeader title='Criar senha de acesso ao sistema' />
           <CardContent className='flex flex-col gap-4'>
             <Alert icon={false} severity='warning' onClose={() => {}}>
               <AlertTitle>Requisitos para a senha</AlertTitle>
-              Mínimo de 6 caracteres, ao menos uma letra maiúscula e ao menos um número
+              Mínimo de 6 caracteres, ao menos uma letra e ao menos um número
             </Alert>
             <form>
               <Grid container spacing={4}>
+                <Grid item xs={12} sm={12}>
+                  <RadioGroup
+                    row
+                    name='radio-buttons-group'
+                    value={senhaAutomatica ? '1' : '0'}
+                    onChange={e => setSenhaAutomatica(e.target.value === '0' ? false : true)}
+                  >
+                    <FormControlLabel
+                      value='1'
+                      control={<Radio />}
+                      label='Quero que o sistema gere uma senha automática'
+                    />
+                    <FormControlLabel value='0' control={<Radio />} label='Não, prefiro digitar uma senha agora' />
+                  </RadioGroup>
+                </Grid>
                 <Grid item xs={12} sm={6}>
                   <CustomTextField
                     fullWidth
                     label='Senha'
                     type={isPasswordShown ? 'text' : 'password'}
                     onChange={e => setNovaSenha(e.target.value)}
+                    disabled={senhaAutomatica}
                     InputProps={{
                       endAdornment: (
                         <InputAdornment position='end'>
@@ -154,6 +173,7 @@ const FinalizarCadastroUsuario = ({ activeStep, handlePrev, steps }: Props) => {
                     label='Confirmação da senha'
                     type={isConfirmPasswordShown ? 'text' : 'password'}
                     onChange={e => setConfirmacaoSenha(e.target.value)}
+                    disabled={senhaAutomatica}
                     InputProps={{
                       endAdornment: (
                         <InputAdornment position='end'>
@@ -199,7 +219,7 @@ const FinalizarCadastroUsuario = ({ activeStep, handlePrev, steps }: Props) => {
               )
             }
           >
-            {activeStep === steps.length - 1 ? 'Finalizar cadastro do parceiro' : 'Próximo'}
+            {activeStep === steps.length - 1 ? 'Finalizar cadastro do usuário' : 'Próximo'}
           </Button>
         </div>
       </Grid>

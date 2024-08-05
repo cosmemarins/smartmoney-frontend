@@ -280,7 +280,7 @@ const UsuarioListTable = () => {
   useEffect(() => {
     if (refreshTable) {
       setRefreshTable(false)
-      UsuarioService.getList()
+      UsuarioService.getList('TODOS')
         .then(respListUsuario => {
           setData(respListUsuario)
         })

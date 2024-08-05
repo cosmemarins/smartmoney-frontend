@@ -1,5 +1,6 @@
 // React Imports
-import { useState } from 'react'
+import type { SyntheticEvent } from 'react'
+import { useEffect, useState } from 'react'
 
 // MUI Imports
 import Card from '@mui/material/Card'
@@ -14,12 +15,15 @@ import { toast } from 'react-toastify'
 import CustomTextField from '@core/components/mui/TextField'
 
 import { tiposContaBancaria, tiposPix } from '@/types/DadosBancariosType'
-import { useUsuarioContext } from '@/contexts/UsuarioContext'
+import { useEquipeContext } from '@/contexts/EquipeContext'
 import DirectionalIcon from '@/components/DirectionalIcon'
-import UsuarioService from '@/services/UsuarioService'
 import { trataErro } from '@/utils/erro'
 
 import { bancoList, getTipoChavePix } from '@/utils/banco'
+import UsuarioService from '@/services/UsuarioService'
+import { getPerfilUsuarioEnumDesc } from '@/utils/enums/PerfilUsuarioEnum'
+import CustomAutocomplete from '@/@core/components/mui/Autocomplete'
+import type { ItemListType } from '@/types/utilTypes'
 
 type Props = {
   activeStep: number
@@ -28,27 +32,33 @@ type Props = {
   steps: { title: string; subtitle: string }[]
 }
 
-const DadosBancariosUsuario = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
+const DadosBancarios = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
   //contexto
-  const { usuario, setUsuarioContext } = useUsuarioContext()
+  const { usuarioEquipe, setUsuarioEquipeContext } = useEquipeContext()
 
   // States
   const [sending, setSending] = useState<boolean>(false)
+  const [bancoSelect, setBancoSelect] = useState<ItemListType | null>(null)
 
   const onChageCavePix = (chave: string) => {
     const tipoChave = getTipoChavePix(chave)
 
-    setUsuarioContext({ ...usuario, chavePix: chave, tipoPix: tipoChave })
+    setUsuarioEquipeContext({ ...usuarioEquipe, chavePix: chave, tipoPix: tipoChave })
+  }
+
+  const onChangeBanco = (event: SyntheticEvent, itemSel: ItemListType | null) => {
+    setBancoSelect(itemSel)
+    setUsuarioEquipeContext({ ...usuarioEquipe, banco: { codigo: itemSel?.key, nome: itemSel?.value } })
   }
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement> | undefined) => {
     e?.preventDefault()
 
-    if (usuario) {
+    if (usuarioEquipe) {
       setSending(true)
-      UsuarioService.salvar(usuario)
+      UsuarioService.salvar(usuarioEquipe)
         .then(respUsuario => {
-          setUsuarioContext(respUsuario)
+          setUsuarioEquipeContext(respUsuario)
           handleNext()
         })
         .catch(err => {
@@ -62,36 +72,42 @@ const DadosBancariosUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pr
     }
   }
 
+  useEffect(() => {
+    if (usuarioEquipe && usuarioEquipe.banco && usuarioEquipe.banco.codigo != '') {
+      setBancoSelect({
+        key: usuarioEquipe.banco.codigo,
+        value: usuarioEquipe.banco.nome
+      })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   return (
     <Grid container spacing={6}>
       <Grid item xs={12}>
         <Card>
           <form onSubmit={e => onSubmit(e)}>
-            <CardHeader title='Dados Bancários' />
+            <CardHeader title={`Dados Bancários do ${getPerfilUsuarioEnumDesc(usuarioEquipe?.perfil)}`} />
             <CardContent className='flex flex-col gap-4'>
               <Grid container spacing={5}>
                 <Grid item xs={12} sm={6}>
-                  <CustomTextField
-                    select
+                  <CustomAutocomplete
                     fullWidth
-                    label='Banco'
-                    value={bancoList.length > 0 ? usuario?.banco?.codigo || '' : ''}
-                    onChange={e => setUsuarioContext({ ...usuario, banco: { codigo: e.target.value } })}
-                    placeholder='Selecione um banco'
-                  >
-                    {bancoList.map((banco, index) => (
-                      <MenuItem key={index} value={banco.codigo} selected={usuario?.banco === banco.codigo}>
-                        {banco.codigo} - {banco.nome}
-                      </MenuItem>
-                    ))}
-                  </CustomTextField>
+                    options={bancoList}
+                    onChange={onChangeBanco}
+                    id='bancoSel'
+                    isOptionEqualToValue={(option, value) => option.key === value.key}
+                    value={bancoSelect}
+                    getOptionLabel={option => `${option.key} - ${option.value}`}
+                    renderInput={params => <CustomTextField {...params} label='Banco' />}
+                  />
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <CustomTextField
                     fullWidth
                     label='Agência'
-                    value={usuario?.agencia || ''}
-                    onChange={e => setUsuarioContext({ ...usuario, agencia: e.target.value })}
+                    value={usuarioEquipe?.agencia || ''}
+                    onChange={e => setUsuarioEquipeContext({ ...usuarioEquipe, agencia: e.target.value })}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -99,24 +115,24 @@ const DadosBancariosUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pr
                     select
                     fullWidth
                     label='Tipo Conta'
-                    value={usuario?.tipoConta || ''}
-                    onChange={e => setUsuarioContext({ ...usuario, tipoConta: e.target.value })}
+                    value={usuarioEquipe?.tipoConta || ''}
+                    onChange={e => setUsuarioEquipeContext({ ...usuarioEquipe, tipoConta: e.target.value })}
                     placeholder='Selecione um tipo de conta'
                   >
                     {tiposContaBancaria.map((tipoConta, index) => (
-                      <MenuItem key={index} value={tipoConta} selected={usuario?.tipoConta === tipoConta}>
+                      <MenuItem key={index} value={tipoConta} selected={usuarioEquipe?.tipoConta === tipoConta}>
                         {tipoConta}
                       </MenuItem>
                     ))}
                   </CustomTextField>
                 </Grid>
-                {usuario?.tipoConta === 'Poupança' && (
+                {usuarioEquipe?.tipoConta === 'Poupança' && (
                   <Grid item xs={12} sm={6}>
                     <CustomTextField
                       fullWidth
                       label='Tipo poupança'
-                      value={usuario?.tipoPoupanca || ''}
-                      onChange={e => setUsuarioContext({ ...usuario, tipoPoupanca: e.target.value })}
+                      value={usuarioEquipe?.tipoPoupanca || ''}
+                      onChange={e => setUsuarioEquipeContext({ ...usuarioEquipe, tipoPoupanca: e.target.value })}
                     />
                   </Grid>
                 )}
@@ -124,8 +140,8 @@ const DadosBancariosUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pr
                   <CustomTextField
                     fullWidth
                     label='Número da conta (com dv)'
-                    value={usuario?.conta || ''}
-                    onChange={e => setUsuarioContext({ ...usuario, conta: e.target.value })}
+                    value={usuarioEquipe?.conta || ''}
+                    onChange={e => setUsuarioEquipeContext({ ...usuarioEquipe, conta: e.target.value })}
                   />
                 </Grid>
               </Grid>
@@ -138,7 +154,7 @@ const DadosBancariosUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pr
                   <CustomTextField
                     fullWidth
                     label='Chave pix'
-                    value={usuario?.chavePix || ''}
+                    value={usuarioEquipe?.chavePix || ''}
                     onChange={e => onChageCavePix(e.target.value)}
                   />
                 </Grid>
@@ -147,12 +163,12 @@ const DadosBancariosUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pr
                     select
                     fullWidth
                     label='Tipo pix'
-                    value={usuario?.tipoPix || ''}
-                    onChange={e => setUsuarioContext({ ...usuario, tipoPix: e.target.value })}
+                    value={usuarioEquipe?.tipoPix || ''}
+                    onChange={e => setUsuarioEquipeContext({ ...usuarioEquipe, tipoPix: e.target.value })}
                   >
                     <MenuItem>Selecione um tipo de pix</MenuItem>
                     {tiposPix.map((tipoPix, index) => (
-                      <MenuItem key={index} value={tipoPix} selected={usuario?.tipoPix === tipoPix}>
+                      <MenuItem key={index} value={tipoPix} selected={usuarioEquipe?.tipoPix === tipoPix}>
                         {tipoPix === 'Random' ? 'Chave aleatória' : tipoPix}
                       </MenuItem>
                     ))}
@@ -198,4 +214,4 @@ const DadosBancariosUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pr
   )
 }
 
-export default DadosBancariosUsuario
+export default DadosBancarios
