@@ -3,6 +3,9 @@
 // React Imports
 import { useEffect, useMemo, useState } from 'react'
 
+// Type Imports
+import { useSession } from 'next-auth/react'
+
 import type { TextFieldProps } from '@mui/material'
 import { Button, Card, CardHeader, MenuItem, TablePagination, Typography } from '@mui/material'
 
@@ -39,6 +42,8 @@ import TablePaginationComponent from '@/components/TablePaginationComponent'
 import type { ValidationError } from '@/services/api'
 import { valorBr } from '@/utils/string'
 import FinanceiroService from '@/services/FinanceiroService'
+import { getPerfilUsuarioEnumDesc, PerfilUsuarioEnum } from '@/utils/enums/PerfilUsuarioEnum'
+import { isColaboradorMaster } from '@/utils/utils'
 
 locale('pt-br')
 
@@ -88,6 +93,9 @@ const DebouncedInput = ({
 }
 
 const ComissaoInvestidoresListTable = () => {
+  //hooks
+  const { data: session } = useSession()
+
   // States
   const [rowSelection, setRowSelection] = useState({})
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -105,7 +113,18 @@ const ComissaoInvestidoresListTable = () => {
               <Typography color='text.primary' className='font-medium'>
                 {row.original.nomeCliente}
               </Typography>
-              <Typography variant='body2'>Parceiro: {row.original.nomeParceiro}</Typography>
+              {session?.user.perfil != PerfilUsuarioEnum.AGENTE && (
+                <Typography variant='body2'>
+                  {getPerfilUsuarioEnumDesc(row.original.perfilGestor)}: {row.original.nomeAgente}
+                </Typography>
+              )}
+              {session?.user.perfil === PerfilUsuarioEnum.MASTER ||
+                (row.original.nomeParceiro &&
+                  isColaboradorMaster(session?.user) &&
+                  session?.user.id != row.original?.parceiro &&
+                  session?.user.idGestor != row.original?.parceiro && (
+                    <Typography variant='body2'>Parceiro: {row.original.nomeParceiro}</Typography>
+                  ))}
             </div>
           </div>
         )
@@ -136,16 +155,14 @@ const ComissaoInvestidoresListTable = () => {
         header: 'Valor',
         cell: ({ row }) => <Typography color='text.primary'>{valorBr.format(row.original.valor || 0)}</Typography>
       }),
-      columnHelper.accessor('taxaCliente', {
+      columnHelper.accessor('taxa', {
         header: 'Taxa',
-        cell: ({ row }) => (
-          <Typography color='text.primary'>{valorBr.format(row.original.taxaCliente || 0)}%</Typography>
-        )
+        cell: ({ row }) => <Typography color='text.primary'>{valorBr.format(row.original.taxa || 0)}%</Typography>
       }),
-      columnHelper.accessor('valorRepasseCliente', {
+      columnHelper.accessor('valorRepasse', {
         header: 'Valor Repasse',
         cell: ({ row }) => (
-          <Typography color='text.primary'>{valorBr.format(row.original.valorRepasseCliente || 0)}</Typography>
+          <Typography color='text.primary'>{valorBr.format(row.original.valorRepasse || 0)}</Typography>
         )
       })
     ],
@@ -185,7 +202,7 @@ const ComissaoInvestidoresListTable = () => {
   useEffect(() => {
     if (refreshTable) {
       setRefreshTable(false)
-      FinanceiroService.getComissaoInvestidores()
+      FinanceiroService.getComissaoInvestidores(session?.user.token)
         .then(respListComissao => {
           console.log('respListComissao', respListComissao)
           setData(respListComissao)
@@ -201,6 +218,7 @@ const ComissaoInvestidoresListTable = () => {
           }
         })
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshTable])
 
   return (

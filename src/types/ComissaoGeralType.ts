@@ -14,8 +14,14 @@ export type ComissaoType = {
   valor?: number
   saldo?: number
   prazo?: number
-  taxa?: number
-  valorRepasse?: number
+  taxaGestor?: number
+  valorRepasseDiretor?: number
+  taxaCliente?: number
+  valorRepasseCliente?: number
+  taxaParceiro?: number
+  valorRepasseParceiro?: number
+  taxaAgente?: number
+  valorRepasseAgente?: number
   dataAporte?: Date
   dataCredito?: Date
   dataVencimento?: Date

@@ -16,6 +16,12 @@ const FinanceiroService = {
     return data
   },
 
+  getComissaoParceiros: async function (token?: string): Promise<ComissaoType[]> {
+    const { data } = await api.get<ComissaoType[]>(`${path}/comissao/parceiros/${token}`)
+
+    return data
+  },
+
   getComissaoDiretor: async function (token?: string): Promise<ComissaoType[]> {
     const { data } = await api.get<ComissaoType[]>(`${path}/comissao/diretor/${token}`)
 

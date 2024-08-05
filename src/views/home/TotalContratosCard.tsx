@@ -20,10 +20,7 @@ import ContratoService from '@/services/ContratoService'
 import type TamanhoEquipeDTO from '@/types/TamanhoEquipe.dto'
 
 const TotalContratosCard = () => {
-  const [tamanhoEquipe, setTamanhoEquipe] = useState<TamanhoEquipeDTO>({
-    totalContratosMeusClientes: 0,
-    totalContratosDeOutrosClientes: 0
-  })
+  const [tamanhoEquipe, setTamanhoEquipe] = useState<TamanhoEquipeDTO>()
 
   const [loading, setLoading] = useState(true)
 
@@ -32,7 +29,7 @@ const TotalContratosCard = () => {
   useEffect(() => {
     const user = session?.user
 
-    if (user && user.token) {
+    if (user && user.token && !tamanhoEquipe) {
       setLoading(true)
 
       ContratoService.getTotalContratos(user.token)
@@ -46,7 +43,9 @@ const TotalContratosCard = () => {
           setLoading(false)
         })
     }
-  }, [session])
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.user])
 
   return (
     <Card>
@@ -70,7 +69,7 @@ const TotalContratosCard = () => {
                 <i className='tabler-users'></i>
               </CustomAvatar>
               <div className='flex flex-col'>
-                <Typography variant='h5'>{tamanhoEquipe.totalContratosMeusClientes}</Typography>
+                <Typography variant='h5'>{tamanhoEquipe?.totalContratosMeusClientes}</Typography>
                 <Typography variant='body2'>Dos meus clientes</Typography>
               </div>
             </Grid>
@@ -79,7 +78,7 @@ const TotalContratosCard = () => {
                 <i className='tabler-users'></i>
               </CustomAvatar>
               <div className='flex flex-col'>
-                <Typography variant='h5'>{tamanhoEquipe.totalContratosDeOutrosClientes}</Typography>
+                <Typography variant='h5'>{tamanhoEquipe?.totalContratosDeOutrosClientes}</Typography>
                 <Typography variant='body2'>Da equipe</Typography>
               </div>
             </Grid>

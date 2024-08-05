@@ -2,11 +2,16 @@
 
 import Grid from '@mui/material/Grid'
 
+// Type Imports
+import { useSession } from 'next-auth/react'
+
 import TotalClientesCard from './TotalClientesCard'
 import TotalEquipeCard from './TotalEquipeCard'
 import TotalContratosCard from './TotalContratosCard'
 
 const HomePage = () => {
+  const { data: session } = useSession()
+
   // States
   //const [loading, setLoading] = useState(false)
 
@@ -38,9 +43,11 @@ const HomePage = () => {
   */
   return (
     <Grid container spacing={6}>
-      <Grid item xs={12} sm={6} md={4}>
-        <TotalEquipeCard />
-      </Grid>
+      {session?.user.podeCriarEquipe && (
+        <Grid item xs={12} sm={6} md={4}>
+          <TotalEquipeCard />
+        </Grid>
+      )}
       <Grid item xs={12} sm={6} md={4}>
         <TotalContratosCard />
       </Grid>

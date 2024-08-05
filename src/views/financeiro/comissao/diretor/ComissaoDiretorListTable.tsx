@@ -3,6 +3,9 @@
 // React Imports
 import { useEffect, useMemo, useState } from 'react'
 
+// Type Imports
+import { useSession } from 'next-auth/react'
+
 import type { TextFieldProps } from '@mui/material'
 import { Button, Card, CardHeader, MenuItem, TablePagination, Typography } from '@mui/material'
 
@@ -26,7 +29,6 @@ import { rankItem } from '@tanstack/match-sorter-utils'
 
 import { toast } from 'react-toastify'
 
-import axios from 'axios'
 import moment, { locale } from 'moment'
 import 'moment/locale/pt-br'
 
@@ -36,9 +38,10 @@ import { type ComissaoType, type ComissaoTypeAction } from '@/types/ComissaoType
 // Style Imports
 import tableStyles from '@core/styles/table.module.css'
 import TablePaginationComponent from '@/components/TablePaginationComponent'
-import type { ValidationError } from '@/services/api'
 import { valorBr } from '@/utils/string'
 import FinanceiroService from '@/services/FinanceiroService'
+import { trataErro } from '@/utils/erro'
+import { PerfilUsuarioEnum } from '@/utils/enums/PerfilUsuarioEnum'
 
 locale('pt-br')
 
@@ -88,6 +91,9 @@ const DebouncedInput = ({
 }
 
 const ComissaoDiretorListTable = () => {
+  // Hooks
+  const { data: session } = useSession()
+
   // States
   const [rowSelection, setRowSelection] = useState({})
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -97,6 +103,7 @@ const ComissaoDiretorListTable = () => {
 
   const columns = useMemo<ColumnDef<ComissaoTypeAction, any>[]>(
     () => [
+      /*
       columnHelper.accessor('nomeParceiro', {
         header: 'Diretor',
         cell: ({}) => (
@@ -109,6 +116,7 @@ const ComissaoDiretorListTable = () => {
           </div>
         )
       }),
+      */
       columnHelper.accessor('nomeCliente', {
         header: 'Cliente',
         cell: ({ row }) => (
@@ -117,7 +125,9 @@ const ComissaoDiretorListTable = () => {
               <Typography color='text.primary' className='font-medium'>
                 {row.original.nomeCliente}
               </Typography>
-              <Typography variant='body2'>{row.original.nomeParceiro}</Typography>
+              {session?.user.perfil != PerfilUsuarioEnum.AGENTE && (
+                <Typography variant='body2'>{row.original.nomeAgente}</Typography>
+              )}
             </div>
           </div>
         )
@@ -148,14 +158,14 @@ const ComissaoDiretorListTable = () => {
         header: 'Valor',
         cell: ({ row }) => <Typography color='text.primary'>{valorBr.format(row.original.valor || 0)}</Typography>
       }),
-      columnHelper.accessor('taxaGestor', {
+      columnHelper.accessor('taxa', {
         header: 'Taxa',
-        cell: ({ row }) => <Typography color='text.primary'>{valorBr.format(row.original.taxaGestor || 0)}%</Typography>
+        cell: ({ row }) => <Typography color='text.primary'>{valorBr.format(row.original.taxa || 0)}%</Typography>
       }),
-      columnHelper.accessor('valorRepasseDiretor', {
+      columnHelper.accessor('valorRepasse', {
         header: 'Valor Repasse',
         cell: ({ row }) => (
-          <Typography color='text.primary'>{valorBr.format(row.original.valorRepasseDiretor || 0)}</Typography>
+          <Typography color='text.primary'>{valorBr.format(row.original.valorRepasse || 0)}</Typography>
         )
       })
     ],
@@ -197,18 +207,11 @@ const ComissaoDiretorListTable = () => {
       setRefreshTable(false)
       FinanceiroService.getComissaoDiretor()
         .then(respListComissao => {
-          console.log('respListComissao', respListComissao)
+          //console.log('respListComissao', respListComissao)
           setData(respListComissao)
         })
         .catch((err: any) => {
-          if (axios.isAxiosError<ValidationError, Record<string, unknown>>(err)) {
-            console.log(err.status)
-            console.error(err.response)
-            toast.error(`Erro, ${err.status}`)
-          } else {
-            console.error(err)
-            toast.error(`Erro`, err)
-          }
+          toast.error(trataErro(err))
         })
     }
   }, [refreshTable])
@@ -216,7 +219,7 @@ const ComissaoDiretorListTable = () => {
   return (
     <>
       <Card>
-        <CardHeader title='Comissões do Diretor' className='pbe-4' />
+        <CardHeader title='Minhas Comissões' className='pbe-4' />
         <div className='flex justify-between flex-col items-start md:flex-row md:items-center p-6 border-bs gap-4'>
           <CustomTextField
             select

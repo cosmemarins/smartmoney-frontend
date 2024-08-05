@@ -66,7 +66,11 @@ const EnderecoUsuario = ({ activeStep, handleNext, handlePrev, steps }: Props) =
   })
 
   const onSubmit: SubmitHandler<FormData> = async (data: FormData) => {
-    if (usuarioEquipe && data.cep) {
+    if (
+      usuarioEquipe &&
+      (data.cep ||
+        (usuarioEquipe?.perfil != PerfilUsuarioEnum.AGENTE && usuarioEquipe?.perfil != PerfilUsuarioEnum.PARCEIRO))
+    ) {
       setSending(true)
       UsuarioService.salvar(usuarioEquipe)
         .then(respUsuario => {

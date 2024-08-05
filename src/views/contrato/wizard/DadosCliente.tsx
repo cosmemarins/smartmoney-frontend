@@ -212,9 +212,11 @@ const DadosCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
                         placeholder='(00) 00000-0000'
                         value={telefoleMask(cliente?.telefone)}
                         onChange={e => {
-                          field.onChange(e.target.value)
-                          setClienteContext({ ...cliente, telefone: e.target.value })
-                          errorState !== null && setErrorState(null)
+                          if (e.target.value.length <= 15) {
+                            field.onChange(e.target.value)
+                            setClienteContext({ ...cliente, telefone: e.target.value })
+                            errorState !== null && setErrorState(null)
+                          }
                         }}
                         {...((errors.telefone || errorState !== null) && {
                           error: true,

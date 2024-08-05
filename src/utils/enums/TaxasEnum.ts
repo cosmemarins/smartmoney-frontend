@@ -1,0 +1,6 @@
+export enum TaxasEnum {
+  CREDENCIADO = 1,
+  MASTER = 2,
+  MAXIMO_CONSULTOR = 5,
+  MAXIMO_CLIENTE = 3,
+}

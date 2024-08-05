@@ -212,16 +212,28 @@ const ContratoListTable = () => {
           </div>
         )
       }),
-      columnHelper.accessor('cliente.gestor.parceiro', {
-        header: 'Parceiro',
+      columnHelper.accessor('cliente.gestor.nome', {
+        header: 'Gestor',
         cell: ({ row }) => (
           <div className='flex items-center gap-4'>
             <div className='flex flex-col'>
-              <Typography color='text.primary' className='font-medium'>
-                {row.original.cliente?.gestor?.parceiro?.nomeFantasia}
-              </Typography>
-              <Typography variant='body2'>{row.original.cliente?.gestor?.nome}</Typography>
-              <Typography variant='body2'>celular: {row.original.cliente?.gestor?.telefone}</Typography>
+              {row.original.cliente?.gestor?.gestor && (
+                <>
+                  <Typography color='text.primary' className='font-medium'>
+                    {row.original.cliente?.gestor?.nome}
+                  </Typography>
+                  <Typography variant='body2'>{row.original.cliente?.gestor?.gestor?.nome}</Typography>
+                  <Typography variant='body2'>celular: {row.original.cliente?.gestor?.gestor?.telefone}</Typography>
+                </>
+              )}
+              {!row.original.cliente?.gestor?.gestor && (
+                <>
+                  <Typography color='text.primary' className='font-medium'>
+                    {row.original.cliente?.gestor?.nome}
+                  </Typography>
+                  <Typography variant='body2'>celular: {row.original.cliente?.gestor?.telefone}</Typography>
+                </>
+              )}
             </div>
           </div>
         )
@@ -292,11 +304,13 @@ const ContratoListTable = () => {
                 <i className='tabler-paperclip text-[22px] text-textSecondary' />
               </IconButton>
             )}
-            <IconButton>
-              <Link href={`/contrato/${row.original.token}/extrato`} title='Extrato'>
-                <i className='tabler-file-description text-[22px] text-textSecondary' />
-              </Link>
-            </IconButton>
+            {row.original.status == StatusContratoEnum.ATIVO && (
+              <IconButton>
+                <Link href={`/contrato/${row.original.token}/extrato`} title='Extrato'>
+                  <i className='tabler-file-description text-[22px] text-textSecondary' />
+                </Link>
+              </IconButton>
+            )}
             <IconButton onClick={() => handleOpenDlgContrato(row.original)}>
               <i className='tabler-edit text-[22px] text-textSecondary' />
             </IconButton>

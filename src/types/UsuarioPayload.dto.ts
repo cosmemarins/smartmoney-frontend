@@ -1,5 +1,6 @@
 export default interface UsuarioPayloadDTO {
-  sub: number
+  sub?: number
+  id: number
   token: string
   nome: string
   tipoPessoa: string
@@ -13,4 +14,5 @@ export default interface UsuarioPayloadDTO {
   foto?: string
   rememberMe: boolean
   dataUltimoAcesso: Date
+  role?: string
 }

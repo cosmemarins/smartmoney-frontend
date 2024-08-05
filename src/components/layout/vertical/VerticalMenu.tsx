@@ -24,6 +24,7 @@ import StyledVerticalNavExpandIcon from '@menu/styles/vertical/StyledVerticalNav
 // Style Imports
 import menuItemStyles from '@core/styles/vertical/menuItemStyles'
 import menuSectionStyles from '@core/styles/vertical/menuSectionStyles'
+import { PerfilUsuarioEnum } from '@/utils/enums/PerfilUsuarioEnum'
 
 type RenderExpandIconProps = {
   open?: boolean
@@ -97,7 +98,9 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
         )}
         <SubMenu label='Clientes' icon={<i className='tabler-users' />}>
           <MenuItem href={`/cliente/list`}>Listar Clientes</MenuItem>
+          {/*
           <MenuItem href={`/cliente/new`}>Novo cliente</MenuItem>
+          */}
         </SubMenu>
         <SubMenu label='Contratos' icon={<i className='tabler-files' />}>
           <MenuItem href={`/contrato/list`}>Listar Contratos</MenuItem>
@@ -106,14 +109,18 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
         <SubMenu label='Financeiro' icon={<i className='tabler-currency-dollar' />}>
           <SubMenu label='Comissionamento' icon={<i className='tabler-file-dollar' />}>
             <MenuItem href={`/financeiro/comissao/investidores`}>Investidores</MenuItem>
-            <MenuItem href={`/financeiro/comissao/agentes`}>Agentes</MenuItem>
-            <MenuItem href={`/financeiro/comissao/parceiros`}>Parceiro</MenuItem>
-            <MenuItem href={`/financeiro/comissao/diretor`}>Diretor</MenuItem>
+            {session?.user.podeCriarEquipe && session?.user.perfil != PerfilUsuarioEnum.AGENTE && (
+              <MenuItem href={`/financeiro/comissao/agentes`}>Agentes</MenuItem>
+            )}
+            {session?.user.podeCriarEquipe && <MenuItem href={`/financeiro/comissao/parceiros`}>Parceiro</MenuItem>}
+            <MenuItem href={`/financeiro/comissao/diretor`}>Minhas Comissões</MenuItem>
           </SubMenu>
         </SubMenu>
+        {/*
         <MenuItem href='/about' icon={<i className='tabler-info-circle' />}>
           About
         </MenuItem>
+        */}
       </Menu>
       {/* <Menu
         popoutMenuOffset={{ mainAxis: 23 }}

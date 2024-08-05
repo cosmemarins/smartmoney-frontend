@@ -51,6 +51,11 @@ export type PerfilPageHeaderType = {
   status?: string
 }
 
+export type ItemListType = {
+  key?: string
+  value?: string
+}
+
 export const perfilPageHeaderInit = {
   foto: '/images/avatars/nobody.png',
   imagemCapa: '/images/pages/profile-banner.png'

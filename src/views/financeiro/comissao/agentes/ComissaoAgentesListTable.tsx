@@ -3,6 +3,9 @@
 // React Imports
 import { useEffect, useMemo, useState } from 'react'
 
+// Type Imports
+import { useSession } from 'next-auth/react'
+
 import type { TextFieldProps } from '@mui/material'
 import { Button, Card, CardHeader, MenuItem, TablePagination, Typography } from '@mui/material'
 
@@ -39,6 +42,8 @@ import TablePaginationComponent from '@/components/TablePaginationComponent'
 import type { ValidationError } from '@/services/api'
 import { valorBr } from '@/utils/string'
 import FinanceiroService from '@/services/FinanceiroService'
+import { PerfilUsuarioEnum } from '@/utils/enums/PerfilUsuarioEnum'
+import { isColaboradorMaster } from '@/utils/utils'
 
 locale('pt-br')
 
@@ -88,6 +93,9 @@ const DebouncedInput = ({
 }
 
 const ComissaoAgentesListTable = () => {
+  //hooks
+  const { data: session } = useSession()
+
   // States
   const [rowSelection, setRowSelection] = useState({})
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -97,15 +105,22 @@ const ComissaoAgentesListTable = () => {
 
   const columns = useMemo<ColumnDef<ComissaoTypeAction, any>[]>(
     () => [
-      columnHelper.accessor('nomeGestor', {
+      columnHelper.accessor('nomeAgente', {
         header: 'Agente',
         cell: ({ row }) => (
           <div className='flex items-center gap-4'>
             <div className='flex flex-col'>
               <Typography color='text.primary' className='font-medium'>
-                {row.original.nomeGestor}
+                {row.original.nomeAgente}
               </Typography>
               <Typography variant='body2'>Cliente: {row.original.nomeCliente}</Typography>
+              {session?.user.perfil === PerfilUsuarioEnum.MASTER ||
+                (row.original.nomeParceiro &&
+                  isColaboradorMaster(session?.user) &&
+                  session?.user.id != row.original?.parceiro &&
+                  session?.user.idGestor != row.original?.parceiro && (
+                    <Typography variant='body2'>Parceiro: {row.original.nomeParceiro}</Typography>
+                  ))}
             </div>
           </div>
         )
@@ -136,14 +151,14 @@ const ComissaoAgentesListTable = () => {
         header: 'Valor',
         cell: ({ row }) => <Typography color='text.primary'>{valorBr.format(row.original.valor || 0)}</Typography>
       }),
-      columnHelper.accessor('taxaAgente', {
+      columnHelper.accessor('taxa', {
         header: 'Taxa',
-        cell: ({ row }) => <Typography color='text.primary'>{valorBr.format(row.original.taxaAgente || 0)}%</Typography>
+        cell: ({ row }) => <Typography color='text.primary'>{valorBr.format(row.original.taxa || 0)}%</Typography>
       }),
-      columnHelper.accessor('valorRepasseAgente', {
+      columnHelper.accessor('valorRepasse', {
         header: 'Valor Repasse',
         cell: ({ row }) => (
-          <Typography color='text.primary'>{valorBr.format(row.original.valorRepasseAgente || 0)}</Typography>
+          <Typography color='text.primary'>{valorBr.format(row.original.valorRepasse || 0)}</Typography>
         )
       })
     ],

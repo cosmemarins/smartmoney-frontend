@@ -3,10 +3,10 @@ import axios from 'axios'
 import type { ValidationError } from '@/services/api'
 
 export const trataErro = (err: any) => {
-  let msgErro = 'Ocorreu um erro ao tentar salvar o registro'
+  let msgErro = 'Ocorreu um erro no sistema'
 
   if (axios.isAxiosError<ValidationError, Record<string, unknown>>(err)) {
-    console.log('status', err.status)
+    //console.log('status', err.status)
     console.error('response', err.response)
     msgErro = err?.response?.request.responseText
   } else {

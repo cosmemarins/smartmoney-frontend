@@ -309,7 +309,7 @@ const UsuarioListTable = ({ perfil }: Props) => {
   return (
     <>
       <Card>
-        <CardHeader title='Equipe' className='pbe-4' />
+        <CardHeader title={`Equipe: ${getPerfilUsuarioEnumDesc(perfil).toUpperCase()}`} className='pbe-4' />
         <div className='flex justify-between flex-col items-start md:flex-row md:items-center p-6 border-bs gap-4'>
           <CustomTextField
             select

@@ -97,13 +97,13 @@ const ComissaoParceirosListTable = () => {
 
   const columns = useMemo<ColumnDef<ComissaoTypeAction, any>[]>(
     () => [
-      columnHelper.accessor('nomeCliente', {
+      columnHelper.accessor('nomeAgente', {
         header: 'Parceiro',
         cell: ({ row }) => (
           <div className='flex items-center gap-4'>
             <div className='flex flex-col'>
               <Typography color='text.primary' className='font-medium'>
-                {row.original.nomeParceiro}
+                {row.original.nomeAgente}
               </Typography>
               <Typography variant='body2'>Cliente: {row.original.nomeCliente}</Typography>
             </div>
@@ -136,16 +136,14 @@ const ComissaoParceirosListTable = () => {
         header: 'Valor',
         cell: ({ row }) => <Typography color='text.primary'>{valorBr.format(row.original.valor || 0)}</Typography>
       }),
-      columnHelper.accessor('taxaParceiro', {
+      columnHelper.accessor('taxa', {
         header: 'Taxa',
-        cell: ({ row }) => (
-          <Typography color='text.primary'>{valorBr.format(row.original.taxaParceiro || 0)}%</Typography>
-        )
+        cell: ({ row }) => <Typography color='text.primary'>{valorBr.format(row.original.taxa || 0)}%</Typography>
       }),
-      columnHelper.accessor('valorRepasseParceiro', {
+      columnHelper.accessor('valorRepasse', {
         header: 'Valor Repasse',
         cell: ({ row }) => (
-          <Typography color='text.primary'>{valorBr.format(row.original.valorRepasseParceiro || 0)}</Typography>
+          <Typography color='text.primary'>{valorBr.format(row.original.valorRepasse || 0)}</Typography>
         )
       })
     ],
@@ -185,7 +183,7 @@ const ComissaoParceirosListTable = () => {
   useEffect(() => {
     if (refreshTable) {
       setRefreshTable(false)
-      FinanceiroService.getComissaoAgentes()
+      FinanceiroService.getComissaoParceiros()
         .then(respListComissao => {
           console.log('respListComissao', respListComissao)
           setData(respListComissao)

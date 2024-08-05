@@ -1,5 +1,6 @@
 // React Imports
-import { useState } from 'react'
+import type { SyntheticEvent } from 'react'
+import { useEffect, useState } from 'react'
 
 // MUI Imports
 import Card from '@mui/material/Card'
@@ -21,6 +22,8 @@ import { trataErro } from '@/utils/erro'
 import { bancoList, getTipoChavePix } from '@/utils/banco'
 import UsuarioService from '@/services/UsuarioService'
 import { getPerfilUsuarioEnumDesc } from '@/utils/enums/PerfilUsuarioEnum'
+import CustomAutocomplete from '@/@core/components/mui/Autocomplete'
+import type { ItemListType } from '@/types/utilTypes'
 
 type Props = {
   activeStep: number
@@ -35,11 +38,17 @@ const DadosBancarios = ({ activeStep, handleNext, handlePrev, steps }: Props) =>
 
   // States
   const [sending, setSending] = useState<boolean>(false)
+  const [bancoSelect, setBancoSelect] = useState<ItemListType | null>(null)
 
   const onChageCavePix = (chave: string) => {
     const tipoChave = getTipoChavePix(chave)
 
     setUsuarioEquipeContext({ ...usuarioEquipe, chavePix: chave, tipoPix: tipoChave })
+  }
+
+  const onChangeBanco = (event: SyntheticEvent, itemSel: ItemListType | null) => {
+    setBancoSelect(itemSel)
+    setUsuarioEquipeContext({ ...usuarioEquipe, banco: { codigo: itemSel?.key, nome: itemSel?.value } })
   }
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement> | undefined) => {
@@ -63,6 +72,16 @@ const DadosBancarios = ({ activeStep, handleNext, handlePrev, steps }: Props) =>
     }
   }
 
+  useEffect(() => {
+    if (usuarioEquipe && usuarioEquipe.banco && usuarioEquipe.banco.codigo != '') {
+      setBancoSelect({
+        key: usuarioEquipe.banco.codigo,
+        value: usuarioEquipe.banco.nome
+      })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   return (
     <Grid container spacing={6}>
       <Grid item xs={12}>
@@ -72,20 +91,16 @@ const DadosBancarios = ({ activeStep, handleNext, handlePrev, steps }: Props) =>
             <CardContent className='flex flex-col gap-4'>
               <Grid container spacing={5}>
                 <Grid item xs={12} sm={6}>
-                  <CustomTextField
-                    select
+                  <CustomAutocomplete
                     fullWidth
-                    label='Banco'
-                    value={bancoList.length > 0 ? usuarioEquipe?.banco?.codigo || '' : ''}
-                    onChange={e => setUsuarioEquipeContext({ ...usuarioEquipe, banco: { codigo: e.target.value } })}
-                    placeholder='Selecione um banco'
-                  >
-                    {bancoList.map((banco, index) => (
-                      <MenuItem key={index} value={banco.codigo} selected={usuarioEquipe?.banco === banco.codigo}>
-                        {banco.codigo} - {banco.nome}
-                      </MenuItem>
-                    ))}
-                  </CustomTextField>
+                    options={bancoList}
+                    onChange={onChangeBanco}
+                    id='bancoSel'
+                    isOptionEqualToValue={(option, value) => option.key === value.key}
+                    value={bancoSelect}
+                    getOptionLabel={option => `${option.key} - ${option.value}`}
+                    renderInput={params => <CustomTextField {...params} label='Banco' />}
+                  />
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <CustomTextField

@@ -37,8 +37,6 @@ import { rankItem } from '@tanstack/match-sorter-utils'
 
 import { toast } from 'react-toastify'
 
-import axios from 'axios'
-
 import CustomTextField from '@/@core/components/mui/TextField'
 import { clienteStatusColors, type ClienteType, type ClienteTypeWithAction } from '@/types/ClienteType'
 import CustomAvatar from '@/@core/components/mui/Avatar'
@@ -49,9 +47,9 @@ import tableStyles from '@core/styles/table.module.css'
 import TablePaginationComponent from '@/components/TablePaginationComponent'
 import DialogConfirma from '@/components/DialogConfirma'
 import type { DialogConfirmaType } from '@/types/utilTypes'
-import type { ValidationError } from '@/services/api'
 import { excluirCliente, getListCliente } from '@/services/ClienteService'
 import { cpfCnpjMask } from '@/utils/string'
+import { trataErro } from '@/utils/erro'
 
 // Column Definitions
 const columnHelper = createColumnHelper<ClienteTypeWithAction>()
@@ -142,14 +140,7 @@ const ClienteListTable = () => {
           toast.success(`Cliente ${clienteExcluir?.nome} excluído!`)
         })
         .catch((err: any) => {
-          if (axios.isAxiosError<ValidationError, Record<string, unknown>>(err)) {
-            console.log(err.status)
-            console.error(err.response)
-            toast.error(`Erro, ${err.status}`)
-          } else {
-            console.error(err)
-            toast.error(`Erro`, err)
-          }
+          toast.error(trataErro(err))
         })
         .finally(() => {})
     }
@@ -194,12 +185,30 @@ const ClienteListTable = () => {
         )
       }),
       columnHelper.accessor('email', {
-        header: 'Email',
-        cell: ({ row }) => <Typography color='text.primary'>{row.original.email}</Typography>
+        header: 'Contato',
+        cell: ({ row }) => (
+          <div className='flex items-center gap-4'>
+            <div className='flex flex-col'>
+              <Typography color='text.primary' className='font-medium'>
+                {row.original.email}
+              </Typography>
+              <Typography variant='body2'>celular: {row.original.telefone}</Typography>
+            </div>
+          </div>
+        )
       }),
-      columnHelper.accessor('telefone', {
-        header: 'Telefone',
-        cell: ({ row }) => <Typography color='text.primary'>{row.original.telefone}</Typography>
+      columnHelper.accessor('gestor.nome', {
+        header: 'Gestor',
+        cell: ({ row }) => (
+          <div className='flex items-center gap-4'>
+            <div className='flex flex-col'>
+              <Typography color='text.primary' className='font-medium'>
+                {row.original.gestor?.nome}
+              </Typography>
+              <Typography variant='body2'>{row.original.gestor?.email}</Typography>
+            </div>
+          </div>
+        )
       }),
       columnHelper.accessor('status', {
         header: 'Status',

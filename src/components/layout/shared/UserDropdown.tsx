@@ -28,6 +28,7 @@ import { signOut, useSession } from 'next-auth/react'
 
 // Hook Imports
 import { useSettings } from '@core/hooks/useSettings'
+import { getPerfilUsuarioEnumDesc } from '@/utils/enums/PerfilUsuarioEnum'
 
 // Styled component for badge content
 const BadgeContentSpan = styled('span')({
@@ -135,7 +136,9 @@ const UserDropdown = () => {
                     onClick={e => handleDropdownClose(e, `/equipe/${session?.user?.token}`)}
                   >
                     <i className='tabler-user text-[22px]' />
-                    <Typography color='text.primary'>My Profile</Typography>
+                    <Typography color='text.primary'>
+                      My Profile - {getPerfilUsuarioEnumDesc(session?.user.perfil).toUpperCase()}
+                    </Typography>
                   </MenuItem>
                   <div className='flex items-center plb-2 pli-3'>
                     <Button

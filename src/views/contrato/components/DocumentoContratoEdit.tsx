@@ -320,10 +320,10 @@ const DocumentoContratoEdit = ({ arquivoData, extratoData, handleClose, setRefre
                   <Grid container spacing={4}>
                     <Grid item xs={12} sm={12}>
                       <CustomTextField
-                        type='datetime-local'
+                        type='date'
                         fullWidth
                         label='Data'
-                        value={arquivoEdit?.data ? moment(arquivoEdit?.data).format('YYYY-MM-DD HH:mm') : ''}
+                        value={arquivoEdit?.data ? moment(arquivoEdit?.data).format('YYYY-MM-DD') : ''}
                         onChange={e => setArquivoEdit({ ...arquivoEdit, data: new Date(e.target.value) })}
                       />
                     </Grid>

@@ -46,6 +46,7 @@ import themeConfig from '@configs/themeConfig'
 // Hook Imports
 import { useImageVariant } from '@core/hooks/useImageVariant'
 import { useSettings } from '@core/hooks/useSettings'
+import { trataErro } from '@/utils/erro'
 
 // Util Imports
 //import { getLocalizedUrl } from '@/utils/i18n'
@@ -144,32 +145,40 @@ const Login = ({ mode }: { mode: SystemMode }) => {
   const onSubmit: SubmitHandler<FormData> = async (data: FormData) => {
     setSending(true)
 
-    const res = await signIn('credentials', {
-      email: data.email,
-      password: data.password,
-      redirect: false,
-      rememberMe: true
-    })
+    try {
+      const res = await signIn('credentials', {
+        email: data.email,
+        password: data.password,
+        redirect: false,
+        rememberMe: true
+      })
 
-    //console.log('LOGIN res', res)
+      //console.log('LOGIN res', res)
 
-    if (res && res.ok && res.error === null) {
-      // Vars
-      const redirectURL = searchParams.get('redirectTo') ?? '/'
+      if (res && res.ok && res.error === null) {
+        // Vars
+        const redirectURL = searchParams.get('redirectTo') ?? '/'
 
-      //router.push(getLocalizedUrl(redirectURL, locale as Locale))
-      router.push(redirectURL)
-    } else {
-      if (res?.error) {
-        console.log('res.error', res.error)
-        const error = JSON.parse(res.error)
+        //router.push(getLocalizedUrl(redirectURL, locale as Locale))
+        router.push(redirectURL)
+      } else {
+        if (res?.error) {
+          console.log('res.error', res.error)
+          const msgErro = trataErro(res?.error)
 
-        // é preciso definir o objeto error que tenha a propriedade message
-        setErrorState(error)
+          //const error = JSON.parse(res.error)
+
+          // é preciso definir o objeto error que tenha a propriedade message
+          setErrorState({ message: [msgErro] })
+        }
       }
+    } catch (e) {
+      //mesmo com erro no sigin não tá passando por aqui
+      console.log('deu ruim', e)
+      setErrorState({ message: ['Erro desconhecido no login'] })
+    } finally {
+      setSending(false)
     }
-
-    setSending(false)
   }
 
   return (

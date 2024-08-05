@@ -12,7 +12,7 @@ export enum PerfilUsuarioEnum {
 export function getPerfilUsuarioEnumDesc(item: string | undefined) {
   switch (item) {
     case PerfilUsuarioEnum.MASTER:
-      return 'sócio administrativo'
+      return 'Master'
     case PerfilUsuarioEnum.PARCEIRO:
       return 'Parceiro'
     case PerfilUsuarioEnum.AGENTE:

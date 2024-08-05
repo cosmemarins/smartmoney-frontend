@@ -98,14 +98,10 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
   }
 
   const onSubmit: SubmitHandler<FormData> = async (data: FormData) => {
-    console.log('contrato', contrato)
-    console.log('data', data)
-
     if (contrato && contrato.cliente && contrato.cliente.token && data.valor && data.taxaCliente) {
       setSending(true)
       ContratoService.salvarContrato(contrato, false)
         .then(respContrato => {
-          console.log('respContrato', respContrato)
           setContratoContext(respContrato)
           handleNext()
         })
@@ -127,9 +123,12 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
         ...contrato,
         cliente: { id: cliente?.id, token: cliente?.token }
       })
+    }
+
+    if (contrato && contrato.cliente) {
       setMaxTaxa(
-        cliente?.gestor?.parceiro?.taxaDistribuicao && cliente?.gestor?.parceiro?.taxaDistribuicao <= 3
-          ? cliente?.gestor?.parceiro?.taxaDistribuicao
+        cliente?.gestor?.taxaDistribuicao && cliente?.gestor?.taxaDistribuicao <= 3
+          ? cliente?.gestor?.taxaDistribuicao
           : 3
       )
     }
@@ -147,10 +146,10 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
                 <Grid container spacing={4}>
                   <Grid item xs={12} sm={6}>
                     <CustomTextField
-                      type='datetime-local'
+                      type='date'
                       fullWidth
                       label='Data'
-                      value={contrato?.data ? moment(contrato?.data).format('YYYY-MM-DD HH:mm') : ''}
+                      value={contrato?.data ? moment(contrato?.data).format('YYYY-MM-DD') : ''}
                       onChange={e => setContratoContext({ ...contrato, data: new Date(e.target.value) })}
                       disabled={!!contrato?.status && contrato?.status != StatusContratoEnum.NOVO}
                     />
