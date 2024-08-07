@@ -21,7 +21,6 @@ import {
   Chip,
   CircularProgress,
   Dialog,
-  DialogActions,
   DialogContent,
   DialogTitle,
   styled
@@ -332,31 +331,6 @@ export default function ExtratoContrato({ token }: props) {
               tipoExtrato={TipoExtratoEnum.ADITIVO}
             />
           </DialogContent>
-        </Dialog>
-
-        <Dialog maxWidth='sm' open={openDlgDeleteExtrato} aria-labelledby='form-dialog-title' disableEscapeKeyDown>
-          <DialogTitle id='form-dialog-title'>Atenção ao excluir lançamento</DialogTitle>
-          <DialogContent>
-            <p>Ao excluir este lançamento, o comprovante também será excluído.</p>
-            <p>Tem certeza que deseja excluir o lançamento: {/*itemSelect*/}?</p>
-          </DialogContent>
-          <DialogActions className='dialog-actions-dense'>
-            {/*
-            <Button variant='contained' onClick={() => confirmDeleteExtrato()}>
-              Confirmar Exclusão
-            </Button>
-            <Button
-              type='reset'
-              variant='tonal'
-              color='secondary'
-              onClick={() => {
-                setOpenDlgDeleteExtrato(false)
-              }}
-            >
-              Cancelar
-            </Button>
-            */}
-          </DialogActions>
         </Dialog>
       </>
     )
