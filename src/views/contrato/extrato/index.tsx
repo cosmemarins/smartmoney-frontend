@@ -242,7 +242,9 @@ export default function ExtratoContrato({ token }: props) {
                 <TableCell align='center'>Histórico</TableCell>
                 <TableCell align='center'>Tipo</TableCell>
                 <TableCell align='center'>Valor</TableCell>
+                {/*
                 <TableCell align='center'>Ações</TableCell>
+                */}
               </TableRow>
             </TableHead>
             <TableBody>
@@ -265,6 +267,7 @@ export default function ExtratoContrato({ token }: props) {
                     />
                   </TableCell>
                   <TableCell align='center'>{extrato?.valor ? valorBr.format(extrato?.valor) : ''}</TableCell>
+                  {/*
                   <TableCell align='center'>
                     <IconButton
                       aria-label='capture screenshot'
@@ -283,6 +286,7 @@ export default function ExtratoContrato({ token }: props) {
                       <i className='tabler-trash' />
                     </IconButton>
                   </TableCell>
+                  */}
                 </StyledTableRow>
               ))}
             </TableBody>
@@ -302,7 +306,7 @@ export default function ExtratoContrato({ token }: props) {
                 onClick={() => handleNovoExtrato()}
                 sx={{ float: 'right' }}
               >
-                Novo Lançamento
+                Novo Aditivo
               </Button>
             </caption>
           </Table>

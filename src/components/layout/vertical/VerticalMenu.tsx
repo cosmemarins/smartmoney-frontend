@@ -113,7 +113,7 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
               <MenuItem href={`/financeiro/comissao/agentes`}>Agentes</MenuItem>
             )}
             {session?.user.podeCriarEquipe && <MenuItem href={`/financeiro/comissao/parceiros`}>Parceiro</MenuItem>}
-            <MenuItem href={`/financeiro/comissao/diretor`}>Minhas Comissões</MenuItem>
+            <MenuItem href={`/financeiro/comissao/gestor`}>Minhas Comissões</MenuItem>
           </SubMenu>
         </SubMenu>
         {/*

@@ -14,10 +14,7 @@ const EquipeWizard = ({ perfil }: Props) => {
   //contexto
   const { setUsuarioEquipeContext } = useEquipeContext()
 
-  console.log('entrada perfil', perfil)
-
   useEffect(() => {
-    console.log('useEffect perfil', perfil)
     setUsuarioEquipeContext({
       perfil,
       tipoPessoa:

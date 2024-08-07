@@ -90,9 +90,9 @@ const InicioCadatroUsuario = ({ handleNext }: Props) => {
               setUsuarioEquipeContext(respUsuario)
             } else {
               setUsuarioEquipeContext({
-                ...usuarioEquipe,
                 tipoPessoa: isCNPJ(data.cpfCnpj) ? 'J' : 'F',
                 cpfCnpj: data.cpfCnpj,
+                perfil: usuarioEquipe?.perfil,
                 status: StatusUsuarioEnum.NOVO
               })
             }

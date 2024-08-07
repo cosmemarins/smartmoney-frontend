@@ -3,8 +3,16 @@
 // React Imports
 import { useEffect, useMemo, useState } from 'react'
 
+// Type Imports
+import { useSession } from 'next-auth/react'
+
 import type { TextFieldProps } from '@mui/material'
 import { Button, Card, CardHeader, MenuItem, TablePagination, Typography } from '@mui/material'
+import Table from '@mui/material/Table'
+import TableBody from '@mui/material/TableBody'
+import TableCell from '@mui/material/TableCell'
+import TableHead from '@mui/material/TableHead'
+import TableRow from '@mui/material/TableRow'
 
 import type { ColumnDef, FilterFn } from '@tanstack/react-table'
 import {
@@ -39,6 +47,8 @@ import TablePaginationComponent from '@/components/TablePaginationComponent'
 import type { ValidationError } from '@/services/api'
 import { valorBr } from '@/utils/string'
 import FinanceiroService from '@/services/FinanceiroService'
+import { PerfilUsuarioEnum } from '@/utils/enums/PerfilUsuarioEnum'
+import type { TotaisComissaoType } from '@/types/TotaisComissaoType'
 
 locale('pt-br')
 
@@ -88,23 +98,32 @@ const DebouncedInput = ({
 }
 
 const ComissaoParceirosListTable = () => {
+  // Hooks
+  const { data: session } = useSession()
+
   // States
   const [rowSelection, setRowSelection] = useState({})
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [data, setData] = useState<ComissaoType[]>([])
+  const [totais, setTotais] = useState<TotaisComissaoType>()
   const [globalFilter, setGlobalFilter] = useState('')
   const [refreshTable, setRefreshTable] = useState<boolean>(true)
 
   const columns = useMemo<ColumnDef<ComissaoTypeAction, any>[]>(
     () => [
-      columnHelper.accessor('nomeAgente', {
+      columnHelper.accessor('nomeGestor', {
         header: 'Parceiro',
         cell: ({ row }) => (
           <div className='flex items-center gap-4'>
             <div className='flex flex-col'>
-              <Typography color='text.primary' className='font-medium'>
-                {row.original.nomeAgente}
-              </Typography>
+              <Typography variant='body2'>Gestor: {row.original.nomeGestor}</Typography>
+              {session?.user.perfil != PerfilUsuarioEnum.AGENTE && row.original.parceiro1 && (
+                <Typography variant='body2'>
+                  Parceiro: {row.original.nomeParceiro1}
+                  {row.original.parceiro2 && row.original.parceiro2 && ` -> ${row.original.nomeParceiro2}`}
+                  {row.original.parceiro3 && row.original.parceiro3 && ` -> ${row.original.nomeParceiro3}`}
+                </Typography>
+              )}
               <Typography variant='body2'>Cliente: {row.original.nomeCliente}</Typography>
             </div>
           </div>
@@ -184,9 +203,10 @@ const ComissaoParceirosListTable = () => {
     if (refreshTable) {
       setRefreshTable(false)
       FinanceiroService.getComissaoParceiros()
-        .then(respListComissao => {
-          console.log('respListComissao', respListComissao)
-          setData(respListComissao)
+        .then(respComissaoView => {
+          //console.log('respListComissao', respListComissao)
+          setData(respComissaoView.listComissao)
+          setTotais(respComissaoView.totaisComissao)
         })
         .catch((err: any) => {
           if (axios.isAxiosError<ValidationError, Record<string, unknown>>(err)) {
@@ -205,6 +225,32 @@ const ComissaoParceirosListTable = () => {
     <>
       <Card>
         <CardHeader title='Comissisões dos Parceiros' className='pbe-4' />
+        <div className='flex justify-between flex-col items-start md:flex-row md:items-center p-6 border-bs gap-4'>
+          <Table sx={{ minWidth: 650 }}>
+            <TableHead>
+              <TableRow>
+                <TableCell align='center'>Qtd Contratos</TableCell>
+                <TableCell align='center'>Maior Taxa</TableCell>
+                <TableCell align='center'>Menor Taxa</TableCell>
+                <TableCell align='center'>Valor Médio</TableCell>
+                <TableCell align='center'>Valor Total</TableCell>
+                <TableCell align='center'>Repasse Médio</TableCell>
+                <TableCell align='center'>Total Repasse</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              <TableRow>
+                <TableCell align='center'>{totais?.totalRegistros}</TableCell>
+                <TableCell align='center'>{valorBr.format(totais?.maiorTaxa || 0)}%</TableCell>
+                <TableCell align='center'>{valorBr.format(totais?.menorTaxa || 0)}%</TableCell>
+                <TableCell align='center'>{valorBr.format(totais?.valorMedio || 0)}</TableCell>
+                <TableCell align='center'>{valorBr.format(totais?.valorTotal || 0)}</TableCell>
+                <TableCell align='center'>{valorBr.format(totais?.repasseMedio || 0)}</TableCell>
+                <TableCell align='center'>{valorBr.format(totais?.totalRepasse || 0)}</TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </div>
         <div className='flex justify-between flex-col items-start md:flex-row md:items-center p-6 border-bs gap-4'>
           <CustomTextField
             select

@@ -47,7 +47,7 @@ type FormData = v.InferInput<typeof schema>
 const schema = v.object({
   nome: v.string('É preciso digitar um nome'),
   email: pipe(v.string('É preciso digitar um email'), v.email('Email inválido')),
-  identidade: v.string('É preciso informar a identidade'),
+  identidade: v.string('É preciso informar a identidade ou CNH'),
   telefone: v.string('É preciso informar um celular'),
   dataNascimento: pipe(
     v.date('É preciso infromar uma data válida'),
@@ -174,8 +174,8 @@ const DadosCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
                       <CustomTextField
                         {...field}
                         fullWidth
-                        label={isCpf ? 'Identidade' : 'Inscrição Estadual'}
-                        placeholder='identidade'
+                        label={isCpf ? 'Identidade/CNH' : 'Inscrição Estadual'}
+                        placeholder='identidade/CNH'
                         value={cliente?.identidade || ''}
                         onChange={e => {
                           field.onChange(e.target.value)
@@ -260,8 +260,8 @@ const DadosCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
       <Grid item xs={12}>
         <div className='flex items-center justify-between'>
           <Button
-            variant='tonal'
-            color='secondary'
+            variant='contained'
+            color='primary'
             disabled={activeStep === 0}
             onClick={handlePrev}
             startIcon={<DirectionalIcon ltrIconClass='tabler-arrow-left' rtlIconClass='tabler-arrow-right' />}

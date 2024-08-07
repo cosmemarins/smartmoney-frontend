@@ -217,22 +217,17 @@ const ContratoListTable = () => {
         cell: ({ row }) => (
           <div className='flex items-center gap-4'>
             <div className='flex flex-col'>
+              <Typography color='text.primary' className='font-medium'>
+                {row.original.cliente?.gestor?.nome}
+              </Typography>
+              <Typography variant='body2'>celular: {row.original.cliente?.gestor?.telefone}</Typography>
               {row.original.cliente?.gestor?.gestor && (
-                <>
-                  <Typography color='text.primary' className='font-medium'>
-                    {row.original.cliente?.gestor?.nome}
-                  </Typography>
-                  <Typography variant='body2'>{row.original.cliente?.gestor?.gestor?.nome}</Typography>
-                  <Typography variant='body2'>celular: {row.original.cliente?.gestor?.gestor?.telefone}</Typography>
-                </>
-              )}
-              {!row.original.cliente?.gestor?.gestor && (
-                <>
-                  <Typography color='text.primary' className='font-medium'>
-                    {row.original.cliente?.gestor?.nome}
-                  </Typography>
-                  <Typography variant='body2'>celular: {row.original.cliente?.gestor?.telefone}</Typography>
-                </>
+                <Typography variant='body2'>
+                  Parceiro: {row.original.cliente?.gestor?.gestor?.nome}
+                  {row.original.cliente?.gestor?.gestor?.gestor
+                    ? ` -> ${row.original.cliente?.gestor?.gestor?.gestor?.nome}`
+                    : ''}
+                </Typography>
               )}
             </div>
           </div>

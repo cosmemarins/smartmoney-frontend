@@ -206,6 +206,12 @@ const ClienteListTable = () => {
                 {row.original.gestor?.nome}
               </Typography>
               <Typography variant='body2'>{row.original.gestor?.email}</Typography>
+              {row.original.gestor?.gestor && (
+                <Typography variant='body2'>
+                  Parceiro: {row.original.gestor?.gestor?.nome}
+                  {row.original.gestor?.gestor?.gestor ? ` -> ${row.original.gestor?.gestor?.gestor?.nome}` : ''}
+                </Typography>
+              )}
             </div>
           </div>
         )

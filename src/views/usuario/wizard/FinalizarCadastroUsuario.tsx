@@ -197,8 +197,8 @@ const FinalizarCadastroUsuario = ({ activeStep, handlePrev, steps }: Props) => {
       <Grid item xs={12}>
         <div className='flex items-center justify-between'>
           <Button
-            variant='tonal'
-            color='secondary'
+            variant='contained'
+            color='primary'
             disabled={activeStep === 0}
             onClick={handlePrev}
             startIcon={<DirectionalIcon ltrIconClass='tabler-arrow-left' rtlIconClass='tabler-arrow-right' />}

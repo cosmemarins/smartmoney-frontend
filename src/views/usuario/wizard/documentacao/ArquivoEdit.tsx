@@ -227,14 +227,12 @@ const ArquivoEdit = ({ arquivoData, handleClose, setRefreshArquivoList }: props)
                           </MenuItem>
                         )}
 
-                        {arquivoData?.usuario?.tipoPessoa === 'F' && (
-                          <MenuItem
-                            value='IDENTIDADE'
-                            selected={arquivoEdit.tipoDocumento === TipoDocumentoEnum.IDENTIDADE}
-                          >
-                            Identidade
-                          </MenuItem>
-                        )}
+                        <MenuItem
+                          value='IDENTIDADE'
+                          selected={arquivoEdit.tipoDocumento === TipoDocumentoEnum.IDENTIDADE}
+                        >
+                          Identidade/CNH
+                        </MenuItem>
 
                         <MenuItem value='OUTROS' selected={arquivoEdit.tipoDocumento === TipoDocumentoEnum.OUTROS}>
                           Outros

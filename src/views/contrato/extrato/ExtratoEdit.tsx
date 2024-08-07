@@ -202,10 +202,10 @@ const ExtratoEdit = ({ extratoData, handleClose, tipoExtrato }: props) => {
                 <Grid container spacing={4}>
                   <Grid item xs={12} sm={12}>
                     <CustomTextField
-                      type='datetime-local'
+                      type='date'
                       fullWidth
                       label='Data'
-                      value={extratoEdit?.data ? moment(extratoEdit?.data).format('YYYY-MM-DD HH:mm') : ''}
+                      value={extratoEdit?.data ? moment(extratoEdit?.data).format('YYYY-MM-DD') : ''}
                       onChange={e => setExtratoEdit({ ...extratoEdit, data: new Date(e.target.value) })}
                     />
                   </Grid>
@@ -277,8 +277,8 @@ const ExtratoEdit = ({ extratoData, handleClose, tipoExtrato }: props) => {
           </Button>
           <Button
             type='reset'
-            variant='tonal'
-            color='secondary'
+            variant='contained'
+            color='primary'
             onClick={() => {
               handleClose(false)
             }}

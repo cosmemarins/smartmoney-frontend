@@ -56,15 +56,15 @@ const DadosUsuario = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
     usuarioEquipe?.tipoPessoa === 'F' &&
     (usuarioEquipe?.perfil === PerfilUsuarioEnum.PARCEIRO || usuarioEquipe?.perfil === PerfilUsuarioEnum.AGENTE)
 
+  /*
   const mostRestrictPj =
     usuarioEquipe?.tipoPessoa === 'J' &&
     (usuarioEquipe?.perfil === PerfilUsuarioEnum.PARCEIRO || usuarioEquipe?.perfil === PerfilUsuarioEnum.AGENTE)
+  */
 
   const schema = v.object({
     nome: v.string('É preciso digitar um nome'),
     email: pipe(v.string('É preciso digitar um email'), v.email('Email inválido')),
-    identidade: mostRestrictPf ? v.string('É preciso informar a identidade') : v.optional(v.string()),
-    inscricaoEstadual: mostRestrictPj ? v.string('É preciso informar a inscrição estatual') : v.optional(v.string()),
     telefone: v.string('É preciso informar um telefone'),
     dataNascimento: mostRestrictPf
       ? pipe(
@@ -86,8 +86,6 @@ const DadosUsuario = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
     defaultValues: {
       nome: usuarioEquipe?.nome,
       email: usuarioEquipe?.email,
-      identidade: usuarioEquipe?.identidade ? usuarioEquipe?.identidade : undefined,
-      inscricaoEstadual: usuarioEquipe?.inscricaoEstadual ? usuarioEquipe?.inscricaoEstadual : undefined,
       telefone: usuarioEquipe?.telefone,
       dataNascimento: usuarioEquipe?.dataNascimento ? moment(usuarioEquipe?.dataNascimento).toDate() : undefined,
       nomeSocio: usuarioEquipe?.nomeSocio ? usuarioEquipe?.nomeSocio : undefined
@@ -167,28 +165,12 @@ const DadosUsuario = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
                 )}
                 {!isCpf && (
                   <Grid item xs={12} sm={6}>
-                    <Controller
-                      name='inscricaoEstadual'
-                      control={control}
-                      rules={{ required: true }}
-                      render={({ field }) => (
-                        <CustomTextField
-                          {...field}
-                          fullWidth
-                          label='Inscrição Estadual'
-                          placeholder='Inscrição Estadual'
-                          value={usuarioEquipe?.inscricaoEstadual || ''}
-                          onChange={e => {
-                            field.onChange(e.target.value)
-                            setUsuarioEquipeContext({ ...usuarioEquipe, inscricaoEstadual: e.target.value })
-                            errorState !== null && setErrorState(null)
-                          }}
-                          {...((errors.identidade || errorState !== null) && {
-                            error: true,
-                            helperText: errors?.identidade?.message || errorState?.message
-                          })}
-                        />
-                      )}
+                    <CustomTextField
+                      fullWidth
+                      label='Inscrição Estadual'
+                      placeholder='Inscrição Estadual'
+                      value={usuarioEquipe?.inscricaoEstadual || ''}
+                      onChange={e => setUsuarioEquipeContext({ ...usuarioEquipe, inscricaoEstadual: e.target.value })}
                     />
                   </Grid>
                 )}
@@ -255,28 +237,12 @@ const DadosUsuario = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
                 </Grid>
                 {isCpf && (
                   <Grid item xs={12} sm={6}>
-                    <Controller
-                      name='identidade'
-                      control={control}
-                      rules={{ required: true }}
-                      render={({ field }) => (
-                        <CustomTextField
-                          {...field}
-                          fullWidth
-                          label='Identidade'
-                          placeholder='Identidade'
-                          value={usuarioEquipe?.identidade || ''}
-                          onChange={e => {
-                            field.onChange(e.target.value)
-                            setUsuarioEquipeContext({ ...usuarioEquipe, identidade: e.target.value })
-                            errorState !== null && setErrorState(null)
-                          }}
-                          {...((errors.identidade || errorState !== null) && {
-                            error: true,
-                            helperText: errors?.identidade?.message || errorState?.message
-                          })}
-                        />
-                      )}
+                    <CustomTextField
+                      fullWidth
+                      label='Identidade'
+                      placeholder='Identidade'
+                      value={usuarioEquipe?.identidade || ''}
+                      onChange={e => setUsuarioEquipeContext({ ...usuarioEquipe, identidade: e.target.value })}
                     />
                   </Grid>
                 )}
@@ -346,8 +312,8 @@ const DadosUsuario = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
       <Grid item xs={12}>
         <div className='flex items-center justify-between'>
           <Button
-            variant='tonal'
-            color='secondary'
+            variant='contained'
+            color='primary'
             disabled={activeStep === 0}
             onClick={handlePrev}
             startIcon={<DirectionalIcon ltrIconClass='tabler-arrow-left' rtlIconClass='tabler-arrow-right' />}

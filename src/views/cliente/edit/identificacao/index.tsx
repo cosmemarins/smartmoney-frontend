@@ -163,7 +163,7 @@ const Identificacao = () => {
             <Grid item xs={12} sm={6}>
               <CustomTextField
                 fullWidth
-                label='Identidade'
+                label='Identidade/CNH'
                 value={clienteEdit?.identidade || ''}
                 onChange={e => setClienteEdit({ ...clienteEdit, identidade: e.target.value })}
               />
@@ -283,8 +283,8 @@ const Identificacao = () => {
           </Button>
           <Button
             type='reset'
-            variant='tonal'
-            color='secondary'
+            variant='contained'
+            color='primary'
             onClick={() => {
               handleReset()
             }}

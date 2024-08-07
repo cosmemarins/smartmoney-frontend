@@ -18,7 +18,7 @@ export function getTipoDocumentoEnumDesc(item: TipoDocumentoEnum | string) {
     case TipoDocumentoEnum.CARTAO_CNPJ:
       return 'Cartão CNPJ'
     case TipoDocumentoEnum.IDENTIDADE:
-      return 'Identidade'
+      return 'Identidade/CNH'
     case TipoDocumentoEnum.COMPROVANTE_RESIDENCIA:
       return 'Comprovante de residência'
     case TipoDocumentoEnum.COMPROVANTE_FINANCEIRO:
@@ -38,7 +38,7 @@ export const TipoDocumentoEnumList = [
   { value: 'CARTAO_CNPJ', label: 'Cartão CNPJ', tipoPessoa: 'J' },
   { value: 'COMPROVANTE_RESIDENCIA', label: 'Comprovante de residência', tipoPessoa: 'F' },
   { value: 'CONTRATO_SOCIAL', label: 'Contrato Social', tipoPessoa: 'J' },
-  { value: 'IDENTIDADE', label: 'Identidade', tipoPessoa: 'F' },
+  { value: 'IDENTIDADE', label: 'Identidade/CNH', tipoPessoa: 'F' },
   { value: 'IDENTIDADE', label: 'RG ou CNH do sócio administrador', tipoPessoa: 'J' },
   { value: 'OUTROS', label: 'Outros', tipoPessoa: 'A' }
 ]
@@ -46,7 +46,7 @@ export const TipoDocumentoEnumList = [
 export const TipoDocumentoPessoFisicaEnumList = [
   { value: 'APORTE', label: 'Comprovante de transferência' },
   { value: 'COMPROVANTE_RESIDENCIA', label: 'Comprovante de residência' },
-  { value: 'IDENTIDADE', label: 'Identidade' },
+  { value: 'IDENTIDADE', label: 'Identidade/CNH' },
   { value: 'OUTROS', label: 'Outros' }
 ]
 

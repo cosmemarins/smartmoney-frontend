@@ -26,6 +26,7 @@ import { taxaContratoMarks } from '@/types/ContratoType'
 import type { ConfiguracoesUsuarioType } from '@/types/ConfiguracoesUsuarioType'
 import UsuarioService from '@/services/UsuarioService'
 import { getPerfilUsuarioEnumDesc, PerfilUsuarioEnum } from '@/utils/enums/PerfilUsuarioEnum'
+import { TaxasEnum } from '@/utils/enums/TaxasEnum'
 
 type Props = {
   activeStep: number
@@ -42,12 +43,13 @@ const ConfiguracoesUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pro
   const [configuracoesUsuario, setConfiguracoesUsuario] = useState<ConfiguracoesUsuarioType>({
     id: usuarioEquipe?.id,
     token: usuarioEquipe?.token,
-    taxaDistribuicao: usuarioEquipe?.perfil === PerfilUsuarioEnum.PARCEIRO ? 5 : 3,
+    taxaDistribuicao:
+      usuarioEquipe?.perfil === PerfilUsuarioEnum.PARCEIRO ? TaxasEnum.MAXIMO_CONSULTOR : TaxasEnum.MAXIMO_CLIENTE,
     podeCriarEquipe: false
   })
 
   const [sending, setSending] = useState<boolean>(false)
-  const [maxTaxa, setMaxTaxa] = useState<number>(Number(process.env.NEXT_PUBLIC_MAX_TAXA_PARCEIRO) || 5)
+  const [maxTaxa, setMaxTaxa] = useState<number>(Number(TaxasEnum.MAXIMO_CONSULTOR) || 5)
 
   const handleSubmit = () => {
     if (usuarioEquipe && usuarioEquipe.token && configuracoesUsuario) {
@@ -74,7 +76,7 @@ const ConfiguracoesUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pro
     //console.log(sliderValue)
 
     if (typeof sliderValue === 'number') {
-      if (sliderValue < 5) {
+      if (sliderValue < TaxasEnum.MAXIMO_CONSULTOR) {
         setConfiguracoesUsuario({
           ...configuracoesUsuario,
           taxaDistribuicao: sliderValue,
@@ -96,7 +98,9 @@ const ConfiguracoesUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pro
         id: usuarioEquipe.id,
         token: usuarioEquipe.token,
         podeCriarEquipe:
-          usuarioEquipe.taxaDistribuicao && usuarioEquipe.taxaDistribuicao < 5 ? false : usuarioEquipe.podeCriarEquipe
+          usuarioEquipe.taxaDistribuicao && usuarioEquipe.taxaDistribuicao < TaxasEnum.MAXIMO_CONSULTOR
+            ? false
+            : usuarioEquipe.podeCriarEquipe
       })
 
       //definindo a taxa máxima padrao default para o novo usuario
@@ -133,7 +137,7 @@ const ConfiguracoesUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pro
                     min={0}
                     max={maxTaxa}
                     step={0.1}
-                    defaultValue={configuracoesUsuario?.taxaDistribuicao || 5}
+                    defaultValue={configuracoesUsuario?.taxaDistribuicao || TaxasEnum.MAXIMO_CONSULTOR}
                     valueLabelDisplay='auto'
                     aria-labelledby='continuous-slider'
                     onChangeCommitted={(e, value) => handleSlideChange(e, value)}
@@ -158,7 +162,9 @@ const ConfiguracoesUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pro
                         control={<Radio />}
                         label='Não'
                         disabled={
-                          (configuracoesUsuario.taxaDistribuicao && configuracoesUsuario.taxaDistribuicao < 5) || false
+                          (configuracoesUsuario.taxaDistribuicao &&
+                            configuracoesUsuario.taxaDistribuicao < TaxasEnum.MAXIMO_CONSULTOR) ||
+                          false
                         }
                       />
                       <FormControlLabel
@@ -166,7 +172,9 @@ const ConfiguracoesUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pro
                         control={<Radio />}
                         label='Sim'
                         disabled={
-                          (configuracoesUsuario.taxaDistribuicao && configuracoesUsuario.taxaDistribuicao < 5) || false
+                          (configuracoesUsuario.taxaDistribuicao &&
+                            configuracoesUsuario.taxaDistribuicao < TaxasEnum.MAXIMO_CONSULTOR) ||
+                          false
                         }
                       />
                     </RadioGroup>
@@ -182,7 +190,7 @@ const ConfiguracoesUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pro
       <Grid item xs={12}>
         <div className='flex items-center justify-between'>
           <Button
-            variant='tonal'
+            variant='contained'
             color='secondary'
             disabled={activeStep === 0}
             onClick={handlePrev}

@@ -4,18 +4,7 @@
 import { useEffect, useMemo, useState } from 'react'
 
 import type { TextFieldProps } from '@mui/material'
-import {
-  Button,
-  Card,
-  CardHeader,
-  Checkbox,
-  Chip,
-  IconButton,
-  Link,
-  MenuItem,
-  TablePagination,
-  Typography
-} from '@mui/material'
+import { Button, Card, CardHeader, Chip, IconButton, Link, MenuItem, TablePagination, Typography } from '@mui/material'
 
 import type { ColumnDef, FilterFn } from '@tanstack/react-table'
 import {
@@ -155,39 +144,6 @@ const UsuarioListTable = ({ perfil }: Props) => {
 
   const columns = useMemo<ColumnDef<UsuarioTypeWithAction, any>[]>(
     () => [
-      {
-        id: 'select',
-        header: ({ table }) => (
-          <Checkbox
-            {...{
-              checked: table.getIsAllRowsSelected(),
-              indeterminate: table.getIsSomeRowsSelected(),
-              onChange: table.getToggleAllRowsSelectedHandler()
-            }}
-          />
-        ),
-        cell: ({ row }) => (
-          <Checkbox
-            {...{
-              checked: row.getIsSelected(),
-              disabled: !row.getCanSelect(),
-              indeterminate: row.getIsSomeSelected(),
-              onChange: row.getToggleSelectedHandler()
-            }}
-          />
-        )
-      },
-      columnHelper.accessor('gestor.nome', {
-        header: 'Gestor',
-        cell: ({ row }) => (
-          <div className='flex flex-col'>
-            <Typography color='text.primary' className='font-medium'>
-              {row.original.gestor?.nome}
-            </Typography>
-            <Typography variant='body2'>{cpfCnpjMask(row.original.gestor?.cpfCnpj)}</Typography>
-          </div>
-        )
-      }),
       columnHelper.accessor('nome', {
         header: 'Usuário',
         cell: ({ row }) => (
@@ -199,6 +155,17 @@ const UsuarioListTable = ({ perfil }: Props) => {
               </Typography>
               <Typography variant='body2'>{cpfCnpjMask(row.original.cpfCnpj)}</Typography>
             </div>
+          </div>
+        )
+      }),
+      columnHelper.accessor('gestor.nome', {
+        header: 'Gestor',
+        cell: ({ row }) => (
+          <div className='flex flex-col'>
+            <Typography color='text.primary' className='font-medium'>
+              {row.original.gestor?.nome}
+            </Typography>
+            <Typography variant='body2'>{cpfCnpjMask(row.original.gestor?.cpfCnpj)}</Typography>
           </div>
         )
       }),

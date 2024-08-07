@@ -215,8 +215,8 @@ const DadosBancarios = () => {
           </Button>
           <Button
             type='reset'
-            variant='tonal'
-            color='secondary'
+            variant='contained'
+            color='primary'
             onClick={() => {
               handleReset()
             }}

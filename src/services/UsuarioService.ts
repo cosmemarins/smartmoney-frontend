@@ -64,6 +64,12 @@ const UsuarioService = {
     return data
   },
 
+  getProfile: async function (): Promise<UsuarioType> {
+    const { data } = await api.get<UsuarioType>(`${path}/profile`)
+
+    return data
+  },
+
   getByCpfCnpj: async function (cpfCnpj: string): Promise<UsuarioType> {
     const cpfCnpjPar = cpfCnpj.replace(/[^\d]+/g, '')
     const { data } = await api.get<UsuarioType>(`${path}/cpf-cnpj/${cpfCnpjPar}`)
