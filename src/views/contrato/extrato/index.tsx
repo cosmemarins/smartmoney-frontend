@@ -24,7 +24,6 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  IconButton,
   styled
 } from '@mui/material'
 
@@ -65,8 +64,8 @@ export default function ExtratoContrato({ token }: props) {
   const [extratoList, setExtratoList] = useState<ExtratoType[]>([])
   const [reload, setReload] = useState(false)
   const [openDlgExtrato, setOpenDlgExtrato] = useState<boolean>(false)
-  const [openDlgDeleteExtrato, setOpenDlgDeleteExtrato] = useState<boolean>(false)
-  const [itemSelect, setItemSelect] = useState<string | undefined>()
+
+  //const [openDlgDeleteExtrato, setOpenDlgDeleteExtrato] = useState<boolean>(false)
 
   // Refs
   const initialized = useRef(false)
@@ -93,6 +92,7 @@ export default function ExtratoContrato({ token }: props) {
     }
   }
 
+  /*
   const handleOnEditExtrato = (extrato: ExtratoType) => {
     if (extrato.token) {
       extrato = {
@@ -112,24 +112,25 @@ export default function ExtratoContrato({ token }: props) {
       setOpenDlgDeleteExtrato(true)
     }
   }
-
+  
   const confirmDeleteExtrato = () => {
     if (contrato && itemSelect) {
       setReload(true)
       ContratoService.excluirExtrato(itemSelect)
-        .then(() => {
-          refreshListExtrato(contrato?.token)
-          setOpenDlgDeleteExtrato(false)
-          toast.success(`Lançamento ${itemSelect} excluído com sucesso!`)
-        })
-        .catch(err => {
-          console.log('Erro ao excluir', err)
-        })
-        .finally(() => {
-          setReload(false)
-        })
+      .then(() => {
+        refreshListExtrato(contrato?.token)
+        setOpenDlgDeleteExtrato(false)
+        toast.success(`Lançamento ${itemSelect} excluído com sucesso!`)
+      })
+      .catch(err => {
+        console.log('Erro ao excluir', err)
+      })
+      .finally(() => {
+        setReload(false)
+      })
     }
   }
+  */
 
   const refreshListExtrato = (token: string | undefined) => {
     if (token) {
@@ -337,9 +338,10 @@ export default function ExtratoContrato({ token }: props) {
           <DialogTitle id='form-dialog-title'>Atenção ao excluir lançamento</DialogTitle>
           <DialogContent>
             <p>Ao excluir este lançamento, o comprovante também será excluído.</p>
-            <p>Tem certeza que deseja excluir o lançamento: {itemSelect}?</p>
+            <p>Tem certeza que deseja excluir o lançamento: {/*itemSelect*/}?</p>
           </DialogContent>
           <DialogActions className='dialog-actions-dense'>
+            {/*
             <Button variant='contained' onClick={() => confirmDeleteExtrato()}>
               Confirmar Exclusão
             </Button>
@@ -353,6 +355,7 @@ export default function ExtratoContrato({ token }: props) {
             >
               Cancelar
             </Button>
+            */}
           </DialogActions>
         </Dialog>
       </>

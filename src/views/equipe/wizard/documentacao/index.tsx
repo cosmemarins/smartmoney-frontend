@@ -14,7 +14,6 @@ import ArquivoService from '@/services/ArquivoService'
 import { trataErro } from '@/utils/erro'
 import ArquivoItem from './ArquivoItem'
 
-import UsuarioService from '@/services/UsuarioService'
 import DirectionalIcon from '@/components/DirectionalIcon'
 import { TipoArquivoRegistroEnum } from '@/utils/enums/TipoArquivoRegistroEnum'
 import { useEquipeContext } from '@/contexts/EquipeContext'
@@ -28,9 +27,8 @@ type Props = {
 
 const Documentacao = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
   //contexto
-  const { usuarioEquipe, setUsuarioEquipeContext, setLoadingContext } = useEquipeContext()
+  const { usuarioEquipe, setLoadingContext } = useEquipeContext()
 
-  const [sending, setSending] = useState<boolean>(false)
   const [openDlgArquivo, setOpenDlgArquivo] = useState<boolean>(false)
   const [tituloDlgArquivo, setTituloDlgArquivo] = useState('Novo Upload de Arquivo')
   const [arquivoList, setArquivoList] = useState<ArquivoType[]>([])
@@ -60,27 +58,6 @@ const Documentacao = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
 
   const handleCloseDlgArquivo = () => {
     setOpenDlgArquivo(false)
-  }
-
-  const onSubmit = (e: React.FormEvent<HTMLFormElement> | undefined) => {
-    e?.preventDefault()
-
-    if (usuarioEquipe) {
-      setSending(true)
-      UsuarioService.salvar(usuarioEquipe)
-        .then(respUsuario => {
-          setUsuarioEquipeContext(respUsuario)
-          handleNext()
-        })
-        .catch(err => {
-          const msgErro = trataErro(err)
-
-          toast.error(msgErro)
-        })
-        .finally(() => {
-          setSending(false)
-        })
-    }
   }
 
   useEffect(() => {
@@ -150,7 +127,6 @@ const Documentacao = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
               variant='contained'
               color={activeStep === steps.length - 1 ? 'success' : 'primary'}
               onClick={handleNext}
-              /* onClick={() => onSubmit(undefined)} */
               endIcon={
                 activeStep === steps.length - 1 ? (
                   <i className='tabler-check' />
