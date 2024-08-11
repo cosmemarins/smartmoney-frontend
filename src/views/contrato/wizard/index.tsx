@@ -106,7 +106,7 @@ const ContratoPage = () => {
   const { contrato } = useContratoContext()
 
   const handleNext = () => {
-    console.log('proximo: ', activeStep)
+    //console.log('proximo: ', activeStep)
 
     if (activeStep !== steps.length - 1) {
       setActiveStep(activeStep + 1)

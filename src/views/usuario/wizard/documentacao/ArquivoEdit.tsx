@@ -284,8 +284,7 @@ const ArquivoEdit = ({ arquivoData, handleClose, setRefreshArquivoList }: props)
             </Button>
             <Button
               type='reset'
-              variant='tonal'
-              color='secondary'
+              variant='contained'
               onClick={() => {
                 handleClose(false)
               }}

@@ -88,21 +88,23 @@ const UserDropdown = () => {
 
   return (
     <>
-      <Badge
-        ref={anchorRef}
-        overlap='circular'
-        badgeContent={<BadgeContentSpan onClick={handleDropdownOpen} />}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-        className='mis-2'
-      >
-        <Avatar
+      <div ref={anchorRef} onClick={handleDropdownOpen} className='flex items-center cursor-pointer' tabIndex={-1}>
+        <Badge
           ref={anchorRef}
-          alt={session?.user?.nome || ''}
-          src={session?.user?.foto || ''}
-          onClick={handleDropdownOpen}
-          className='cursor-pointer bs-[38px] is-[38px]'
-        />
-      </Badge>
+          overlap='circular'
+          badgeContent={<BadgeContentSpan onClick={handleDropdownOpen} />}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+          className='mis-2'
+        >
+          <Avatar alt={session?.user?.nome || ''} src={session?.user?.foto || ''} className='bs-[38px] is-[38px]' />
+        </Badge>
+        <div className='flex items-start flex-col pli-3 '>
+          <Typography className='font-medium' color='text.primary'>
+            {session?.user?.nome || ''}
+          </Typography>
+          <Typography variant='caption'>{session?.user?.perfil || ''}</Typography>
+        </div>
+      </div>
       <Popper
         open={open}
         transition

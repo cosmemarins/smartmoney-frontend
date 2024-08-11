@@ -91,6 +91,12 @@ const ContratoService = {
     return data
   },
 
+  ativarEEnviarContrato: async function ativarContrato(token: string): Promise<ContratoType> {
+    const { data } = await api.post<ContratoType>(`${path}/ativar-enviar/${token}`, { token })
+
+    return data
+  },
+
   excluirContrato: async function excluirContrato(token: string) {
     //console.log('Excluindo o contrato: ', token)
     const { data } = await api.delete<string>(`${path}/${token}`)

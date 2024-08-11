@@ -527,7 +527,11 @@ const ContratoListTable = () => {
             </Typography>
           </DialogTitle>
           <DialogContent>
-            <Documentacao contrato={contratoEdit} cliente={contratoEdit.cliente} />
+            <Documentacao
+              contrato={contratoEdit}
+              cliente={contratoEdit.cliente}
+              handleClose={handleCloseDlgDocumentacao}
+            />
           </DialogContent>
           <DialogActions className='dialog-actions-dense'>
             <Button

@@ -36,8 +36,8 @@ const DialogConfirma = ({ dialogConfirmaOptions }: props) => {
         </Button>
         <Button
           type='reset'
-          variant='tonal'
-          color='secondary'
+          variant='contained'
+          color='primary'
           onClick={() => {
             setOpenDlgConfirma({ open: false })
           }}

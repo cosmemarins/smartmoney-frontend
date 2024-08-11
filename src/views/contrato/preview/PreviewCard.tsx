@@ -13,7 +13,7 @@ import moment, { locale } from 'moment'
 
 import { toast } from 'react-toastify'
 
-import Logo from '@components/layout/shared/Logo'
+import Logo from '@/components/layout/shared/Logo-h'
 
 import 'moment/locale/pt-br'
 

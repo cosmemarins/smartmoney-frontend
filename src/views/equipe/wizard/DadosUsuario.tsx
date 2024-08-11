@@ -238,7 +238,7 @@ const DadosUsuario = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
                     <CustomTextField
                       fullWidth
                       label='Identidade/CNH'
-                      placeholder='Identidade'
+                      placeholder='Identidade/CNH'
                       value={usuarioEquipe?.identidade || ''}
                       onChange={e => setUsuarioEquipeContext({ ...usuarioEquipe, identidade: e.target.value })}
                     />

@@ -12,6 +12,9 @@ export type ResumoContratoType = {
   comprovanteResidenciaOk: boolean
   contratoSocialOk: boolean
   identidadeOk: boolean
+  isAtivo: boolean
+  dataAtivacao: string
+  dataEnvio: string
   resumoExtrato?: ResumoExtratoType
 }
 
@@ -26,5 +29,8 @@ export const ResumoContratoInit = {
   comprovanteResidenciaOk: false,
   contratoSocialOk: false,
   identidadeOk: false,
+  isAtivo: false,
+  dataAtivacao: '',
+  dataEnvio: '',
   resumoExtrato: ResumoExtratoInit
 }

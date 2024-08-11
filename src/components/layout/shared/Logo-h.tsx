@@ -17,7 +17,7 @@ import type { VerticalNavContextProps } from '@menu/contexts/verticalNavContext'
 //import VuexyLogo from '@core/svg/Logo'
 
 // Config Imports
-import themeConfig from '@configs/themeConfig'
+// import themeConfig from '@configs/themeConfig'
 
 // Hook Imports
 import useVerticalNav from '@menu/hooks/useVerticalNav'
@@ -42,7 +42,7 @@ const LogoText = styled.span<LogoTextProps>`
     isCollapsed && !isHovered ? 'opacity: 0; margin-inline-start: 0;' : 'opacity: 1; margin-inline-start: 12px;'}
 `
 
-const Logo = () => {
+const LogoH = () => {
   // Refs
   const logoTextRef = useRef<HTMLSpanElement>(null)
 
@@ -72,17 +72,15 @@ const Logo = () => {
   // return <Img src='/next.svg' width={100} height={25} alt='logo' /> // for example
   return (
     <Link href='/' className='flex items-center'>
-      <img src='/images/logo-laranja-3.png' width='45' />
+      <img src='/images/logo-h.png' width='354' />
       <LogoText
         ref={logoTextRef}
         isHovered={isHovered}
         isCollapsed={layout === 'collapsed'}
         transitionDuration={transitionDuration}
-      >
-        {themeConfig.templateName}
-      </LogoText>
+      ></LogoText>
     </Link>
   )
 }
 
-export default Logo
+export default LogoH

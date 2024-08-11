@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import Grid from '@mui/material/Grid'
 
 // Component Imports
-import { Button, Card, CardContent, CardHeader, Dialog, DialogContent, DialogTitle } from '@mui/material'
+import { Button, Card, CardContent, CardHeader, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material'
 
 import { toast } from 'react-toastify'
 
@@ -20,18 +20,23 @@ import ExtratoService from '@/services/ExtratoService'
 import ContratoService from '@/services/ContratoService'
 import type { ContratoType } from '@/types/ContratoType'
 import type { ClienteType } from '@/types/ClienteType'
+import type { ResumoContratoType } from '@/types/ResumoContratoType'
+import { ResumoContratoInit } from '@/types/ResumoContratoType'
 
 type Props = {
   contrato: ContratoType
   cliente?: ClienteType
+  handleClose?: any
 }
 
-const Documentacao = ({ contrato, cliente }: Props) => {
+const Documentacao = ({ contrato, cliente, handleClose }: Props) => {
   //contexto
   const [openDlgArquivo, setOpenDlgArquivo] = useState<boolean>(false)
   const [tituloDlgArquivo, setTituloDlgArquivo] = useState('Novo Upload de Arquivo')
+  const [openDlgAtivarContrato, setOpenDlgAtivarContrato] = useState<boolean>(false)
   const [arquivoList, setArquivoList] = useState<ArquivoType[]>([])
-  const [refreshArquivoList, setRefreshArquivoList] = useState<boolean>(true)
+  const [refreshArquivoList, setRefreshArquivoList] = useState<boolean>(false)
+  const [resumoContrato, setResumoContrato] = useState<ResumoContratoType>(ResumoContratoInit)
 
   const arquivoInit = {
     data: new Date(),
@@ -57,7 +62,7 @@ const Documentacao = ({ contrato, cliente }: Props) => {
     }
   }
 
-  console.log('extratoInit', extratoInit)
+  console.log('Documentacao 1 extratoInit', extratoInit)
   const [extratoEdit, setExtratoEdit] = useState<ExtratoType>(extratoInit)
 
   const handleNovoArquivo = () => {
@@ -95,9 +100,47 @@ const Documentacao = ({ contrato, cliente }: Props) => {
     setOpenDlgArquivo(false)
   }
 
-  useEffect(() => {
-    setRefreshArquivoList(false)
+  const handleAtivarContrato = () => {
+    if (contrato?.token) {
+      if (!resumoContrato.isAtivo) {
+        ContratoService.ativarContrato(contrato?.token)
+          .then(() => {
+            //console.log(respContrato)
+            toast.success(`Contrato ${contrato?.token} ativado!`)
+            handleClose(true)
+          })
+          .catch(err => {
+            console.log('ERRO contratoAtivar', err)
+            toast.error(trataErro(err))
+          })
+          .finally(() => {})
+      } else {
+        toast.success(`Contrato ${contrato?.token} já está ativado!`)
+      }
+    }
+  }
 
+  const handleAtivarEEnviarContrato = () => {
+    if (contrato?.token) {
+      if (!resumoContrato.isAtivo) {
+        ContratoService.ativarEEnviarContrato(contrato?.token)
+          .then(() => {
+            //console.log(respContrato)
+            toast.success(`Contrato ${contrato?.token} ativado!`)
+            handleClose(true)
+          })
+          .catch(err => {
+            console.log('ERRO contratoAtivar', err)
+            toast.error(trataErro(err))
+          })
+          .finally(() => {})
+      } else {
+        toast.success(`Contrato ${contrato?.token} já está ativado!`)
+      }
+    }
+  }
+
+  const carregaLista = () => {
     if (contrato?.token) {
       //precisa recuperar por aqui pois tem que ser via axios por causa da validação de seção
       ContratoService.listDocumentos(contrato.token)
@@ -108,7 +151,33 @@ const Documentacao = ({ contrato, cliente }: Props) => {
           toast.error(trataErro(err))
         })
         .finally(() => {})
+
+      if (!openDlgAtivarContrato) {
+        //atualiza o objeto resumo do contrato
+        ContratoService.getResumo(contrato.token)
+          .then(respResumo => {
+            console.log('respResumo', respResumo)
+            setResumoContrato(respResumo)
+            if (respResumo.podeAtivar) setOpenDlgAtivarContrato(true)
+          })
+          .catch(err => {
+            toast.error(trataErro(err))
+          })
+          .finally(() => {})
+      }
     }
+  }
+
+  useEffect(() => {
+    console.log('Documentacao useeffect[]')
+    carregaLista()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    console.log('Documentacao useeffect refreshList')
+    setRefreshArquivoList(false)
+    carregaLista()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshArquivoList])
 
@@ -179,6 +248,50 @@ const Documentacao = ({ contrato, cliente }: Props) => {
             setRefresh={setRefreshArquivoList}
           />
         </DialogContent>
+      </Dialog>
+      <Dialog
+        maxWidth='sm'
+        open={openDlgAtivarContrato}
+        aria-labelledby='form-dialog-title'
+        disableEscapeKeyDown
+        onClose={(event, reason) => {
+          if (reason !== 'backdropClick') {
+            handleCloseDlgArquivo()
+          }
+        }}
+      >
+        <DialogTitle id='form-dialog-title'>Ativar contrato</DialogTitle>
+        <DialogContent>Este contrato já pode ser ativado, deseja ativa-lo agora?</DialogContent>
+        <DialogActions className='dialog-actions-dense'>
+          <Button
+            variant='contained'
+            color='info'
+            onClick={() => {
+              handleAtivarEEnviarContrato()
+            }}
+          >
+            Ativar e Enviar contrato
+          </Button>
+          <Button
+            variant='contained'
+            color='success'
+            onClick={() => {
+              handleAtivarContrato()
+            }}
+          >
+            Apenas ativar o contrato
+          </Button>
+          <Button
+            type='reset'
+            variant='contained'
+            color='primary'
+            onClick={() => {
+              setOpenDlgAtivarContrato(false)
+            }}
+          >
+            Cancelar
+          </Button>
+        </DialogActions>
       </Dialog>
     </>
   )

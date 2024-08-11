@@ -371,8 +371,7 @@ export default function ExtratoContrato() {
             </Button>
             <Button
               type='reset'
-              variant='tonal'
-              color='secondary'
+              variant='contained'
               onClick={() => {
                 setOpenDlgDeleteExtrato(false)
               }}

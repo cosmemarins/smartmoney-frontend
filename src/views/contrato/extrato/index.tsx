@@ -292,8 +292,7 @@ export default function ExtratoContrato({ token }: props) {
             </TableBody>
             <caption>
               <Button
-                variant='tonal'
-                color='secondary'
+                variant='contained'
                 startIcon={<i className='tabler-arrow-back-up' />}
                 onClick={() => window.history.back()}
                 sx={{ float: 'left' }}

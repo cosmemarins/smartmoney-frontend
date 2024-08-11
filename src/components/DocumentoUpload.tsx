@@ -48,7 +48,13 @@ const DocumentoUpload = ({ arquivoUploadData, setFileUpload }: props) => {
   })
 
   const img = files.map((file: FileProp) => (
-    <CardMedia key={file.name} sx={{ minHeight: 170 }} image={URL.createObjectURL(file as any)} title={file.name} />
+    <CardMedia
+      key={file.name}
+      sx={{ minHeight: 170 }}
+      image={URL.createObjectURL(file as any)}
+      title={file.name}
+      className='cursor-pointer'
+    />
   ))
 
   return (
@@ -65,10 +71,11 @@ const DocumentoUpload = ({ arquivoUploadData, setFileUpload }: props) => {
               sx={{ minHeight: 170 }}
               image={`data:image/jpeg;base64, ${arquivoUploadData.base64Data}`}
               title={arquivoUploadData.titulo}
+              className='cursor-pointer'
             />
           ) : (
             <div style={{ minHeight: '203px' }} className='flex items-center flex-col'>
-              <Avatar variant='rounded' className='bs-12 is-12 mbe-5'>
+              <Avatar variant='rounded' className='bs-12 is-12 mbe-5 cursor-pointer'>
                 <i className='tabler-upload' />
               </Avatar>
               <Typography variant='h6' className='mbe-2 text-center'>

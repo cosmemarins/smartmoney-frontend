@@ -239,8 +239,8 @@ const DadosUsuario = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
                   <Grid item xs={12} sm={6}>
                     <CustomTextField
                       fullWidth
-                      label='Identidade'
-                      placeholder='Identidade'
+                      label='Identidade/CNH'
+                      placeholder='Identidade/CNH'
                       value={usuarioEquipe?.identidade || ''}
                       onChange={e => setUsuarioEquipeContext({ ...usuarioEquipe, identidade: e.target.value })}
                     />

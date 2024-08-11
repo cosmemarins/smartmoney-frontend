@@ -9,6 +9,7 @@ import type UsuarioSenhaDTO from '@/types/UsuarioSenha.dto'
 import type TamanhoEquipeDTO from '@/types/TamanhoEquipe.dto'
 import type { ConfiguracoesUsuarioType } from './../types/ConfiguracoesUsuarioType'
 import { PerfilUsuarioEnum } from '@/utils/enums/PerfilUsuarioEnum'
+import type { ResumoUsuarioType } from '@/types/ResumoUsuarioType'
 
 const path = 'usuarios'
 
@@ -159,6 +160,12 @@ const UsuarioService = {
 
   resetarSenha: async function (token: string, usuarioSenha: UsuarioSenhaDTO): Promise<DadosBancariosType> {
     const { data } = await api.put<DadosBancariosType>(`${path}/resetar-senha/${token}`, usuarioSenha)
+
+    return data
+  },
+
+  getResumo: async function getResumo(token: string): Promise<ResumoUsuarioType> {
+    const { data } = await api.get<ResumoUsuarioType>(`${path}/resumo/${token}`)
 
     return data
   },

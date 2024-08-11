@@ -18,7 +18,6 @@ import { TipoDocumentoEnum } from '@/utils/enums/TipoDocumentoEnum'
 import ComprovanteUpload from '@/components/DocumentoUpload'
 import { trataErro } from '@/utils/erro'
 import DialogConfirma from '@/components/DialogConfirma'
-import { useClienteContext } from '@/contexts/ClienteContext'
 
 interface props {
   arquivoData: ArquivoType
@@ -37,7 +36,6 @@ const ArquivoEdit = ({ arquivoData, handleClose, setRefreshArquivoList }: props)
   const [dialogConfirma, setDialogConfirma] = useState<DialogConfirmaType>({ open: false })
 
   console.log('arquivoData', arquivoData)
-  const { setLoadingContext } = useClienteContext()
 
   const handleOpenDlgConfirmaExcluir = () => {
     setDialogConfirma({
@@ -50,7 +48,6 @@ const ArquivoEdit = ({ arquivoData, handleClose, setRefreshArquivoList }: props)
   }
 
   const handleExcluirArquivo = () => {
-    setLoadingContext(true)
     setErro(undefined)
 
     if (arquivoEdit.token) {
@@ -65,9 +62,7 @@ const ArquivoEdit = ({ arquivoData, handleClose, setRefreshArquivoList }: props)
         .catch(err => {
           setErro({ msg: trataErro(err) })
         })
-        .finally(() => {
-          setLoadingContext(false)
-        })
+        .finally(() => {})
     }
   }
 
@@ -158,7 +153,6 @@ const ArquivoEdit = ({ arquivoData, handleClose, setRefreshArquivoList }: props)
   useEffect(() => {
     if (arquivoData?.token) {
       //precisa recuperar por aqui pois tem que ser via axios por causa da validação de seção
-      //precisa recuperar por aqui pois tem que ser via axios por causa da validação de seção
       ArquivoService.getThumbnail(arquivoData.token)
         .then(dataImg => {
           setArquivoUploadData({
@@ -227,14 +221,12 @@ const ArquivoEdit = ({ arquivoData, handleClose, setRefreshArquivoList }: props)
                           </MenuItem>
                         )}
 
-                        {arquivoData?.usuario?.tipoPessoa === 'F' && (
-                          <MenuItem
-                            value='IDENTIDADE'
-                            selected={arquivoEdit.tipoDocumento === TipoDocumentoEnum.IDENTIDADE}
-                          >
-                            Identidade
-                          </MenuItem>
-                        )}
+                        <MenuItem
+                          value='IDENTIDADE'
+                          selected={arquivoEdit.tipoDocumento === TipoDocumentoEnum.IDENTIDADE}
+                        >
+                          Identidade/CNH {arquivoData?.usuario?.tipoPessoa === 'J' && ' do sócio admin'}
+                        </MenuItem>
 
                         <MenuItem value='OUTROS' selected={arquivoEdit.tipoDocumento === TipoDocumentoEnum.OUTROS}>
                           Outros
@@ -286,8 +278,7 @@ const ArquivoEdit = ({ arquivoData, handleClose, setRefreshArquivoList }: props)
             </Button>
             <Button
               type='reset'
-              variant='tonal'
-              color='secondary'
+              variant='contained'
               onClick={() => {
                 handleClose(false)
               }}

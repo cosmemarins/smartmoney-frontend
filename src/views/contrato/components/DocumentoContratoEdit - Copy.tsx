@@ -420,8 +420,7 @@ const DocumentoContratoEdit = ({ arquivoData, extratoData, handleClose, setRefre
             </Button>
             <Button
               type='reset'
-              variant='tonal'
-              color='secondary'
+              variant='contained'
               onClick={() => {
                 handleClose(false)
               }}

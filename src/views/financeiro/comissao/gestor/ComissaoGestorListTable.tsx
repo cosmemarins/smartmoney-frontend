@@ -132,7 +132,7 @@ const ComissaoGestorListTable = () => {
               <Typography color='text.primary' className='font-medium'>
                 {row.original.nomeCliente}
               </Typography>
-              <Typography variant='body2'>Gestor: {row.original.nomeGestor}</Typography>
+              <Typography variant='body2'>Gestor: {row.original.nomeGestor || row.original.nomeMaster}</Typography>
               {session?.user.perfil != PerfilUsuarioEnum.AGENTE && row.original.parceiro1 && (
                 <Typography variant='body2'>
                   Parceiro: {row.original.nomeParceiro1}

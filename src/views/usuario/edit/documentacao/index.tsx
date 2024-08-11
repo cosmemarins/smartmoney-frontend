@@ -14,7 +14,7 @@ const DocumentacaoTab = () => {
       <CardContent className='flex flex-col gap-4'>
         <Grid container spacing={4}>
           <Grid item xs={12} sm={4}>
-            <DocumentoUploadDropzone titulo='Identidade' tipoUpload={TipoDocumentoEnum.IDENTIDADE} />
+            <DocumentoUploadDropzone titulo='Identidade/CNH' tipoUpload={TipoDocumentoEnum.IDENTIDADE} />
           </Grid>
           <Grid item xs={12} sm={4}>
             <DocumentoUploadDropzone

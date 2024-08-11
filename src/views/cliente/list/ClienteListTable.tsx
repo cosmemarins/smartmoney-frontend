@@ -5,7 +5,6 @@ import { useEffect, useMemo, useState } from 'react'
 
 import type { TextFieldProps } from '@mui/material'
 import {
-  Button,
   Card,
   CardHeader,
   Checkbox,
@@ -325,6 +324,7 @@ const ClienteListTable = () => {
               placeholder='Localizar cliente'
               className='is-full sm:is-auto'
             />
+            {/*
             <Button
               href='/cliente/new'
               variant='contained'
@@ -333,6 +333,7 @@ const ClienteListTable = () => {
             >
               Adicionar Cliente
             </Button>
+            */}
           </div>
         </div>
         <div className='overflow-x-auto'>

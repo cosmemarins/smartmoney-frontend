@@ -192,6 +192,7 @@ const DocumentoUploadDropzone = ({ titulo, tipoUpload }: props) => {
               sx={{ minHeight: 250 }}
               image={`data:image/jpeg;base64, ${fileDocumento}`}
               title={titulo}
+              className='cursor-pointer'
             />
           ) : loadFile ? (
             <div className='flex items-center flex-col' style={{ cursor: 'pointer' }}>
@@ -199,7 +200,7 @@ const DocumentoUploadDropzone = ({ titulo, tipoUpload }: props) => {
             </div>
           ) : (
             <div className='flex items-center flex-col' style={{ cursor: 'pointer' }}>
-              <Avatar variant='rounded' className='bs-12 is-12 mbe-9'>
+              <Avatar variant='rounded' className='bs-12 is-12 mbe-9 cursor-pointer'>
                 <i className='tabler-upload' />
               </Avatar>
               <Typography variant='h6' className='mbe-2.5'>

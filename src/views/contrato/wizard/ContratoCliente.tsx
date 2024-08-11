@@ -43,6 +43,7 @@ import { useContratoContext } from '@/contexts/ContratoContext'
 import { trataErro } from '@/utils/erro'
 
 import DirectionalIcon from '@/components/DirectionalIcon'
+import { TaxasEnum } from '@/utils/enums/TaxasEnum'
 
 locale('pt-br')
 
@@ -90,9 +91,35 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
     }
   })
 
+  const calculaTaxaMaxima = (valor: number) => {
+    let taxaMax: number = TaxasEnum.MAXIMO_CLIENTE
+
+    if (valor < 100000) {
+      taxaMax = 2
+    } else if (valor < 250000) {
+      taxaMax = 2.25
+    } else if (valor < 500000) {
+      taxaMax = 2.5
+    } else if (valor < 1000000) {
+      taxaMax = 2.75
+    } else {
+      taxaMax = 3
+    }
+
+    setMaxTaxa(taxaMax)
+    setContratoContext({
+      ...contrato,
+      taxaCliente: taxaMax
+    })
+
+    return taxaMax
+  }
+
   const onChangeValor = (value: string) => {
     const valorStr = value.replace(/[^\d]+/g, '')
     const valor = parseFloat(valorStr) / 100
+
+    calculaTaxaMaxima(valor)
 
     return valor
   }
@@ -100,8 +127,10 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
   const onSubmit: SubmitHandler<FormData> = async (data: FormData) => {
     if (contrato && contrato.cliente && contrato.cliente.token && data.valor && data.taxaCliente) {
       setSending(true)
+      console.log('contrato', contrato)
       ContratoService.salvarContrato(contrato, false)
         .then(respContrato => {
+          console.log('respContrato', respContrato)
           setContratoContext(respContrato)
           handleNext()
         })
@@ -117,6 +146,9 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
   }
 
   useEffect(() => {
+    //console.log('contrato', contrato)
+    //console.log('cliente', cliente)
+
     if (contrato && (!contrato?.cliente || !contrato?.cliente.token)) {
       //é um contrato novo, tem que setar o cliente
       setContratoContext({
@@ -126,11 +158,21 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
     }
 
     if (contrato && contrato.cliente) {
-      setMaxTaxa(
-        cliente?.gestor?.taxaDistribuicao && cliente?.gestor?.taxaDistribuicao <= 3
-          ? cliente?.gestor?.taxaDistribuicao
-          : 3
-      )
+      calculaTaxaMaxima(contrato?.valor || 0)
+
+      /*
+      let taxaMax = TaxasEnum.MAXIMO_CLIENTE
+
+      if (cliente?.gestor) {
+        if (cliente?.gestor.perfil === PerfilUsuarioEnum.AGENTE) {
+          taxaMax = TaxasEnum.MAXIMO_CLIENTE
+        } else if (cliente?.gestor?.taxaDistribuicao && cliente?.gestor?.taxaDistribuicao <= TaxasEnum.MAXIMO_CLIENTE) {
+          taxaMax = cliente?.gestor?.taxaDistribuicao
+        }
+      }
+
+      setMaxTaxa(taxaMax)
+      */
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -141,7 +183,7 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
         <Grid container spacing={6}>
           <Grid item xs={12}>
             <Card className='relative'>
-              <CardHeader title='Dados do Contrato' />
+              <CardHeader title={`Dados do Contrato: ${contrato?.token ? contrato?.token : 'NOVO'}`} />
               <CardContent className='flex flex-col gap-4'>
                 <Grid container spacing={4}>
                   <Grid item xs={12} sm={6}>
@@ -238,7 +280,7 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
                             min={0}
                             max={maxTaxa || 3}
                             step={0.01}
-                            defaultValue={contrato?.taxaCliente || 3}
+                            defaultValue={contrato?.taxaCliente || TaxasEnum.MAXIMO_CLIENTE}
                             valueLabelDisplay='auto'
                             aria-labelledby='continuous-slider'
                             disabled={!!contrato?.status && contrato?.status != StatusContratoEnum.NOVO}
@@ -269,7 +311,11 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
                 </Grid>
               </CardContent>
               <Divider />
-              <CardActions></CardActions>
+              <CardActions>
+                <Grid container spacing={0} direction='column' alignItems='center' justifyContent='center'>
+                  <img src='/images/tabela-perc-rendimentos.png' />
+                </Grid>
+              </CardActions>
             </Card>
           </Grid>
           <Grid item xs={12}>

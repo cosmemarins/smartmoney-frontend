@@ -12,7 +12,7 @@ import Divider from '@mui/material/Divider'
 // Component Imports
 import moment, { locale } from 'moment'
 
-import Logo from '@components/layout/shared/Logo'
+import Logo from '@/components/layout/shared/Logo-h'
 
 import 'moment/locale/pt-br'
 

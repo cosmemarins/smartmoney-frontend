@@ -3,10 +3,13 @@ import { createContext, useContext, useState, type ReactNode } from 'react'
 import type { UsuarioType } from '@/types/UsuarioType'
 import isCPF from '@/utils/cpf'
 import isCNPJ from '@/utils/cnpj'
+import type { ResumoUsuarioType } from '@/types/ResumoUsuarioType'
 
 interface EquipeContextData {
   usuarioEquipe?: UsuarioType
   setUsuarioEquipeContext: (usuarioEquipe: UsuarioType) => void
+  resumoUsuario?: ResumoUsuarioType
+  setResumoUsuarioContext: (resumoUsuario: ResumoUsuarioType | undefined) => void
   loading: boolean
   setLoadingContext: (loading: boolean) => void
   isCpf: boolean
@@ -21,6 +24,7 @@ export const EquipeContext = createContext<EquipeContextData>({} as EquipeContex
 
 export function EquipeProvider({ children }: Props) {
   const [usuarioEquipe, setUsuarioEquipe] = useState<UsuarioType>()
+  const [resumoUsuario, setResumoUsuario] = useState<ResumoUsuarioType>()
   const [loading, setLoading] = useState<boolean>(false)
   const [isCpf, setIsCpf] = useState<boolean>(false)
   const [isCnpj, setIsCnpj] = useState<boolean>(false)
@@ -42,13 +46,26 @@ export function EquipeProvider({ children }: Props) {
     setUsuarioEquipe(usuarioEquipe)
   }
 
+  const setResumoUsuarioContext = (resumoUsuario: ResumoUsuarioType | undefined) => {
+    setResumoUsuario(resumoUsuario)
+  }
+
   const setLoadingContext = (loading: boolean) => {
     setLoading(loading)
   }
 
   return (
     <EquipeContext.Provider
-      value={{ usuarioEquipe, setUsuarioEquipeContext, loading, setLoadingContext, isCpf, isCnpj }}
+      value={{
+        usuarioEquipe,
+        setUsuarioEquipeContext,
+        resumoUsuario,
+        setResumoUsuarioContext,
+        loading,
+        setLoadingContext,
+        isCpf,
+        isCnpj
+      }}
     >
       {' '}
       {children}

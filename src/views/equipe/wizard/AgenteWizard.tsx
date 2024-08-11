@@ -15,6 +15,8 @@ import type { StepProps } from '@mui/material/Step'
 // Third-party Imports
 import classnames from 'classnames'
 
+import { toast } from 'react-toastify'
+
 import CustomAvatar from '@core/components/mui/Avatar'
 
 // Styled Component Imports
@@ -98,7 +100,7 @@ const getStepContent = (step: number, handleNext: () => void, handlePrev: () => 
 
 const AgenteWizard = () => {
   //hooks
-  const { usuarioEquipe } = useEquipeContext()
+  const { usuarioEquipe, resumoUsuario } = useEquipeContext()
 
   // States
   const [activeStep, setActiveStep] = useState(0)
@@ -118,7 +120,11 @@ const AgenteWizard = () => {
   }
 
   const handleStep = (index: number) => {
-    console.log('entrada: ', index)
+    //console.log('entrada: ', index, 'anterior', stepAnterior)
+
+    if (index > 4) {
+      if (!resumoUsuario?.podeAtivar) toast.error('É preciso enviar a documentação do usuário antes de prosseguir')
+    }
 
     switch (index) {
       case 1:
@@ -134,10 +140,17 @@ const AgenteWizard = () => {
         index = usuarioEquipe?.token && usuarioEquipe.cep ? index : stepAnterior
         break
       case 5:
-        index = usuarioEquipe?.token && usuarioEquipe.cep ? index : stepAnterior
+        index = usuarioEquipe?.token && usuarioEquipe.cep && resumoUsuario?.podeAtivar ? index : stepAnterior
         break
       case 6:
-        index = usuarioEquipe?.token && usuarioEquipe.cep ? index : stepAnterior
+        index =
+          usuarioEquipe?.token &&
+          usuarioEquipe.cep &&
+          usuarioEquipe.taxaDistribuicao &&
+          usuarioEquipe.taxaDistribuicao > 0 &&
+          resumoUsuario?.podeAtivar
+            ? index
+            : stepAnterior
         break
       case 7:
         index = usuarioEquipe?.token ? index : stepAnterior

@@ -39,35 +39,43 @@ const ConfiguracoesUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pro
   //contexto
   const { usuarioEquipe, setUsuarioEquipeContext } = useEquipeContext()
 
+  console.log('usuarioEquipe', usuarioEquipe)
+
+  const taxaInit =
+    usuarioEquipe?.perfil === PerfilUsuarioEnum.AGENTE ? TaxasEnum.MAXIMO_AGENTE : TaxasEnum.MAXIMO_CONSULTOR
+
   // States
   const [configuracoesUsuario, setConfiguracoesUsuario] = useState<ConfiguracoesUsuarioType>({
     id: usuarioEquipe?.id,
     token: usuarioEquipe?.token,
-    taxaDistribuicao:
-      usuarioEquipe?.perfil === PerfilUsuarioEnum.PARCEIRO ? TaxasEnum.MAXIMO_CONSULTOR : TaxasEnum.MAXIMO_CLIENTE,
+    taxaDistribuicao: usuarioEquipe?.taxaDistribuicao || 0,
     podeCriarEquipe: false
   })
 
   const [sending, setSending] = useState<boolean>(false)
-  const [maxTaxa, setMaxTaxa] = useState<number>(Number(TaxasEnum.MAXIMO_CONSULTOR) || 5)
+  const [maxTaxa, setMaxTaxa] = useState<number>(Number(taxaInit))
 
   const handleSubmit = () => {
     if (usuarioEquipe && usuarioEquipe.token && configuracoesUsuario) {
-      setSending(true)
-      UsuarioService.salvarConfiguracoes(configuracoesUsuario)
-        .then(respUsuario => {
-          setUsuarioEquipeContext(respUsuario)
-          toast.success('Dados salvo com sucesso!')
-          handleNext()
-        })
-        .catch(err => {
-          const msgErro = trataErro(err)
+      if (configuracoesUsuario.taxaDistribuicao && configuracoesUsuario.taxaDistribuicao > 0) {
+        setSending(true)
+        UsuarioService.salvarConfiguracoes(configuracoesUsuario)
+          .then(respUsuario => {
+            setUsuarioEquipeContext(respUsuario)
+            toast.success('Dados salvo com sucesso!')
+            handleNext()
+          })
+          .catch(err => {
+            const msgErro = trataErro(err)
 
-          toast.error(msgErro)
-        })
-        .finally(() => {
-          setSending(false)
-        })
+            toast.error(msgErro)
+          })
+          .finally(() => {
+            setSending(false)
+          })
+      } else {
+        toast.error(`A taxa de distribuição do ${usuarioEquipe.perfil} precisa ser maior que zero`)
+      }
     }
   }
 
@@ -92,7 +100,7 @@ const ConfiguracoesUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pro
   }
 
   useEffect(() => {
-    console.log(usuarioEquipe)
+    //console.log(usuarioEquipe)
 
     if (usuarioEquipe && usuarioEquipe.token) {
       setConfiguracoesUsuario({
@@ -106,13 +114,38 @@ const ConfiguracoesUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pro
       })
 
       //definindo a taxa máxima padrao default para o novo usuario
+      console.log('usuarioEquipe.gestor?.taxaDistribuicao', usuarioEquipe.gestor?.taxaDistribuicao)
+
       if (usuarioEquipe.gestor?.taxaDistribuicao) {
-        setMaxTaxa(usuarioEquipe.gestor?.taxaDistribuicao)
+        setMaxTaxa(
+          usuarioEquipe.gestor?.taxaDistribuicao < taxaInit ? usuarioEquipe.gestor?.taxaDistribuicao : taxaInit
+        )
       } else {
         //vai pegar a taxa de distribuicao
         UsuarioService.getProfile()
-          .then(respGestor => {
-            if (respGestor && respGestor.taxaDistribuicao) setMaxTaxa(respGestor.taxaDistribuicao)
+          .then(respUsuario => {
+            console.log('respUsuario', respUsuario)
+            let taxaGestor = taxaInit
+
+            console.log('taxaInit', taxaInit)
+
+            if (respUsuario) {
+              //se o usuaro tem uma taxa de distribuição entao eu pego ela
+              if (respUsuario.taxaDistribuicao && respUsuario.taxaDistribuicao > 0) {
+                taxaGestor = respUsuario.taxaDistribuicao > taxaInit ? taxaInit : respUsuario.taxaDistribuicao
+              } else {
+                //se a taxa de distribuição do usuario é zero, então ele é um colaborador e eu preciso pegar a taxa do gestor dele
+                if (respUsuario.gestor) {
+                  if (respUsuario.gestor.taxaDistribuicao && respUsuario.gestor.taxaDistribuicao > 0) {
+                    taxaGestor =
+                      respUsuario.gestor.taxaDistribuicao > taxaInit ? taxaInit : respUsuario.gestor.taxaDistribuicao
+                  }
+                }
+              }
+            }
+
+            console.log('taxaGestor', taxaGestor)
+            setMaxTaxa(taxaGestor)
           })
           .catch(err => {
             const msgErro = trataErro(err)
@@ -152,7 +185,7 @@ const ConfiguracoesUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pro
                     min={0}
                     max={maxTaxa}
                     step={0.1}
-                    defaultValue={configuracoesUsuario?.taxaDistribuicao || TaxasEnum.MAXIMO_CONSULTOR}
+                    defaultValue={configuracoesUsuario?.taxaDistribuicao || 0}
                     valueLabelDisplay='auto'
                     aria-labelledby='continuous-slider'
                     onChangeCommitted={(e, value) => handleSlideChange(e, value)}

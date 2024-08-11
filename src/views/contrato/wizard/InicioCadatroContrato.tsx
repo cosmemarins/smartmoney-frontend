@@ -78,12 +78,14 @@ const InicioCadatroContrato = ({ handleNext }: Props) => {
 
         getClienteByCpfCnpj(data.cpfCnpj)
           .then(respCliente => {
+            console.log('respCliente', respCliente)
+
             if (respCliente) {
               setClienteContext(respCliente)
               setContratoContext({
                 ...contratoInit,
                 data: new Date(),
-                cliente: { id: respCliente?.id, token: respCliente?.token }
+                cliente: { id: respCliente?.id, token: respCliente?.token, gestor: respCliente.gestor }
               })
 
               if (respCliente && respCliente.token) {

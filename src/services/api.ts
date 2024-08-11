@@ -45,7 +45,10 @@ api.interceptors.request.use(function (config) {
     console.log('storedToken vazio, precisa logar novamente')
 
     //signOut({ redirect: false })
-    signOut({ redirect: true })
+    //signOut({ redirect: false, callbackUrl: `${process.env.NEXT_PUBLIC_APP_URL}/login` })
+    signOut({ redirect: false }).then(() => {
+      window.location.href = `${process.env.NEXT_PUBLIC_APP_URL}/login`
+    })
 
     //TODO: implementar metode de refresh token
     //window.location.href = `${process.env.NEXT_PUBLIC_APP_URL}/login`

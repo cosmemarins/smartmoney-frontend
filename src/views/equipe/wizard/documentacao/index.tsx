@@ -17,6 +17,7 @@ import ArquivoItem from './ArquivoItem'
 import DirectionalIcon from '@/components/DirectionalIcon'
 import { TipoArquivoRegistroEnum } from '@/utils/enums/TipoArquivoRegistroEnum'
 import { useEquipeContext } from '@/contexts/EquipeContext'
+import UsuarioService from '@/services/UsuarioService'
 
 type Props = {
   activeStep: number
@@ -27,7 +28,7 @@ type Props = {
 
 const Documentacao = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
   //contexto
-  const { usuarioEquipe, setLoadingContext } = useEquipeContext()
+  const { usuarioEquipe, setResumoUsuarioContext, setLoadingContext } = useEquipeContext()
 
   const [openDlgArquivo, setOpenDlgArquivo] = useState<boolean>(false)
   const [tituloDlgArquivo, setTituloDlgArquivo] = useState('Novo Upload de Arquivo')
@@ -60,11 +61,65 @@ const Documentacao = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
     setOpenDlgArquivo(false)
   }
 
+  const handleProximo = () => {
+    if (usuarioEquipe?.token) {
+      UsuarioService.getResumo(usuarioEquipe?.token)
+        .then(respResumo => {
+          console.log('respResumo', respResumo)
+          setResumoUsuarioContext(respResumo)
+
+          if (respResumo.podeAtivar) {
+            handleNext()
+          } else {
+            let msgErro = !respResumo.comprovanteResidenciaOk ? 'identidade/CNH' : ''
+
+            if (!respResumo.comprovanteResidenciaOk) {
+              msgErro += msgErro === '' ? 'comprovante de residência' : ' e comprovante de residência'
+            }
+
+            if (usuarioEquipe.tipoPessoa === 'J') {
+              if (!respResumo.cartaoCnpjOk) {
+                msgErro += msgErro === '' ? 'cartão CNPJ' : ', cartão CNPJ'
+              }
+
+              if (!respResumo.contratoSocialOk) {
+                msgErro += msgErro === '' ? 'contrato social' : ' e contrato social'
+              }
+            }
+
+            msgErro = `É preciso enviar a documentação deste usuário para dar continuidade ao cadastro. A documentação que falta é ${msgErro}`
+            toast.error(msgErro)
+          }
+        })
+        .catch(err => {
+          toast.error(trataErro(err))
+        })
+        .finally(() => {
+          setLoadingContext(false)
+        })
+    } else {
+      toast.error('Nenhum usuário selecionado')
+    }
+  }
+
   useEffect(() => {
     setRefreshArquivoList(false)
 
     if (usuarioEquipe?.token) {
       setLoadingContext(true)
+
+      //atualiza o objeto resumo do contrato
+      UsuarioService.getResumo(usuarioEquipe?.token)
+        .then(respResumo => {
+          console.log('respResumo', respResumo)
+          setResumoUsuarioContext(respResumo)
+        })
+        .catch(err => {
+          toast.error(trataErro(err))
+        })
+        .finally(() => {
+          setLoadingContext(false)
+        })
 
       //precisa recuperar por aqui pois tem que ser via axios por causa da validação de seção
       ArquivoService.getListUsuario(usuarioEquipe.token)
@@ -103,7 +158,14 @@ const Documentacao = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
                 {arquivoList.map((arquivo, key) => (
                   <Grid key={key} item xs={12} sm={4}>
                     <ArquivoItem
-                      arquivo={{ ...arquivo, usuario: { id: usuarioEquipe?.id, token: usuarioEquipe?.token } }}
+                      arquivo={{
+                        ...arquivo,
+                        usuario: {
+                          id: usuarioEquipe?.id,
+                          token: usuarioEquipe?.token,
+                          tipoPessoa: usuarioEquipe?.tipoPessoa
+                        }
+                      }}
                       handleEditArquivo={handleEditArquivo}
                     />
                   </Grid>
@@ -126,7 +188,7 @@ const Documentacao = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
             <Button
               variant='contained'
               color={activeStep === steps.length - 1 ? 'success' : 'primary'}
-              onClick={handleNext}
+              onClick={handleProximo}
               endIcon={
                 activeStep === steps.length - 1 ? (
                   <i className='tabler-check' />

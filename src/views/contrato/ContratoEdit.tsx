@@ -562,8 +562,7 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
             )}
             <Button
               type='reset'
-              variant='tonal'
-              color='secondary'
+              variant='contained'
               onClick={() => {
                 handleClose(false)
               }}

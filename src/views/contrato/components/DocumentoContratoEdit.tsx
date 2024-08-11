@@ -25,7 +25,6 @@ import {
 import ComprovanteUpload from '@/components/DocumentoUpload'
 import { trataErro } from '@/utils/erro'
 import DialogConfirma from '@/components/DialogConfirma'
-import { useClienteContext } from '@/contexts/ClienteContext'
 import { TipoArquivoRegistroEnum } from '@/utils/enums/TipoArquivoRegistroEnum'
 import type { ExtratoType } from '@/types/ExtratoType'
 import ContratoService from '@/services/ContratoService'
@@ -51,8 +50,6 @@ const DocumentoContratoEdit = ({ arquivoData, extratoData, handleClose, setRefre
   const [extratoEdit, setExtratoEdit] = useState<ExtratoType>(extratoData)
   const [dialogConfirma, setDialogConfirma] = useState<DialogConfirmaType>({ open: false })
 
-  const { setLoadingContext } = useClienteContext()
-
   const handleOpenDlgConfirmaExcluir = () => {
     setDialogConfirma({
       open: true,
@@ -63,8 +60,9 @@ const DocumentoContratoEdit = ({ arquivoData, extratoData, handleClose, setRefre
     })
   }
 
+  console.log('DocumentoContratoEdit 1')
+
   const handleExcluirArquivo = () => {
-    setLoadingContext(true)
     setErro(undefined)
 
     console.log('handleExcluirArquivo', arquivoEdit)
@@ -85,9 +83,7 @@ const DocumentoContratoEdit = ({ arquivoData, extratoData, handleClose, setRefre
             .catch(err => {
               setErro({ msg: trataErro(err) })
             })
-            .finally(() => {
-              setLoadingContext(false)
-            })
+            .finally(() => {})
         }
       } else {
         ArquivoService.excluir(arquivoEdit?.token)
@@ -101,9 +97,7 @@ const DocumentoContratoEdit = ({ arquivoData, extratoData, handleClose, setRefre
           .catch(err => {
             setErro({ msg: trataErro(err) })
           })
-          .finally(() => {
-            setLoadingContext(false)
-          })
+          .finally(() => {})
       }
     }
   }
@@ -152,6 +146,7 @@ const DocumentoContratoEdit = ({ arquivoData, extratoData, handleClose, setRefre
       historico: arquivoEdit.descricao
     })
       .then(respExtrato => {
+        setRefresh(true)
         toast.success('Lançamento salvo com sucesso!')
         setExtratoEdit(respExtrato)
         handleClose(true)
@@ -279,7 +274,7 @@ const DocumentoContratoEdit = ({ arquivoData, extratoData, handleClose, setRefre
   }
 
   useEffect(() => {
-    console.log('useeffect arquivoData', arquivoData)
+    console.log('DocumentoContratoEdit useeffect[] arquivoData', arquivoData)
 
     if (arquivoData?.token) {
       //precisa recuperar por aqui pois tem que ser via axios por causa da validação de seção

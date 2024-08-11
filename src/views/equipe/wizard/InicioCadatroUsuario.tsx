@@ -29,6 +29,7 @@ import UsuarioService from '@/services/UsuarioService'
 import isCPF from '@/utils/cpf'
 import { StatusUsuarioEnum } from '@/utils/enums/StatusUsuarioEnum'
 import { getPerfilUsuarioEnumDesc, PerfilUsuarioEnum } from '@/utils/enums/PerfilUsuarioEnum'
+import { ResumoUsuarioInit } from '@/types/ResumoUsuarioType'
 
 type Props = {
   activeStep: number
@@ -43,7 +44,7 @@ type ErrorType = {
 
 const InicioCadatroUsuario = ({ handleNext }: Props) => {
   // Context
-  const { usuarioEquipe, setUsuarioEquipeContext } = useEquipeContext()
+  const { usuarioEquipe, setResumoUsuarioContext, setUsuarioEquipeContext } = useEquipeContext()
 
   // States
   const [errorState, setErrorState] = useState<ErrorType | null>(null)
@@ -88,6 +89,20 @@ const InicioCadatroUsuario = ({ handleNext }: Props) => {
           .then(respUsuario => {
             if (respUsuario) {
               setUsuarioEquipeContext(respUsuario)
+
+              if (respUsuario.token) {
+                //atualiza o objeto resumo do contrato
+                UsuarioService.getResumo(respUsuario.token)
+                  .then(respResumo => {
+                    console.log('respResumo', respResumo)
+                    setResumoUsuarioContext(respResumo)
+                  })
+                  .catch(err => {
+                    toast.error(trataErro(err))
+                  })
+              } else {
+                setResumoUsuarioContext(ResumoUsuarioInit)
+              }
             } else {
               setUsuarioEquipeContext({
                 tipoPessoa: isCNPJ(data.cpfCnpj) ? 'J' : 'F',
@@ -95,6 +110,7 @@ const InicioCadatroUsuario = ({ handleNext }: Props) => {
                 perfil: usuarioEquipe?.perfil,
                 status: StatusUsuarioEnum.NOVO
               })
+              setResumoUsuarioContext(ResumoUsuarioInit)
             }
 
             handleNext()
