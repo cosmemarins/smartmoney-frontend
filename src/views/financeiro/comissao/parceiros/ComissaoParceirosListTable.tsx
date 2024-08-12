@@ -151,9 +151,9 @@ const ComissaoParceirosListTable = () => {
           </Typography>
         )
       }),
-      columnHelper.accessor('valor', {
-        header: 'Valor',
-        cell: ({ row }) => <Typography color='text.primary'>{valorBr.format(row.original.valor || 0)}</Typography>
+      columnHelper.accessor('saldo', {
+        header: 'Saldo',
+        cell: ({ row }) => <Typography color='text.primary'>{valorBr.format(row.original.saldo || 0)}</Typography>
       }),
       columnHelper.accessor('taxa', {
         header: 'Taxa',
