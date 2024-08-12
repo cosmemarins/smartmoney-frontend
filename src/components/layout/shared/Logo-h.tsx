@@ -51,7 +51,7 @@ const LogoH = () => {
   const { settings } = useSettings()
 
   // Vars
-  const { layout } = settings
+  const { mode, layout } = settings
 
   useEffect(() => {
     if (layout !== 'collapsed') {
@@ -72,7 +72,8 @@ const LogoH = () => {
   // return <Img src='/next.svg' width={100} height={25} alt='logo' /> // for example
   return (
     <Link href='/' className='flex items-center'>
-      <img src='/images/logo-h.png' width='354' />
+      {/* <img src='/images/logo-h.png' width='354' /> */}
+      <img src={`/images/logo-login-${mode}.png`} width='280' />
       <LogoText
         ref={logoTextRef}
         isHovered={isHovered}

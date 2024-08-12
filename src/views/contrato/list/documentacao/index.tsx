@@ -62,7 +62,7 @@ const Documentacao = ({ contrato, cliente, handleClose }: Props) => {
     }
   }
 
-  console.log('Documentacao 1 extratoInit', extratoInit)
+  //console.log('Documentacao 1 extratoInit', extratoInit)
   const [extratoEdit, setExtratoEdit] = useState<ExtratoType>(extratoInit)
 
   const handleNovoArquivo = () => {
@@ -169,13 +169,13 @@ const Documentacao = ({ contrato, cliente, handleClose }: Props) => {
   }
 
   useEffect(() => {
-    console.log('Documentacao useeffect[]')
+    //console.log('Documentacao useeffect[]')
     carregaLista()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
-    console.log('Documentacao useeffect refreshList')
+    //console.log('Documentacao useeffect refreshList')
     setRefreshArquivoList(false)
     carregaLista()
     // eslint-disable-next-line react-hooks/exhaustive-deps

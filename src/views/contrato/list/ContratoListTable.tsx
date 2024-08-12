@@ -152,8 +152,39 @@ const ContratoListTable = () => {
     }
   }
 
-  const handleCloseDlgArquivo = () => {
+  const handleCloseDlgArquivo = (refresh: boolean) => {
+    //inclusao de aditivo
+    if (refresh && contratoEdit?.status === StatusContratoEnum.ATIVO) {
+      setDialogConfirma({
+        open: true,
+        titulo: 'Reenviar contrato com aditivo',
+        texto: (
+          <div>
+            Deseja reenviar este contrato com o novo aditivo? <br />
+          </div>
+        ),
+        botaoConfirma: 'Reenviar contrato',
+        handleConfirma: handleRenviarContrato
+      } as DialogConfirmaType)
+    }
+
     setOpenDlgArquivo(false)
+  }
+
+  const handleRenviarContrato = () => {
+    if (contratoEdit?.token) {
+      ContratoService.enviarContrato(contratoEdit?.token)
+        .then(() => {
+          //console.log(respContrato)
+          toast.success(`Contrato ${contratoEdit?.token} reenviado!`)
+          setDialogConfirma({ open: false })
+        })
+        .catch(err => {
+          console.log('ERRO contratoAtivar', err)
+          toast.error(trataErro(err))
+        })
+        .finally(() => {})
+    }
   }
 
   const handleOpenDlgConfirmaExcluir = (contrato: ContratoType) => {
@@ -551,7 +582,7 @@ const ContratoListTable = () => {
         disableEscapeKeyDown
         onClose={(event, reason) => {
           if (reason !== 'backdropClick') {
-            handleCloseDlgArquivo()
+            handleCloseDlgArquivo(false)
           }
         }}
       >

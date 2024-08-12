@@ -17,7 +17,7 @@ import type { VerticalNavContextProps } from '@menu/contexts/verticalNavContext'
 //import VuexyLogo from '@core/svg/Logo'
 
 // Config Imports
-import themeConfig from '@configs/themeConfig'
+// import themeConfig from '@configs/themeConfig'
 
 // Hook Imports
 import useVerticalNav from '@menu/hooks/useVerticalNav'
@@ -47,11 +47,12 @@ const Logo = () => {
   const logoTextRef = useRef<HTMLSpanElement>(null)
 
   // Hooks
-  const { isHovered, transitionDuration } = useVerticalNav()
+  const { isHovered, isCollapsed, transitionDuration } = useVerticalNav()
+
   const { settings } = useSettings()
 
   // Vars
-  const { layout } = settings
+  const { mode, layout } = settings
 
   useEffect(() => {
     if (layout !== 'collapsed') {
@@ -72,14 +73,18 @@ const Logo = () => {
   // return <Img src='/next.svg' width={100} height={25} alt='logo' /> // for example
   return (
     <Link href='/' className='flex items-center'>
-      <img src='/images/logo-laranja-3.png' width='45' />
+      {/* <img src='/images/logo-laranja-3.png' width='45' /> */}
+      <img
+        src={`/images/logo-menuv-${mode}.png`}
+        style={!isHovered && isCollapsed ? { width: '50px' } : { width: '170px' }}
+      />
       <LogoText
         ref={logoTextRef}
         isHovered={isHovered}
         isCollapsed={layout === 'collapsed'}
         transitionDuration={transitionDuration}
       >
-        {themeConfig.templateName}
+        {/* themeConfig.templateName */}
       </LogoText>
     </Link>
   )

@@ -31,7 +31,7 @@ const FooterContent = () => {
       <p>
         <span className='text-textSecondary'>{`© ${new Date().getFullYear()}, by `}</span>
         <Link href='#' target='_blank' className='text-primary'>
-          Cosme Marins
+          Smart Money
         </Link>
         <span className='text-textSecondary'>{`  - todos os direitos reservados `}</span>
       </p>
