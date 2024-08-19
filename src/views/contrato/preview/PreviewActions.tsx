@@ -1,6 +1,9 @@
 // Next Imports
 import { useState } from 'react'
 
+// Type Imports
+import { useSession } from 'next-auth/react'
+
 // MUI Imports
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
@@ -15,9 +18,11 @@ import { trataErro } from '@/utils/erro'
 // Component Imports
 import { useContratoContext } from '@/contexts/ContratoContext'
 import ContratoService from '@/services/ContratoService'
+import { isMaster } from '@/utils/utils'
 
 const PreviewActions = () => {
   // context
+  const { data: session } = useSession()
   const { contrato, setContratoContext } = useContratoContext()
   const { resumoContrato, setResumoContratoContext } = useContratoContext()
 
@@ -25,7 +30,7 @@ const PreviewActions = () => {
   const [dialogConfirma, setDialogConfirma] = useState<DialogConfirmaType>({ open: false })
 
   const handleOpenDlgConfirmaEnviar = () => {
-    if (resumoContrato?.podeEnviar) {
+    if (isMaster(session?.user) && resumoContrato?.podeEnviar) {
       setDialogConfirma({
         open: true,
         titulo: 'Enviar Contrato',
@@ -83,7 +88,7 @@ const PreviewActions = () => {
               }
               onClick={() => handleOpenDlgConfirmaEnviar()}
             >
-              {resumoContrato?.podeEnviar ? 'Salvar e enviar contrato' : 'Salvar'}
+              {resumoContrato?.podeEnviar ? `Salvar ${isMaster(session?.user) ? 'e enviar' : ''} contrato` : 'Salvar'}
             </Button>
           </div>
         </CardContent>

@@ -99,6 +99,7 @@ const ArquivoEdit = ({ arquivoData, handleClose, setRefreshArquivoList }: props)
   }
 
   const update = () => {
+    console.log('arquivoEdit', arquivoEdit)
     ArquivoService.update(arquivoEdit)
       .then(() => {
         //console.log(resp)

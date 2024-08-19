@@ -3,6 +3,9 @@
 // React Imports
 import { useEffect, useState } from 'react'
 
+// Type Imports
+import { useSession } from 'next-auth/react'
+
 // MUI Imports
 import Grid from '@mui/material/Grid'
 import Alert from '@mui/material/Alert'
@@ -48,6 +51,7 @@ import DialogConfirma from '@/components/DialogConfirma'
 import { useContratoContext } from '@/contexts/ContratoContext'
 import { trataErro } from '@/utils/erro'
 import { valorBr } from '@/utils/string'
+import { isMaster } from '@/utils/utils'
 
 locale('pt-br')
 
@@ -62,6 +66,7 @@ type ErrorType = {
 
 const ContratoEdit = ({ contrato, handleClose }: props) => {
   //contexto
+  const { data: session } = useSession()
   const { setContratoContext } = useContratoContext()
 
   // States
@@ -520,46 +525,60 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
           </Grid>
           <Divider />
           <Grid item xs={12} sm={12}>
-            {(contratoEdit.status === StatusContratoEnum.NOVO ||
-              contratoEdit.status === StatusContratoEnum.AGUARDANDO ||
-              contratoEdit.status === StatusContratoEnum.ATIVO) && (
-              <Button type='button' variant='contained' className='mie-2' onClick={() => handleOpenDlgConfirmaEnviar()}>
-                {`${contratoEdit.status === StatusContratoEnum.NOVO ? 'Enviar ' : 'Re-enviar '} Contrato`}
-              </Button>
-            )}
+            {isMaster(session?.user) &&
+              (contratoEdit.status === StatusContratoEnum.NOVO ||
+                contratoEdit.status === StatusContratoEnum.AGUARDANDO ||
+                contratoEdit.status === StatusContratoEnum.ATIVO) && (
+                <Button
+                  type='button'
+                  variant='contained'
+                  className='mie-2'
+                  onClick={() => handleOpenDlgConfirmaEnviar()}
+                >
+                  {`${contratoEdit.status === StatusContratoEnum.NOVO ? 'Enviar ' : 'Re-enviar '} Contrato`}
+                </Button>
+              )}
             {contratoEdit.status === StatusContratoEnum.ATIVO && (
               <Button type='button' variant='contained' className='mie-2' onClick={() => handleOpenDlgConfirmaTrocar()}>
                 Trocar Contrato
               </Button>
             )}
-            {(contratoEdit.status === StatusContratoEnum.AGUARDANDO ||
-              contratoEdit.status === StatusContratoEnum.NOVO) && (
-              <Button type='button' variant='contained' className='mie-2' onClick={() => handleOpenDlgConfirmaAtivar()}>
-                Ativar Contrato
-              </Button>
-            )}
-            {(contratoEdit.status === StatusContratoEnum.AGUARDANDO ||
-              contratoEdit.status === StatusContratoEnum.ATIVO) && (
-              <Button
-                type='button'
-                variant='contained'
-                className='mie-2'
-                onClick={() => handleOpenDlgConfirmaCancelar()}
-              >
-                Cancelar Contrato
-              </Button>
-            )}
-            {(contratoEdit.status === StatusContratoEnum.NOVO ||
-              contratoEdit.status === StatusContratoEnum.CANCELADO) && (
-              <Button
-                type='button'
-                variant='contained'
-                className='mie-2'
-                onClick={() => handleOpenDlgConfirmaExcluir()}
-              >
-                Excluir Contrato
-              </Button>
-            )}
+            {isMaster(session?.user) &&
+              (contratoEdit.status === StatusContratoEnum.AGUARDANDO ||
+                contratoEdit.status === StatusContratoEnum.NOVO) && (
+                <Button
+                  type='button'
+                  variant='contained'
+                  className='mie-2'
+                  onClick={() => handleOpenDlgConfirmaAtivar()}
+                >
+                  Ativar Contrato
+                </Button>
+              )}
+            {isMaster(session?.user) &&
+              (contratoEdit.status === StatusContratoEnum.AGUARDANDO ||
+                contratoEdit.status === StatusContratoEnum.ATIVO) && (
+                <Button
+                  type='button'
+                  variant='contained'
+                  className='mie-2'
+                  onClick={() => handleOpenDlgConfirmaCancelar()}
+                >
+                  Cancelar Contrato
+                </Button>
+              )}
+            {isMaster(session?.user) &&
+              (contratoEdit.status === StatusContratoEnum.NOVO ||
+                contratoEdit.status === StatusContratoEnum.CANCELADO) && (
+                <Button
+                  type='button'
+                  variant='contained'
+                  className='mie-2'
+                  onClick={() => handleOpenDlgConfirmaExcluir()}
+                >
+                  Excluir Contrato
+                </Button>
+              )}
             <Button
               type='reset'
               variant='contained'

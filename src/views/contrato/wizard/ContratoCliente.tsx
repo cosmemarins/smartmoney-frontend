@@ -106,6 +106,7 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
       taxaMax = 3
     }
 
+    console.log('Ao calcular a taxa', contrato)
     setMaxTaxa(taxaMax)
     setContratoContext({
       ...contrato,
@@ -125,6 +126,9 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
   }
 
   const onSubmit: SubmitHandler<FormData> = async (data: FormData) => {
+    console.log('cliente Contexto: ', cliente)
+    console.log('contrato', contrato)
+
     if (contrato && contrato.cliente && contrato.cliente.token && data.valor && data.taxaCliente) {
       setSending(true)
       console.log('contrato', contrato)
@@ -147,9 +151,11 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
 
   useEffect(() => {
     //console.log('contrato', contrato)
-    //console.log('cliente', cliente)
+    console.log('cliente', cliente)
 
-    if (contrato && (!contrato?.cliente || !contrato?.cliente.token)) {
+    if (contrato && (!contrato?.cliente || !contrato?.cliente?.token)) {
+      console.log('atualiza cliente contrato p nao veio')
+
       //é um contrato novo, tem que setar o cliente
       setContratoContext({
         ...contrato,
@@ -157,25 +163,16 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
       })
     }
 
-    if (contrato && contrato.cliente) {
-      calculaTaxaMaxima(contrato?.valor || 0)
-
-      /*
-      let taxaMax = TaxasEnum.MAXIMO_CLIENTE
-
-      if (cliente?.gestor) {
-        if (cliente?.gestor.perfil === PerfilUsuarioEnum.AGENTE) {
-          taxaMax = TaxasEnum.MAXIMO_CLIENTE
-        } else if (cliente?.gestor?.taxaDistribuicao && cliente?.gestor?.taxaDistribuicao <= TaxasEnum.MAXIMO_CLIENTE) {
-          taxaMax = cliente?.gestor?.taxaDistribuicao
-        }
-      }
-
-      setMaxTaxa(taxaMax)
-      */
-    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  useEffect(() => {
+    if (contrato && contrato.cliente && contrato?.valor && contrato?.valor <= 0) {
+      console.log('contrato antes de calcular a taxa', contrato)
+      calculaTaxaMaxima(contrato?.valor || 0)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contrato])
 
   return (
     <>

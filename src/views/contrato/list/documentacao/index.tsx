@@ -1,6 +1,9 @@
 // MUI Imports
 import { useEffect, useState } from 'react'
 
+// Type Imports
+import { useSession } from 'next-auth/react'
+
 import Grid from '@mui/material/Grid'
 
 // Component Imports
@@ -22,6 +25,7 @@ import type { ContratoType } from '@/types/ContratoType'
 import type { ClienteType } from '@/types/ClienteType'
 import type { ResumoContratoType } from '@/types/ResumoContratoType'
 import { ResumoContratoInit } from '@/types/ResumoContratoType'
+import { isMaster } from '@/utils/utils'
 
 type Props = {
   contrato: ContratoType
@@ -30,6 +34,9 @@ type Props = {
 }
 
 const Documentacao = ({ contrato, cliente, handleClose }: Props) => {
+  //hooks
+  const { data: session } = useSession()
+
   //contexto
   const [openDlgArquivo, setOpenDlgArquivo] = useState<boolean>(false)
   const [tituloDlgArquivo, setTituloDlgArquivo] = useState('Novo Upload de Arquivo')
@@ -152,7 +159,7 @@ const Documentacao = ({ contrato, cliente, handleClose }: Props) => {
         })
         .finally(() => {})
 
-      if (!openDlgAtivarContrato) {
+      if (isMaster(session?.user) && !openDlgAtivarContrato) {
         //atualiza o objeto resumo do contrato
         ContratoService.getResumo(contrato.token)
           .then(respResumo => {

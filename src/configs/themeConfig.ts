@@ -53,7 +53,7 @@ export type Config = {
 }
 
 const themeConfig: Config = {
-  templateName: 'IcaInvest',
+  templateName: 'Gestão de Propostas',
   settingsCookieName: 'smartmanage',
   mode: 'system', // 'system', 'light', 'dark'
   skin: 'default', // 'default', 'bordered'

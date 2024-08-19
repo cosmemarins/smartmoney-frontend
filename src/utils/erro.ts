@@ -7,8 +7,18 @@ export const trataErro = (err: any) => {
 
   if (axios.isAxiosError<ValidationError, Record<string, unknown>>(err)) {
     //console.log('status', err.status)
-    console.error('response', err.response)
-    msgErro = err?.response?.request.responseText
+    //console.error('response', err.response)
+
+    // console.error('request', err?.response?.request)
+    const request = err?.response?.request
+
+    if (request.responseType === 'arraybuffer') {
+      const decoder = new TextDecoder()
+
+      msgErro = decoder.decode(request.response)
+    } else {
+      msgErro = request.responseText
+    }
   } else {
     console.error(err)
     msgErro = err

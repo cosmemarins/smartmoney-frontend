@@ -123,8 +123,8 @@ const ComissaoInvestidoresListTable = () => {
               {session?.user.perfil != PerfilUsuarioEnum.AGENTE && row.original.parceiro1 && (
                 <Typography variant='body2'>
                   Parceiro: {row.original.nomeParceiro1}
-                  {row.original.parceiro2 && row.original.parceiro2 && ` -> ${row.original.nomeParceiro2}`}
-                  {row.original.parceiro3 && row.original.parceiro3 && ` -> ${row.original.nomeParceiro3}`}
+                  {row.original.parceiro2 && ` -> ${row.original.nomeParceiro2}`}
+                  {row.original.parceiro3 && ` -> ${row.original.nomeParceiro3}`}
                 </Typography>
               )}
             </div>

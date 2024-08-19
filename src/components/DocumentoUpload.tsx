@@ -63,7 +63,14 @@ const DocumentoUpload = ({ arquivoUploadData, setFileUpload }: props) => {
         <small>{arquivoUploadData.titulo}</small>
         <div {...getRootProps({ className: 'dropzone' })} className='border rounded border-dashed border-light p-2'>
           <input {...getInputProps()} />
-          {files.length ? (
+          {files.length && files[0].type === 'application/pdf' ? (
+            <div style={{ minHeight: '80px' }} className='flex items-center flex-col'>
+              <Avatar variant='rounded' className='bs-12 is-12 mbe-5 cursor-pointer'>
+                <i className='tabler-file-type-pdf' />
+              </Avatar>
+              <small className='w-full '>{files[0].name}</small>
+            </div>
+          ) : files.length ? (
             img
           ) : arquivoUploadData.base64Data ? (
             <CardMedia

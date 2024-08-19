@@ -3,6 +3,9 @@
 // React Imports
 import { useEffect, useMemo, useState } from 'react'
 
+// Type Imports
+import { useSession } from 'next-auth/react'
+
 import type { TextFieldProps } from '@mui/material'
 import {
   Card,
@@ -49,6 +52,7 @@ import type { DialogConfirmaType } from '@/types/utilTypes'
 import { excluirCliente, getListCliente } from '@/services/ClienteService'
 import { cpfCnpjMask } from '@/utils/string'
 import { trataErro } from '@/utils/erro'
+import { PerfilUsuarioEnum } from '@/utils/enums/PerfilUsuarioEnum'
 
 // Column Definitions
 const columnHelper = createColumnHelper<ClienteTypeWithAction>()
@@ -96,6 +100,9 @@ const DebouncedInput = ({
 }
 
 const ClienteListTable = () => {
+  //hooks
+  const { data: session } = useSession()
+
   // States
   const [rowSelection, setRowSelection] = useState({})
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -208,7 +215,9 @@ const ClienteListTable = () => {
               {row.original.gestor?.gestor && (
                 <Typography variant='body2'>
                   Parceiro: {row.original.gestor?.gestor?.nome}
-                  {row.original.gestor?.gestor?.gestor ? ` -> ${row.original.gestor?.gestor?.gestor?.nome}` : ''}
+                  {session?.user.perfil != PerfilUsuarioEnum.AGENTE && row.original.gestor?.gestor?.gestor
+                    ? ` -> ${row.original.gestor?.gestor?.gestor?.nome}`
+                    : ''}
                 </Typography>
               )}
             </div>

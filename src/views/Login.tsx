@@ -127,7 +127,7 @@ const Login = ({ mode }: { mode: SystemMode }) => {
               <Logo />
             </div>
             <div className='flex flex-col gap-1 mbe-6'>
-              <Typography variant='h4'>{`Bem vindo a ${themeConfig.templateName}!`}</Typography>
+              <Typography variant='h5'>{`Bem vindo a ${themeConfig.templateName}!`}</Typography>
               <Typography>Informe seu login e senha para entrar no sistema</Typography>
             </div>
             <form noValidate autoComplete='off' onSubmit={handleSubmit(onSubmit)} className='flex flex-col gap-6'>

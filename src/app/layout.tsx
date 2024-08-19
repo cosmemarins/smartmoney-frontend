@@ -11,7 +11,7 @@ import '@/app/globals.css'
 import '@assets/iconify-icons/generated-icons.css'
 
 export const metadata = {
-  title: 'IcaInvest',
+  title: 'Gestão de Propostas',
   description: 'Gerenciador inteligente'
 }
 

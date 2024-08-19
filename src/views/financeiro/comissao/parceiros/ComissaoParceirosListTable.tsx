@@ -116,7 +116,6 @@ const ComissaoParceirosListTable = () => {
         cell: ({ row }) => (
           <div className='flex items-center gap-4'>
             <div className='flex flex-col'>
-              <Typography variant='body2'>Gestor: {row.original.nomeGestor}</Typography>
               {session?.user.perfil != PerfilUsuarioEnum.AGENTE && row.original.parceiro1 && (
                 <Typography variant='body2'>
                   Parceiro: {row.original.nomeParceiro1}
@@ -124,6 +123,7 @@ const ComissaoParceirosListTable = () => {
                   {row.original.parceiro3 && row.original.parceiro3 && ` -> ${row.original.nomeParceiro3}`}
                 </Typography>
               )}
+              <Typography variant='body2'>Gestor: {row.original.nomeGestor}</Typography>
               <Typography variant='body2'>Cliente: {row.original.nomeCliente}</Typography>
             </div>
           </div>

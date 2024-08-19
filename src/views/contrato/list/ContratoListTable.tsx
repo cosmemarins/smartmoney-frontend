@@ -3,6 +3,9 @@
 // React Imports
 import { useEffect, useMemo, useState } from 'react'
 
+// Type Imports
+import { useSession } from 'next-auth/react'
+
 import type { TextFieldProps } from '@mui/material'
 import {
   Button,
@@ -59,6 +62,8 @@ import Documentacao from './documentacao'
 import DocumentoContratoEdit from '../components/DocumentoContratoEdit'
 import { TipoArquivoRegistroEnum } from '@/utils/enums/TipoArquivoRegistroEnum'
 import { TipoDocumentoEnum } from '@/utils/enums/TipoDocumentoEnum'
+import { PerfilUsuarioEnum } from '@/utils/enums/PerfilUsuarioEnum'
+import { isMaster } from '@/utils/utils'
 
 locale('pt-br')
 
@@ -108,6 +113,9 @@ const DebouncedInput = ({
 }
 
 const ContratoListTable = () => {
+  //hooks
+  const { data: session } = useSession()
+
   // States
   const [rowSelection, setRowSelection] = useState({})
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -244,7 +252,7 @@ const ContratoListTable = () => {
         )
       }),
       columnHelper.accessor('cliente.gestor.nome', {
-        header: 'Gestor',
+        header: 'Agente',
         cell: ({ row }) => (
           <div className='flex items-center gap-4'>
             <div className='flex flex-col'>
@@ -255,7 +263,7 @@ const ContratoListTable = () => {
               {row.original.cliente?.gestor?.gestor && (
                 <Typography variant='body2'>
                   Parceiro: {row.original.cliente?.gestor?.gestor?.nome}
-                  {row.original.cliente?.gestor?.gestor?.gestor
+                  {session?.user.perfil != PerfilUsuarioEnum.AGENTE && row.original.cliente?.gestor?.gestor?.gestor
                     ? ` -> ${row.original.cliente?.gestor?.gestor?.gestor?.nome}`
                     : ''}
                 </Typography>
@@ -327,7 +335,11 @@ const ContratoListTable = () => {
               row.original.status == StatusContratoEnum.AGUARDANDO ||
               row.original.status == StatusContratoEnum.NOVO) && (
               <IconButton onClick={() => handleOpenDlgDocumentacao(row.original)} title='Documentação do contrato'>
-                <i className='tabler-paperclip text-[22px] text-textSecondary' />
+                {row.original.status == StatusContratoEnum.ATIVO ? (
+                  <i className='tabler-plus text-[22px] text-textSecondary' />
+                ) : (
+                  <i className='tabler-paperclip text-[22px] text-textSecondary' />
+                )}
               </IconButton>
             )}
             {row.original.status == StatusContratoEnum.ATIVO && (
@@ -340,7 +352,7 @@ const ContratoListTable = () => {
             <IconButton onClick={() => handleOpenDlgContrato(row.original)}>
               <i className='tabler-edit text-[22px] text-textSecondary' />
             </IconButton>
-            {row.original.status == StatusContratoEnum.NOVO && (
+            {isMaster(session?.user) && row.original.status == StatusContratoEnum.NOVO && (
               <IconButton onClick={() => handleOpenDlgConfirmaExcluir(row.original)}>
                 <i className='tabler-trash text-[22px] text-textSecondary' />
               </IconButton>

@@ -15,3 +15,11 @@ export const isColaboradorMaster = (usuarioPayload?: UsuarioPayloadDTO): boolean
 
   return retorno
 }
+
+export const isMaster = (usuarioPayload?: UsuarioPayloadDTO): boolean => {
+  if (!usuarioPayload) return false
+
+  const retorno = usuarioPayload.idGestor === 1 || isColaboradorMaster(usuarioPayload)
+
+  return retorno
+}

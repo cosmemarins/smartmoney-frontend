@@ -24,6 +24,7 @@ const ArquivoItem = ({ arquivo, handleEditArquivo }: props) => {
   const [titulo, setTitulo] = useState('')
 
   useEffect(() => {
+    setErro('')
     setTitulo(getTipoDocumentoEnumDesc(arquivo.tipoDocumento as TipoDocumentoEnum))
 
     if (arquivo?.token) {
