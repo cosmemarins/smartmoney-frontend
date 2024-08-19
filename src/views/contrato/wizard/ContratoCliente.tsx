@@ -13,13 +13,17 @@ import {
   CardHeader,
   CircularProgress,
   Divider,
-  FormControl,
   FormControlLabel,
-  FormHelperText,
   MenuItem,
+  Paper,
   Radio,
   RadioGroup,
-  Slider,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   Typography
 } from '@mui/material'
 import moment, { locale } from 'moment'
@@ -34,7 +38,7 @@ import { valibotResolver } from '@hookform/resolvers/valibot'
 import type { SubmitHandler } from 'react-hook-form'
 
 import CustomTextField from '@core/components/mui/TextField'
-import { prazoList, taxaContratoMarks } from '@/types/ContratoType'
+import { prazoList } from '@/types/ContratoType'
 import ContratoService from '@/services/ContratoService'
 
 import { StatusContratoEnum } from '@/utils/enums/StatusContratoEnum'
@@ -44,6 +48,7 @@ import { trataErro } from '@/utils/erro'
 
 import DirectionalIcon from '@/components/DirectionalIcon'
 import { TaxasEnum } from '@/utils/enums/TaxasEnum'
+import { valorBr, valorEmReal } from '@/utils/string'
 
 locale('pt-br')
 
@@ -66,15 +71,19 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
   // States
   const [errorState, setErrorState] = useState<ErrorType | null>(null)
   const [sending, setSending] = useState<boolean>(false)
-  const [maxTaxa, setMaxTaxa] = useState<number>(3)
+
+  //const [maxTaxa, setMaxTaxa] = useState<number>(3)
+  const [faixaTaxa, setFaixaTaxa] = useState([0])
+  const [faixaValor, setFaixaValor] = useState([0])
 
   const schema = v.object({
-    valor: pipe(v.number('Informe um valor maior que 0'), v.minValue(1, 'É preciso inforar um valor.')),
-    taxaCliente: pipe(
-      v.number('A taxa precisa ser maior que 0'),
-      v.minValue(0.01, 'A taxa precisa ser maior que 0.'),
-      v.maxValue(maxTaxa || 3, `O valor da taxa não pode ser maior que ${maxTaxa}`)
-    )
+    valor: pipe(v.number('Informe um valor maior que 0'), v.minValue(1, 'É preciso inforar um valor.'))
+
+    //taxaCliente: pipe(
+    //  v.number('A taxa precisa ser maior que 0'),
+    //  v.minValue(0.01, 'A taxa precisa ser maior que 0.'),
+    //  v.maxValue(maxTaxa || 3, `O valor da taxa não pode ser maior que ${maxTaxa}`)
+    //)
   })
 
   type FormData = v.InferInput<typeof schema>
@@ -86,11 +95,26 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
   } = useForm<FormData>({
     resolver: valibotResolver(schema),
     defaultValues: {
-      valor: contrato?.valor,
-      taxaCliente: contrato?.taxaCliente
+      valor: contrato?.valor
+
+      //taxaCliente: contrato?.taxaCliente
     }
   })
 
+  const calculaTaxa = (valor: number) => {
+    let taxaCliente: number = 2
+
+    for (let i = faixaValor.length - 1; i >= 0; i--) {
+      if (valor >= faixaValor[i]) {
+        taxaCliente = Number(faixaTaxa[i])
+        break
+      }
+    }
+
+    return taxaCliente
+  }
+
+  /* nao usa mais essa porque o parceiro já definiu a faixa de percentual */
   const calculaTaxaMaxima = (valor: number) => {
     let taxaMax: number = TaxasEnum.MAXIMO_CLIENTE
 
@@ -106,13 +130,7 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
       taxaMax = 3
     }
 
-    console.log('Ao calcular a taxa', contrato)
-    setMaxTaxa(taxaMax)
-    setContratoContext({
-      ...contrato,
-      taxaCliente: taxaMax
-    })
-
+    // setMaxTaxa(taxaMax)
     return taxaMax
   }
 
@@ -120,16 +138,28 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
     const valorStr = value.replace(/[^\d]+/g, '')
     const valor = parseFloat(valorStr) / 100
 
-    calculaTaxaMaxima(valor)
+    let taxaCliente = 0
+
+    if (faixaTaxa.length > 0) {
+      taxaCliente = calculaTaxa(valor)
+    } else {
+      taxaCliente = calculaTaxaMaxima(valor)
+    }
+
+    setContratoContext({
+      ...contrato,
+      valor,
+      taxaCliente
+    })
 
     return valor
   }
 
   const onSubmit: SubmitHandler<FormData> = async (data: FormData) => {
-    console.log('cliente Contexto: ', cliente)
-    console.log('contrato', contrato)
+    //console.log('cliente Contexto: ', cliente)
 
-    if (contrato && contrato.cliente && contrato.cliente.token && data.valor && data.taxaCliente) {
+    //if (contrato && contrato.cliente && contrato.cliente.token && data.valor && data.taxaCliente) {
+    if (contrato && contrato.cliente && contrato.cliente.token && data.valor) {
       setSending(true)
       console.log('contrato', contrato)
       ContratoService.salvarContrato(contrato, false)
@@ -153,6 +183,20 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
     //console.log('contrato', contrato)
     console.log('cliente', cliente)
 
+    //recuperando as faixas de distribuicao
+    const gestorTaxas = cliente?.gestor?.faixasDistribuicao || cliente?.gestor?.gestor?.faixasDistribuicao
+    const faixasStrArray = gestorTaxas ? gestorTaxas.split('|') : ['0', '0']
+
+    const taxas = faixasStrArray[0].split(';').map(e => Number(e))
+
+    console.log('taxas', taxas)
+    setFaixaTaxa(taxas)
+
+    const valores = faixasStrArray[1].split(';').map(e => Number(e))
+
+    console.log('valores', valores)
+    setFaixaValor(valores)
+
     if (contrato && (!contrato?.cliente || !contrato?.cliente?.token)) {
       console.log('atualiza cliente contrato p nao veio')
 
@@ -169,7 +213,7 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
   useEffect(() => {
     if (contrato && contrato.cliente && contrato?.valor && contrato?.valor <= 0) {
       console.log('contrato antes de calcular a taxa', contrato)
-      calculaTaxaMaxima(contrato?.valor || 0)
+      if (!(faixaTaxa.length > 0)) calculaTaxaMaxima(contrato?.valor || 0)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contrato])
@@ -233,7 +277,6 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
                           disabled={!!contrato?.status && contrato?.status != StatusContratoEnum.NOVO}
                           onChange={e => {
                             field.onChange(onChangeValor(e.target.value))
-                            setContratoContext({ ...contrato, valor: onChangeValor(e.target.value) })
                             errorState !== null && setErrorState(null)
                           }}
                           {...((errors.valor || errorState !== null) && {
@@ -261,6 +304,10 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
                     </CustomTextField>
                   </Grid>
                   <Grid item xs={12} sm={12}>
+                    <Typography className='font-medium'>
+                      Taxa do cliente: <b>{contrato?.taxaCliente}%</b>
+                    </Typography>
+                    {/*
                     <FormControl error={Boolean(errors.taxaCliente)} fullWidth>
                       <Typography className='font-medium'>
                         Taxa do cliente: <b>{contrato?.taxaCliente}%</b>
@@ -272,7 +319,7 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
                         render={({ field }) => (
                           <Slider
                             {...field}
-                            key={`slider-taxaCliente`} /* fixed issue */
+                            key={`slider-taxaCliente`}
                             marks={taxaContratoMarks}
                             min={0}
                             max={maxTaxa || 3}
@@ -295,6 +342,7 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
                       />
                       {errors.taxaCliente && <FormHelperText error>{errors.taxaCliente?.message}</FormHelperText>}
                     </FormControl>
+                      */}
                   </Grid>
                   <Grid item xs={12} sm={12}>
                     <CustomTextField
@@ -310,7 +358,26 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
               <Divider />
               <CardActions>
                 <Grid container spacing={0} direction='column' alignItems='center' justifyContent='center'>
-                  <img src='/images/tabela-perc-rendimentos.png' />
+                  <TableContainer component={Paper}>
+                    <Table sx={{ minWidth: 300 }} aria-label='rentabilidade'>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell align='center'>Rentabilidade</TableCell>
+                          <TableCell align='center'>Valor Mínimo</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {faixaTaxa.map((taxa, index) => (
+                          <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                            <TableCell align='center' component='th' scope='row'>
+                              {valorBr.format(taxa)}%
+                            </TableCell>
+                            <TableCell align='center'>{valorEmReal.format(faixaValor[index])}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
                 </Grid>
               </CardActions>
             </Card>

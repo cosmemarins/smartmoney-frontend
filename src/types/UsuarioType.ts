@@ -5,7 +5,7 @@ export type UsuarioType = {
   id?: number
   token?: string
   gestor?: UsuarioType
-  tipoPessoa?: string;
+  tipoPessoa?: string
   cpfCnpj?: string
   nome?: string
   dataNascimento?: string
@@ -36,6 +36,7 @@ export type UsuarioType = {
   isAdmin?: boolean
   podeCriarEquipe?: boolean
   taxaDistribuicao?: number
+  faixasDistribuicao?: string
   roles?: string
   perfil?: string
   dataUltimoAcesso?: Date

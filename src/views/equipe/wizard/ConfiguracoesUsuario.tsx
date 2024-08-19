@@ -27,6 +27,7 @@ import type { ConfiguracoesUsuarioType } from '@/types/ConfiguracoesUsuarioType'
 import UsuarioService from '@/services/UsuarioService'
 import { getPerfilUsuarioEnumDesc, PerfilUsuarioEnum } from '@/utils/enums/PerfilUsuarioEnum'
 import { TaxasEnum } from '@/utils/enums/TaxasEnum'
+import CustomTextField from '@/@core/components/mui/TextField'
 
 type Props = {
   activeStep: number
@@ -39,7 +40,7 @@ const ConfiguracoesUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pro
   //contexto
   const { usuarioEquipe, setUsuarioEquipeContext } = useEquipeContext()
 
-  console.log('usuarioEquipe', usuarioEquipe)
+  //console.log('usuarioEquipe', usuarioEquipe)
 
   const taxaInit =
     usuarioEquipe?.perfil === PerfilUsuarioEnum.AGENTE ? TaxasEnum.MAXIMO_AGENTE : TaxasEnum.MAXIMO_CONSULTOR
@@ -49,17 +50,115 @@ const ConfiguracoesUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pro
     id: usuarioEquipe?.id,
     token: usuarioEquipe?.token,
     taxaDistribuicao: usuarioEquipe?.taxaDistribuicao || 0,
+    faixasDistribuicao: usuarioEquipe?.faixasDistribuicao || '0|0',
     podeCriarEquipe: false
   })
 
   const [sending, setSending] = useState<boolean>(false)
   const [maxTaxa, setMaxTaxa] = useState<number>(Number(taxaInit))
+  const [faixas, setFaixas] = useState(['faixa'])
+
+  const [faixaTaxa, setFaixaTaxa] = useState([0])
+  const [faixaValor, setFaixaValor] = useState([0])
+
+  const handleAddFaixa = () => {
+    const current = [...faixas]
+    const currentFaixaTaxa = [...faixaTaxa]
+    const currentFaixaValor = [...faixaValor]
+
+    current.push('faixa')
+    currentFaixaTaxa.push(0)
+    currentFaixaValor.push(0)
+
+    setFaixas(current)
+    setFaixaTaxa(currentFaixaTaxa)
+    setFaixaValor(currentFaixaValor)
+  }
+
+  const handleRemoveFaixa = () => {
+    if (faixas.length === 1) return
+
+    const current = [...faixas]
+    const currentFaixaTaxa = [...faixaTaxa]
+    const currentFaixaValor = [...faixaValor]
+
+    current.pop()
+    currentFaixaTaxa.pop()
+    currentFaixaValor.pop()
+
+    setFaixas(current)
+    setFaixaTaxa(currentFaixaTaxa)
+    setFaixaValor(currentFaixaValor)
+  }
+
+  const onChangeValor = (index: number, value: string) => {
+    const valorStr = value.replace(/[^\d]+/g, '')
+    const valor = parseFloat(valorStr) / 100
+    const currentFaixaValor = [...faixaValor]
+
+    currentFaixaValor[index] = valor || 0
+    setFaixaValor(currentFaixaValor)
+  }
+
+  const onChangeTaxa = (index: number, value: string) => {
+    const valorStr = value.replace(/[^\d]+/g, '')
+    const valor = parseFloat(valorStr) / 100
+    const currentFaixaTaxa = [...faixaTaxa]
+
+    currentFaixaTaxa[index] = valor || 0
+    setFaixaTaxa(currentFaixaTaxa)
+  }
 
   const handleSubmit = () => {
     if (usuarioEquipe && usuarioEquipe.token && configuracoesUsuario) {
       if (configuracoesUsuario.taxaDistribuicao && configuracoesUsuario.taxaDistribuicao > 0) {
+        //confere as taxas
+        let taxaAnterior = 0
+        let maiorTaxa = 0
+        let erroTaxa = undefined
+
+        faixaTaxa.forEach(taxa => {
+          if (taxa === 0) erroTaxa = 'Taxa não pode ser zero'
+          if (taxa < taxaAnterior) erroTaxa = 'taxa não pode ser menor que a taxa anerior'
+          if (taxa > maiorTaxa) maiorTaxa = taxa
+          taxaAnterior = taxa
+        })
+
+        if (maiorTaxa > configuracoesUsuario?.taxaDistribuicao) {
+          erroTaxa = 'A taixa não pode ser maior que a taxa de distribuição'
+        }
+
+        if (erroTaxa) {
+          toast.error(erroTaxa)
+
+          return
+        }
+
+        //confere os valores
+        let index = 0
+        let valorAnterior = 0
+        let erroValor = undefined
+
+        faixaValor.forEach(valor => {
+          if (valor === 0 && index > 0) erroValor = 'Valor não pode ser zero'
+          if (valor < valorAnterior) erroValor = 'Valor não pode ser menor que o valor anerior'
+          valorAnterior = valor
+          index++
+        })
+
+        if (erroValor) {
+          toast.error(erroValor)
+
+          return
+        }
+
+        const faixasDistribuicao = `${faixaTaxa.join(';')}|${faixaValor.join(';')}`
+
         setSending(true)
-        UsuarioService.salvarConfiguracoes(configuracoesUsuario)
+        UsuarioService.salvarConfiguracoes({
+          ...configuracoesUsuario,
+          faixasDistribuicao
+        })
           .then(respUsuario => {
             setUsuarioEquipeContext(respUsuario)
             toast.success('Dados salvo com sucesso!')
@@ -113,8 +212,20 @@ const ConfiguracoesUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pro
             : usuarioEquipe.podeCriarEquipe
       })
 
+      //recuperando as faixas de distribuicao
+      const faixasStrArray = usuarioEquipe.faixasDistribuicao ? usuarioEquipe.faixasDistribuicao.split('|') : ['0', '0']
+
+      const taxas = faixasStrArray[0].split(';').map(e => Number(e))
+
+      setFaixaTaxa(taxas)
+
+      const valores = faixasStrArray[1].split(';').map(e => Number(e))
+
+      setFaixaValor(valores)
+      setFaixas(faixasStrArray[0].split(';'))
+
       //definindo a taxa máxima padrao default para o novo usuario
-      console.log('usuarioEquipe.gestor?.taxaDistribuicao', usuarioEquipe.gestor?.taxaDistribuicao)
+      //console.log('usuarioEquipe.gestor?.taxaDistribuicao', usuarioEquipe.gestor?.taxaDistribuicao)
 
       if (usuarioEquipe.gestor?.taxaDistribuicao) {
         setMaxTaxa(
@@ -166,6 +277,18 @@ const ConfiguracoesUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pro
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [maxTaxa])
+
+  useEffect(() => {
+    if (usuarioEquipe && usuarioEquipe.token) {
+      const faixasDistribuicao = `${faixaTaxa.join(';')}|${faixaValor.join(';')}`
+
+      setConfiguracoesUsuario({
+        ...configuracoesUsuario,
+        faixasDistribuicao
+      })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [faixaTaxa, faixaValor])
 
   return (
     <Grid container spacing={6}>
@@ -227,6 +350,76 @@ const ConfiguracoesUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pro
                       />
                     </RadioGroup>
                   </Grid>
+                )}
+                {usuarioEquipe?.perfil === PerfilUsuarioEnum.PARCEIRO && (
+                  <>
+                    <Grid item xs={12} sm={12}>
+                      <Typography className='font-medium'>Faixa de distribuição:</Typography>
+                    </Grid>
+                    {faixas.map((currentItem, index) => {
+                      return (
+                        <Grid key={index} item xs={12} sm={12}>
+                          <Grid container spacing={4}>
+                            <Grid item xs={6} sm={6}>
+                              <CustomTextField
+                                name='taxa'
+                                fullWidth
+                                label='Taxa'
+                                placeholder='Taxa'
+                                value={
+                                  faixaTaxa[index]
+                                    ? faixaTaxa[index].toLocaleString('pt-BR', {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2
+                                      })
+                                    : 0
+                                }
+                                onChange={e => onChangeTaxa(index, e.target.value)}
+                              />
+                            </Grid>
+                            <Grid item xs={6} sm={6}>
+                              <CustomTextField
+                                name='valor'
+                                fullWidth
+                                label='Valor Mínimo'
+                                placeholder='valor'
+                                disabled={index === 0}
+                                value={
+                                  faixaValor[index]
+                                    ? faixaValor[index].toLocaleString('pt-BR', {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2
+                                      })
+                                    : 0
+                                }
+                                onChange={e => onChangeValor(index, e.target.value)}
+                              />
+                            </Grid>
+                          </Grid>
+                        </Grid>
+                      )
+                    })}
+                    <Grid item xs={12} sm={12}>
+                      <Grid container>
+                        <Button
+                          variant='contained'
+                          color='primary'
+                          onClick={handleRemoveFaixa}
+                          startIcon={<i className='tabler-minus' />}
+                        >
+                          Excluir Última Faixa
+                        </Button>
+                        <Button
+                          variant='contained'
+                          color='primary'
+                          onClick={handleAddFaixa}
+                          startIcon={<i className='tabler-plus' />}
+                        >
+                          Incluir Faixa
+                        </Button>
+                      </Grid>
+                    </Grid>
+                  </>
                 )}
               </Grid>
             </CardContent>

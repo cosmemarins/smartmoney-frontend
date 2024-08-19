@@ -139,6 +139,12 @@ const ContratoService = {
     return data
   },
 
+  ativarExtrato: async function salvarExtrato(token: string): Promise<ExtratoType> {
+    const { data } = await api.post<ExtratoType>(`${path}/extrato-ativar/${token}`)
+
+    return data
+  },
+
   salvarExtratoComDocumento: async function salvarExtratoComDocumento(formData: any): Promise<ExtratoType> {
     console.log('salvarExtratoComDocumento', formData.values)
     const { data } = await api.post<ExtratoType>(`${path}/extrato/com-documento`, formData)

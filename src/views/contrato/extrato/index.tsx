@@ -21,8 +21,10 @@ import {
   Chip,
   CircularProgress,
   Dialog,
+  DialogActions,
   DialogContent,
   DialogTitle,
+  IconButton,
   styled
 } from '@mui/material'
 
@@ -31,7 +33,11 @@ import { toast } from 'react-toastify'
 import ContratoService from '@/services/ContratoService'
 import type { ExtratoType } from '@/types/ExtratoType'
 import { valorBr, valorEmReal } from '@/utils/string'
-import { getStatusContratoEnumColor, getStatusContratoEnumDesc } from '@/utils/enums/StatusContratoEnum'
+import {
+  getStatusContratoEnumColor,
+  getStatusContratoEnumDesc,
+  StatusContratoEnum
+} from '@/utils/enums/StatusContratoEnum'
 import { getTipoExtratoEnumColor, getTipoExtratoEnumDesc, TipoExtratoEnum } from '@/utils/enums/TipoExtratoEnum'
 import ExtratoEdit from './ExtratoEdit'
 import { trataErro } from '@/utils/erro'
@@ -63,6 +69,7 @@ export default function ExtratoContrato({ token }: props) {
   const [extratoList, setExtratoList] = useState<ExtratoType[]>([])
   const [reload, setReload] = useState(false)
   const [openDlgExtrato, setOpenDlgExtrato] = useState<boolean>(false)
+  const [openDlgAtivarExtrato, setOpenDlgAtivarExtrato] = useState<boolean>(false)
 
   //const [openDlgDeleteExtrato, setOpenDlgDeleteExtrato] = useState<boolean>(false)
 
@@ -88,6 +95,31 @@ export default function ExtratoContrato({ token }: props) {
 
     if (refresh) {
       refreshListExtrato(contrato?.token)
+    }
+  }
+
+  const handleAtivarExtrato = (extrato: ExtratoType) => {
+    if (extrato.token) {
+      setExtratoEdit(extrato)
+      setOpenDlgAtivarExtrato(true)
+    }
+  }
+
+  const confirmAtivarExtrato = () => {
+    if (contrato && extratoEdit && extratoEdit.token) {
+      setReload(true)
+      ContratoService.ativarExtrato(extratoEdit?.token)
+        .then(() => {
+          refreshListExtrato(contrato?.token)
+          setOpenDlgAtivarExtrato(false)
+          toast.success(`Lançamento ${extratoEdit?.token} ativado com sucesso!`)
+        })
+        .catch(err => {
+          console.log('Erro ao excluir', err)
+        })
+        .finally(() => {
+          setReload(false)
+        })
     }
   }
 
@@ -236,15 +268,14 @@ export default function ExtratoContrato({ token }: props) {
           <Table sx={{ minWidth: 650 }} aria-label='extrato contrato'>
             <TableHead>
               <TableRow>
-                <TableCell align='center'>#</TableCell>
+                <TableCell align='center'>ID</TableCell>
                 <TableCell align='center'>Data</TableCell>
                 <TableCell align='center'>Token</TableCell>
                 <TableCell align='center'>Histórico</TableCell>
                 <TableCell align='center'>Tipo</TableCell>
+                <TableCell align='center'>Status</TableCell>
                 <TableCell align='center'>Valor</TableCell>
-                {/*
                 <TableCell align='center'>Ações</TableCell>
-                */}
               </TableRow>
             </TableHead>
             <TableBody>
@@ -266,9 +297,27 @@ export default function ExtratoContrato({ token }: props) {
                       sx={{ fontSize: '12px', height: '20px' }}
                     />
                   </TableCell>
-                  <TableCell align='center'>{extrato?.valor ? valorBr.format(extrato?.valor) : ''}</TableCell>
-                  {/*
                   <TableCell align='center'>
+                    <Chip
+                      size='small'
+                      label={extrato?.status ? getStatusContratoEnumDesc(extrato?.status) : ''}
+                      color={extrato?.status ? getStatusContratoEnumColor(extrato?.status) : 'default'}
+                    />
+                  </TableCell>
+                  <TableCell align='center'>{extrato?.valor ? valorBr.format(extrato?.valor) : ''}</TableCell>
+                  <TableCell align='center'>
+                    {extrato?.status != StatusContratoEnum.ATIVO && (
+                      <IconButton
+                        title='Ativar comprovante'
+                        aria-label='capture screenshot'
+                        onClick={() => {
+                          handleAtivarExtrato(extrato)
+                        }}
+                      >
+                        <i className='tabler-check' />
+                      </IconButton>
+                    )}
+                    {/*
                     <IconButton
                       aria-label='capture screenshot'
                       onClick={() => {
@@ -285,8 +334,8 @@ export default function ExtratoContrato({ token }: props) {
                     >
                       <i className='tabler-trash' />
                     </IconButton>
+                    */}
                   </TableCell>
-                  */}
                 </StyledTableRow>
               ))}
             </TableBody>
@@ -310,7 +359,6 @@ export default function ExtratoContrato({ token }: props) {
             </caption>
           </Table>
         </TableContainer>
-
         <Dialog
           maxWidth='md'
           open={openDlgExtrato}
@@ -330,6 +378,26 @@ export default function ExtratoContrato({ token }: props) {
               tipoExtrato={TipoExtratoEnum.ADITIVO}
             />
           </DialogContent>
+        </Dialog>
+        <Dialog maxWidth='sm' open={openDlgAtivarExtrato} aria-labelledby='form-dialog-title' disableEscapeKeyDown>
+          <DialogTitle id='form-dialog-title'>Ativar comprovante do extrato</DialogTitle>
+          <DialogContent>
+            <p>Confirmar ativação deste comprovante?</p>
+          </DialogContent>
+          <DialogActions className='dialog-actions-dense'>
+            <Button variant='contained' onClick={() => confirmAtivarExtrato()}>
+              Ativar
+            </Button>
+            <Button
+              type='reset'
+              variant='contained'
+              onClick={() => {
+                setOpenDlgAtivarExtrato(false)
+              }}
+            >
+              Cancelar
+            </Button>
+          </DialogActions>
         </Dialog>
       </>
     )
