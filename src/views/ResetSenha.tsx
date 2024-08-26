@@ -82,12 +82,13 @@ const ResetSenha = ({ mode, tokenSenha }: { mode: SystemMode; tokenSenha: string
       setSending(true)
 
       const usuarioSenha = {
-        token: tokenSenha,
+        token: usuario.token,
+        tokenSenha: tokenSenha,
         novaSenha,
         confirmacaoSenha
       } as UsuarioSenhaDTO
 
-      UsuarioService.salvarSenha(usuario.token, usuarioSenha)
+      UsuarioService.resetarSenha(usuario.token, usuarioSenha)
         .then(() => {
           toast.success('Senha salva com sucesso!')
 

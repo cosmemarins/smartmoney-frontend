@@ -6,6 +6,7 @@ export default interface UsuarioSenhaDTO {
   // basta usar os campos apropriados (novaSenha e confirmacaoSenha)
   id: number
   token?: string
+  tokenSenha?: string
   senha: string
   novaSenha: string
   confirmacaoSenha: string

@@ -173,7 +173,7 @@ const UsuarioService = {
   },
 
   resetarSenha: async function (token: string, usuarioSenha: UsuarioSenhaDTO): Promise<DadosBancariosType> {
-    const { data } = await api.put<DadosBancariosType>(`${path}/resetar-senha/${token}`, usuarioSenha)
+    const { data } = await api.post<DadosBancariosType>(`${path}/resetar-senha/${token}`, usuarioSenha)
 
     return data
   },

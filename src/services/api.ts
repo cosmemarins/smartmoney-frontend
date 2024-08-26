@@ -40,9 +40,16 @@ api.interceptors.request.use(function (config) {
   const storedToken = getCookie('token')
 
   //console.log('storedToken:', storedToken)
+  console.log('config.baseURL', config.baseURL)
+  console.log('config.url', config.url)
 
-  if (!storedToken) {
-    console.log('storedToken vazio, precisa logar novamente')
+  if (
+    !storedToken &&
+    !config.url?.startsWith('usuarios/esqueci-senha') &&
+    !config.url?.startsWith('usuarios/token-senha/') &&
+    !config.url?.startsWith('usuarios/resetar-senha/')
+  ) {
+    //console.log('storedToken vazio, precisa logar novamente')
 
     //signOut({ redirect: false })
     //signOut({ redirect: false, callbackUrl: `${process.env.NEXT_PUBLIC_APP_URL}/login` })
