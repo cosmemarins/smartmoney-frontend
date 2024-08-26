@@ -78,6 +78,12 @@ const UsuarioService = {
     return data
   },
 
+  getByTokenSenha: async function (tokenSenha: string): Promise<UsuarioType> {
+    const { data } = await api.get<UsuarioType>(`${path}/token-senha/${tokenSenha}`)
+
+    return data
+  },
+
   salvar: async function (usuario: UsuarioType): Promise<UsuarioType> {
     //console.log('incluirUsuario', usuario)
 
@@ -85,6 +91,14 @@ const UsuarioService = {
       usuario.token && usuario.token != ''
         ? await api.put<UsuarioType>(path, usuario)
         : await api.post<UsuarioType>(path, usuario)
+
+    return data
+  },
+
+  esqueciSenha: async function (email: string): Promise<UsuarioType> {
+    //console.log('incluirUsuario', usuario)
+
+    const { data } = await api.post<UsuarioType>(`${path}/esqueci-senha`, { email: email })
 
     return data
   },

@@ -31,13 +31,15 @@ export default withAuth(
     const isUserLoggedIn = !!token
 
     // Guest routes (Routes that can be accessed by guest users who are not logged in)
-    const guestRoutes = ['login', 'register', 'forgot-password']
+    const guestRoutes = ['login', 'register', 'forgot-password', 'esqueci-senha', 'reset-senha']
 
     // Shared routes (Routes that can be accessed by both guest and logged in users)
     const sharedRoutes = ['shared-route']
 
     // Private routes (All routes except guest and shared routes that can only be accessed by logged in users)
     const privateRoute = ![...guestRoutes, ...sharedRoutes].some(route => pathname.endsWith(route))
+
+    if (pathname.startsWith('/reset-senha/')) return NextResponse.next()
 
     // If the user is not logged in and is trying to access a private route, redirect to the login page
     if (!isUserLoggedIn && privateRoute) {

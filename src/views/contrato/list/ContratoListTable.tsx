@@ -63,7 +63,7 @@ import DocumentoContratoEdit from '../components/DocumentoContratoEdit'
 import { TipoArquivoRegistroEnum } from '@/utils/enums/TipoArquivoRegistroEnum'
 import { TipoDocumentoEnum } from '@/utils/enums/TipoDocumentoEnum'
 import { PerfilUsuarioEnum } from '@/utils/enums/PerfilUsuarioEnum'
-import { isMaster } from '@/utils/utils'
+import { isMaster, isParceiroMaster } from '@/utils/utils'
 
 locale('pt-br')
 
@@ -160,8 +160,10 @@ const ContratoListTable = () => {
     }
   }
 
-  const handleCloseDlgArquivo = (refresh: boolean) => {
-    //inclusao de aditivo
+  const handleCloseDlgArquivo = () => {
+    /*
+    const handleCloseDlgArquivo = (refresh: boolean) => {
+    //inclusao de aditivo, reenviar o contrato após incluir um aditivo
     if (refresh && contratoEdit?.status === StatusContratoEnum.ATIVO) {
       setDialogConfirma({
         open: true,
@@ -175,10 +177,12 @@ const ContratoListTable = () => {
         handleConfirma: handleRenviarContrato
       } as DialogConfirmaType)
     }
+    */
 
     setOpenDlgArquivo(false)
   }
 
+  /* opção para eenviar o contrato após incluir aditivo
   const handleRenviarContrato = () => {
     if (contratoEdit?.token) {
       ContratoService.enviarContrato(contratoEdit?.token)
@@ -194,6 +198,7 @@ const ContratoListTable = () => {
         .finally(() => {})
     }
   }
+  */
 
   const handleOpenDlgConfirmaExcluir = (contrato: ContratoType) => {
     setContratoExcluir(contrato)
@@ -221,7 +226,7 @@ const ContratoListTable = () => {
 
   const columns = useMemo<ColumnDef<ContratoTypeWithAction, any>[]>(
     () => [
-      columnHelper.accessor('data', {
+      columnHelper.accessor('token', {
         header: 'Data',
         cell: ({ row }) => (
           <div className='flex items-center gap-4'>
@@ -307,8 +312,11 @@ const ContratoListTable = () => {
         cell: ({ row }) => (
           <div className='text-center'>
             <Typography color='text.primary' className='font-medium'>
-              {valorBr.format(Number(row.original.saldo))}
+              {valorBr.format(Number(row.original.saldo || 0))}
             </Typography>
+            {row.original.saldoPendente != 0 && (
+              <small>Pendente: {valorBr.format(Number(row.original.saldoPendente))}</small>
+            )}
           </div>
         )
       }),
@@ -352,11 +360,12 @@ const ContratoListTable = () => {
             <IconButton onClick={() => handleOpenDlgContrato(row.original)}>
               <i className='tabler-edit text-[22px] text-textSecondary' />
             </IconButton>
-            {isMaster(session?.user) && row.original.status == StatusContratoEnum.NOVO && (
-              <IconButton onClick={() => handleOpenDlgConfirmaExcluir(row.original)}>
-                <i className='tabler-trash text-[22px] text-textSecondary' />
-              </IconButton>
-            )}
+            {(isMaster(session?.user) || isParceiroMaster(session?.user)) &&
+              row.original.status == StatusContratoEnum.NOVO && (
+                <IconButton onClick={() => handleOpenDlgConfirmaExcluir(row.original)}>
+                  <i className='tabler-trash text-[22px] text-textSecondary' />
+                </IconButton>
+              )}
           </div>
         ),
         enableSorting: false
@@ -419,6 +428,7 @@ const ContratoListTable = () => {
       setRefreshTable(false)
       ContratoService.getList()
         .then(respListContrato => {
+          console.log('respListContrato', respListContrato)
           setData(respListContrato)
         })
         .catch(err => {
@@ -594,7 +604,10 @@ const ContratoListTable = () => {
         disableEscapeKeyDown
         onClose={(event, reason) => {
           if (reason !== 'backdropClick') {
-            handleCloseDlgArquivo(false)
+            handleCloseDlgArquivo()
+
+            //qunado for para dar oção de reenvio do contrato ao incluir um aditivo
+            //handleCloseDlgArquivo(false)
           }
         }}
       >

@@ -2,7 +2,9 @@ export enum TipoExtratoEnum {
   ADITIVO = 'ADITIVO',
   APORTE = 'APORTE',
   DIVIDENDO = 'DIVIDENDO',
-  RETIRADA = 'RETIRADA'
+  RETIRADA = 'RETIRADA',
+  RESGATE = 'RESGATE',
+  TAXA = 'TAXA'
 }
 
 export function getTipoExtratoEnumDesc(item: string) {
@@ -15,6 +17,10 @@ export function getTipoExtratoEnumDesc(item: string) {
       return 'Dividendo'
     case TipoExtratoEnum.RETIRADA:
       return 'Retirada'
+    case TipoExtratoEnum.RESGATE:
+      return 'Resgate'
+    case TipoExtratoEnum.TAXA:
+      return 'Taxa'
     default:
       return ''
   }
@@ -23,12 +29,12 @@ export function getTipoExtratoEnumDesc(item: string) {
 export function getTipoExtratoEnumColor(item: string) {
   switch (item) {
     case TipoExtratoEnum.ADITIVO:
-      return 'success'
     case TipoExtratoEnum.APORTE:
-      return 'success'
     case TipoExtratoEnum.DIVIDENDO:
       return 'success'
     case TipoExtratoEnum.RETIRADA:
+    case TipoExtratoEnum.RESGATE:
+    case TipoExtratoEnum.TAXA:
       return 'error'
     default:
       return 'default'

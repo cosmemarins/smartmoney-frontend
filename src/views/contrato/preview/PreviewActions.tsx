@@ -18,7 +18,7 @@ import { trataErro } from '@/utils/erro'
 // Component Imports
 import { useContratoContext } from '@/contexts/ContratoContext'
 import ContratoService from '@/services/ContratoService'
-import { isMaster } from '@/utils/utils'
+import { isMaster, isParceiroMaster } from '@/utils/utils'
 
 const PreviewActions = () => {
   // context
@@ -30,7 +30,7 @@ const PreviewActions = () => {
   const [dialogConfirma, setDialogConfirma] = useState<DialogConfirmaType>({ open: false })
 
   const handleOpenDlgConfirmaEnviar = () => {
-    if (isMaster(session?.user) && resumoContrato?.podeEnviar) {
+    if ((isMaster(session?.user) || isParceiroMaster(session?.user)) && resumoContrato?.podeEnviar) {
       setDialogConfirma({
         open: true,
         titulo: 'Enviar Contrato',
@@ -88,7 +88,9 @@ const PreviewActions = () => {
               }
               onClick={() => handleOpenDlgConfirmaEnviar()}
             >
-              {resumoContrato?.podeEnviar ? `Salvar ${isMaster(session?.user) ? 'e enviar' : ''} contrato` : 'Salvar'}
+              {resumoContrato?.podeEnviar
+                ? `Salvar ${isMaster(session?.user) || isParceiroMaster(session?.user) ? 'e enviar' : ''} contrato`
+                : 'Salvar'}
             </Button>
           </div>
         </CardContent>

@@ -47,7 +47,7 @@ type FormData = v.InferInput<typeof schema>
 const schema = v.object({
   nome: v.string('É preciso digitar um nome'),
   email: pipe(v.string('É preciso digitar um email'), v.email('Email inválido')),
-  identidade: v.string('É preciso informar a identidade ou CNH'),
+  identidade: v.string('É preciso informar o RG ou CNH'),
   telefone: v.string('É preciso informar um celular'),
   dataNascimento: pipe(
     v.date('É preciso infromar uma data válida'),
@@ -174,8 +174,8 @@ const DadosCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
                       <CustomTextField
                         {...field}
                         fullWidth
-                        label={isCpf ? 'Identidade/CNH' : 'Inscrição Estadual'}
-                        placeholder='identidade/CNH'
+                        label={isCpf ? 'RG/CNH' : 'Inscrição Estadual'}
+                        placeholder='RG/CNH'
                         value={cliente?.identidade || ''}
                         onChange={e => {
                           field.onChange(e.target.value)

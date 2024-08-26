@@ -76,7 +76,7 @@ async function getThumbnailCliente(token: string, tipoDocumento: TipoDocumentoEn
 
   switch (tipoDocumento) {
     case TipoDocumentoEnum.IDENTIDADE:
-      tipo = 'identidade/CNH'
+      tipo = 'RG/CNH'
       break
     case TipoDocumentoEnum.COMPROVANTE_FINANCEIRO:
       tipo = 'comp-financeiro'

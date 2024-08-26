@@ -51,7 +51,7 @@ import DialogConfirma from '@/components/DialogConfirma'
 import { useContratoContext } from '@/contexts/ContratoContext'
 import { trataErro } from '@/utils/erro'
 import { valorBr } from '@/utils/string'
-import { isMaster } from '@/utils/utils'
+import { isMaster, isParceiroMaster } from '@/utils/utils'
 
 locale('pt-br')
 
@@ -525,7 +525,7 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
           </Grid>
           <Divider />
           <Grid item xs={12} sm={12}>
-            {isMaster(session?.user) &&
+            {(isMaster(session?.user) || isParceiroMaster(session?.user)) &&
               (contratoEdit.status === StatusContratoEnum.NOVO ||
                 contratoEdit.status === StatusContratoEnum.AGUARDANDO ||
                 contratoEdit.status === StatusContratoEnum.ATIVO) && (
@@ -543,7 +543,7 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
                 Trocar Contrato
               </Button>
             )}
-            {isMaster(session?.user) &&
+            {(isMaster(session?.user) || isParceiroMaster(session?.user)) &&
               (contratoEdit.status === StatusContratoEnum.AGUARDANDO ||
                 contratoEdit.status === StatusContratoEnum.NOVO) && (
                 <Button
@@ -555,7 +555,7 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
                   Ativar Contrato
                 </Button>
               )}
-            {isMaster(session?.user) &&
+            {(isMaster(session?.user) || isParceiroMaster(session?.user)) &&
               (contratoEdit.status === StatusContratoEnum.AGUARDANDO ||
                 contratoEdit.status === StatusContratoEnum.ATIVO) && (
                 <Button
@@ -567,7 +567,7 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
                   Cancelar Contrato
                 </Button>
               )}
-            {isMaster(session?.user) &&
+            {(isMaster(session?.user) || isParceiroMaster(session?.user)) &&
               (contratoEdit.status === StatusContratoEnum.NOVO ||
                 contratoEdit.status === StatusContratoEnum.CANCELADO) && (
                 <Button

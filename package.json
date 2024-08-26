@@ -14,6 +14,7 @@
     "postinstall": "npm run build:icons"
   },
   "dependencies": {
+    "@casl/ability": "^6.7.1",
     "@emotion/cache": "11.11.0",
     "@emotion/react": "11.11.4",
     "@emotion/styled": "11.11.0",

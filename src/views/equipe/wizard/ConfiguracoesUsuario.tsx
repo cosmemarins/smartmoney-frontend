@@ -186,8 +186,10 @@ const ConfiguracoesUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pro
       if (sliderValue < TaxasEnum.MAXIMO_CONSULTOR - 1) {
         setConfiguracoesUsuario({
           ...configuracoesUsuario,
-          taxaDistribuicao: sliderValue,
-          podeCriarEquipe: false
+          taxaDistribuicao: sliderValue
+
+          //retirado controle de criacao de equipe
+          //podeCriarEquipe: false
         })
       } else {
         setConfiguracoesUsuario({
@@ -198,8 +200,19 @@ const ConfiguracoesUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pro
     }
   }
 
+  function distFaixas(strFaixas: string | undefined) {
+    const faixasStrArray = strFaixas ? strFaixas.split('|') : ['0', '0']
+
+    const taxas = faixasStrArray[0].split(';').map(e => Number(e))
+    const valores = faixasStrArray[1].split(';').map(e => Number(e))
+
+    setFaixaTaxa(taxas)
+    setFaixaValor(valores)
+    setFaixas(faixasStrArray[0].split(';'))
+  }
+
   useEffect(() => {
-    //console.log(usuarioEquipe)
+    console.log('usuarioEquipe', usuarioEquipe)
 
     if (usuarioEquipe && usuarioEquipe.token) {
       setConfiguracoesUsuario({
@@ -212,27 +225,16 @@ const ConfiguracoesUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pro
             : usuarioEquipe.podeCriarEquipe
       })
 
-      //recuperando as faixas de distribuicao
-      const faixasStrArray = usuarioEquipe.faixasDistribuicao ? usuarioEquipe.faixasDistribuicao.split('|') : ['0', '0']
+      //se ver setada então pega faixas de distribuicao do proprio usuario
+      if (usuarioEquipe.faixasDistribuicao) distFaixas(usuarioEquipe.faixasDistribuicao)
 
-      const taxas = faixasStrArray[0].split(';').map(e => Number(e))
-
-      setFaixaTaxa(taxas)
-
-      const valores = faixasStrArray[1].split(';').map(e => Number(e))
-
-      setFaixaValor(valores)
-      setFaixas(faixasStrArray[0].split(';'))
-
-      //definindo a taxa máxima padrao default para o novo usuario
-      //console.log('usuarioEquipe.gestor?.taxaDistribuicao', usuarioEquipe.gestor?.taxaDistribuicao)
-
+      //define a taxa de distribuicao
       if (usuarioEquipe.gestor?.taxaDistribuicao) {
         setMaxTaxa(
           usuarioEquipe.gestor?.taxaDistribuicao < taxaInit ? usuarioEquipe.gestor?.taxaDistribuicao : taxaInit
         )
       } else {
-        //vai pegar a taxa de distribuicao
+        //vai pegar a taxa e a faixa de distribuicao
         UsuarioService.getProfile()
           .then(respUsuario => {
             console.log('respUsuario', respUsuario)
@@ -241,6 +243,16 @@ const ConfiguracoesUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pro
             console.log('taxaInit', taxaInit)
 
             if (respUsuario) {
+              //se a faixa de distribuicao não tiver sido setada ainda então eu pego do banco ou do gestor
+              if (!usuarioEquipe.faixasDistribuicao) {
+                console.log('usuarioEquipe.faixasDistribuicao')
+                distFaixas(
+                  respUsuario.faixasDistribuicao
+                    ? respUsuario.faixasDistribuicao
+                    : respUsuario.gestor?.faixasDistribuicao
+                )
+              }
+
               //se o usuaro tem uma taxa de distribuição entao eu pego ela
               if (respUsuario.taxaDistribuicao && respUsuario.taxaDistribuicao > 0) {
                 taxaGestor = respUsuario.taxaDistribuicao > taxaInit ? taxaInit : respUsuario.taxaDistribuicao
@@ -332,21 +344,25 @@ const ConfiguracoesUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pro
                         value='0'
                         control={<Radio />}
                         label='Não'
-                        disabled={
-                          (configuracoesUsuario.taxaDistribuicao &&
-                            configuracoesUsuario.taxaDistribuicao < TaxasEnum.MAXIMO_CONSULTOR - 1) ||
-                          false
-                        }
+
+                        //retirado controle de criacao de equipe
+                        //disabled={
+                        //  (configuracoesUsuario.taxaDistribuicao &&
+                        //    configuracoesUsuario.taxaDistribuicao < TaxasEnum.MAXIMO_CONSULTOR - 1) ||
+                        //  false
+                        //}
                       />
                       <FormControlLabel
                         value='1'
                         control={<Radio />}
                         label='Sim'
-                        disabled={
-                          (configuracoesUsuario.taxaDistribuicao &&
-                            configuracoesUsuario.taxaDistribuicao < TaxasEnum.MAXIMO_CONSULTOR - 1) ||
-                          false
-                        }
+
+                        //retirado controle de criacao de equipe
+                        //disabled={
+                        //  (configuracoesUsuario.taxaDistribuicao &&
+                        //    configuracoesUsuario.taxaDistribuicao < TaxasEnum.MAXIMO_CONSULTOR - 1) ||
+                        //  false
+                        //}
                       />
                     </RadioGroup>
                   </Grid>

@@ -163,7 +163,7 @@ const Identificacao = () => {
             <Grid item xs={12} sm={6}>
               <CustomTextField
                 fullWidth
-                label='Identidade/CNH'
+                label='RG/CNH'
                 value={clienteEdit?.identidade || ''}
                 onChange={e => setClienteEdit({ ...clienteEdit, identidade: e.target.value })}
               />

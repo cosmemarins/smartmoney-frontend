@@ -29,9 +29,9 @@ export function getStatusContratoEnumDesc(item: string | undefined) {
 export function getStatusContratoEnumColor(item: string) {
   switch (item) {
     case StatusContratoEnum.NOVO:
-      return 'default'
+      return 'error'
     case StatusContratoEnum.AGUARDANDO:
-      return 'default'
+      return 'warning'
     case StatusContratoEnum.ATIVO:
       return 'success'
     case StatusContratoEnum.SUBSTITUIDO:

@@ -25,7 +25,7 @@ import type { ContratoType } from '@/types/ContratoType'
 import type { ClienteType } from '@/types/ClienteType'
 import type { ResumoContratoType } from '@/types/ResumoContratoType'
 import { ResumoContratoInit } from '@/types/ResumoContratoType'
-import { isMaster } from '@/utils/utils'
+import { isMaster, isParceiroMaster } from '@/utils/utils'
 
 type Props = {
   contrato: ContratoType
@@ -159,7 +159,7 @@ const Documentacao = ({ contrato, cliente, handleClose }: Props) => {
         })
         .finally(() => {})
 
-      if (isMaster(session?.user) && !openDlgAtivarContrato) {
+      if ((isMaster(session?.user) || isParceiroMaster(session?.user)) && !openDlgAtivarContrato) {
         //atualiza o objeto resumo do contrato
         ContratoService.getResumo(contrato.token)
           .then(respResumo => {

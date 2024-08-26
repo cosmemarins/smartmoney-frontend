@@ -88,20 +88,26 @@ const InicioCadatroUsuario = ({ handleNext }: Props) => {
         UsuarioService.getByCpfCnpj(data.cpfCnpj)
           .then(respUsuario => {
             if (respUsuario) {
-              setUsuarioEquipeContext(respUsuario)
+              if (respUsuario.perfil === usuarioEquipe?.perfil) {
+                setUsuarioEquipeContext(respUsuario)
 
-              if (respUsuario.token) {
-                //atualiza o objeto resumo do contrato
-                UsuarioService.getResumo(respUsuario.token)
-                  .then(respResumo => {
-                    console.log('respResumo', respResumo)
-                    setResumoUsuarioContext(respResumo)
-                  })
-                  .catch(err => {
-                    toast.error(trataErro(err))
-                  })
+                if (respUsuario.token) {
+                  //atualiza o objeto resumo do contrato
+                  UsuarioService.getResumo(respUsuario.token)
+                    .then(respResumo => {
+                      console.log('respResumo', respResumo)
+                      setResumoUsuarioContext(respResumo)
+                      handleNext()
+                    })
+                    .catch(err => {
+                      toast.error(trataErro(err))
+                    })
+                } else {
+                  setResumoUsuarioContext(ResumoUsuarioInit)
+                  handleNext()
+                }
               } else {
-                setResumoUsuarioContext(ResumoUsuarioInit)
+                toast.error('Este CPF/CNPJ já esta cadastrado com outro PERFIL')
               }
             } else {
               setUsuarioEquipeContext({
@@ -111,9 +117,8 @@ const InicioCadatroUsuario = ({ handleNext }: Props) => {
                 status: StatusUsuarioEnum.NOVO
               })
               setResumoUsuarioContext(ResumoUsuarioInit)
+              handleNext()
             }
-
-            handleNext()
           })
           .catch(err => {
             const msgErro = trataErro(err)

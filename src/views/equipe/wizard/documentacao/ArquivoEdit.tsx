@@ -226,7 +226,7 @@ const ArquivoEdit = ({ arquivoData, handleClose, setRefreshArquivoList }: props)
                           value='IDENTIDADE'
                           selected={arquivoEdit.tipoDocumento === TipoDocumentoEnum.IDENTIDADE}
                         >
-                          Identidade/CNH {arquivoData?.usuario?.tipoPessoa === 'J' && ' do sócio admin'}
+                          RG/CNH {arquivoData?.usuario?.tipoPessoa === 'J' && ' do sócio admin'}
                         </MenuItem>
 
                         <MenuItem value='OUTROS' selected={arquivoEdit.tipoDocumento === TipoDocumentoEnum.OUTROS}>

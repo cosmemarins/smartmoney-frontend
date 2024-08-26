@@ -11,6 +11,8 @@ export type ContratoType = {
   data?: Date
   valor?: number
   saldo?: number
+  totalCredito?: number
+  totalDebito?: number
   saldoPendente?: number
   prazo?: number
   taxaCliente?: number
@@ -28,6 +30,8 @@ export const contratoInit = {
   data: new Date(),
   valor: 0,
   saldo: 0,
+  totalCredito: 0,
+  totalDebito: 0,
   saldoPendente: 0,
   prazo: 12,
   taxaCliente: 0,

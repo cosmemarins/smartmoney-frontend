@@ -190,7 +190,7 @@ const Login = ({ mode }: { mode: SystemMode }) => {
 
               <div className='flex justify-between items-center gap-x-3 gap-y-1 flex-wrap'>
                 <FormControlLabel control={<Checkbox />} label='Lembrar senha' />
-                <Typography className='text-end' color='primary' component={Link} href={'/forgot-password-v1'}>
+                <Typography className='text-end' color='primary' component={Link} href={'/esqueci-senha'}>
                   Esqueceu sua senha?
                 </Typography>
               </div>

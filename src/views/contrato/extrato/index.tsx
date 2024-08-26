@@ -2,6 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react'
 
+// Type Imports
+import { useSession } from 'next-auth/react'
+
 import moment, { locale } from 'moment'
 import 'moment/locale/pt-br'
 
@@ -43,6 +46,7 @@ import ExtratoEdit from './ExtratoEdit'
 import { trataErro } from '@/utils/erro'
 import type { ContratoType } from '@/types/ContratoType'
 import { TipoDocumentoEnum } from '@/utils/enums/TipoDocumentoEnum'
+import { isMaster, isParceiroMaster } from '@/utils/utils'
 
 locale('pt-br')
 
@@ -62,9 +66,13 @@ interface props {
 }
 
 export default function ExtratoContrato({ token }: props) {
+  // context
+  const { data: session } = useSession()
+
   // States
   const [contrato, setContrato] = useState<ContratoType>()
-  const [saldo, setSaldo] = useState<number>(0)
+
+  //const [saldo, setSaldo] = useState<number>(0)
   const [extratoEdit, setExtratoEdit] = useState<ExtratoType>({} as ExtratoType)
   const [extratoList, setExtratoList] = useState<ExtratoType[]>([])
   const [reload, setReload] = useState(false)
@@ -143,7 +151,7 @@ export default function ExtratoContrato({ token }: props) {
       setOpenDlgDeleteExtrato(true)
     }
   }
-  
+
   const confirmDeleteExtrato = () => {
     if (contrato && itemSelect) {
       setReload(true)
@@ -177,6 +185,7 @@ export default function ExtratoContrato({ token }: props) {
           setReload(false)
         })
 
+      /***
       //atualiza o saldo
       ContratoService.getSaldo(token)
         .then(respSaldo => {
@@ -185,6 +194,7 @@ export default function ExtratoContrato({ token }: props) {
         .catch(err => {
           toast.error(trataErro(err))
         })
+      ***/
     }
   }
 
@@ -256,8 +266,16 @@ export default function ExtratoContrato({ token }: props) {
               sx={{ mr: 2.5 }}
             />
             <span style={{ float: 'right', paddingRight: '10px', fontWeight: 'bolder' }}>
-              Saldo: {saldo ? valorEmReal.format(saldo) : '0,00'}
+              Saldo: {contrato?.saldo ? valorEmReal.format(contrato.saldo) : '0,00'}
             </span>
+            {contrato.saldoPendente && (
+              <>
+                <br />
+                <small style={{ float: 'right', paddingRight: '10px', fontWeight: 'bolder' }}>
+                  ( Pendente: {valorEmReal.format(contrato.saldoPendente)} )
+                </small>
+              </>
+            )}
           </CardContent>
           <Backdrop open={reload} className='absolute text-white z-[cal(var(--mui-zIndex-mobileStepper)-1)]'>
             <CircularProgress color='inherit' />
@@ -275,7 +293,9 @@ export default function ExtratoContrato({ token }: props) {
                 <TableCell align='center'>Tipo</TableCell>
                 <TableCell align='center'>Status</TableCell>
                 <TableCell align='center'>Valor</TableCell>
-                <TableCell align='center'>Ações</TableCell>
+                {(isMaster(session?.user) || isParceiroMaster(session?.user)) && (
+                  <TableCell align='center'>Ações</TableCell>
+                )}
               </TableRow>
             </TableHead>
             <TableBody>
@@ -305,37 +325,39 @@ export default function ExtratoContrato({ token }: props) {
                     />
                   </TableCell>
                   <TableCell align='center'>{extrato?.valor ? valorBr.format(extrato?.valor) : ''}</TableCell>
-                  <TableCell align='center'>
-                    {extrato?.status != StatusContratoEnum.ATIVO && (
+                  {(isMaster(session?.user) || isParceiroMaster(session?.user)) && (
+                    <TableCell align='center'>
+                      {extrato?.status != StatusContratoEnum.ATIVO && (
+                        <IconButton
+                          title='Ativar comprovante'
+                          aria-label='capture screenshot'
+                          onClick={() => {
+                            handleAtivarExtrato(extrato)
+                          }}
+                        >
+                          <i className='tabler-check' />
+                        </IconButton>
+                      )}
+                      {/*
                       <IconButton
-                        title='Ativar comprovante'
                         aria-label='capture screenshot'
                         onClick={() => {
-                          handleAtivarExtrato(extrato)
+                          handleOnEditExtrato(extrato)
                         }}
                       >
-                        <i className='tabler-check' />
+                        <i className='tabler-pencil' />
                       </IconButton>
-                    )}
-                    {/*
-                    <IconButton
-                      aria-label='capture screenshot'
-                      onClick={() => {
-                        handleOnEditExtrato(extrato)
-                      }}
-                    >
-                      <i className='tabler-pencil' />
-                    </IconButton>
-                    <IconButton
-                      aria-label='capture screenshot'
-                      onClick={() => {
-                        handleOnDeleteExtrato(extrato.token)
-                      }}
-                    >
-                      <i className='tabler-trash' />
-                    </IconButton>
-                    */}
-                  </TableCell>
+                      <IconButton
+                        aria-label='capture screenshot'
+                        onClick={() => {
+                          handleOnDeleteExtrato(extrato.token)
+                        }}
+                      >
+                        <i className='tabler-trash' />
+                      </IconButton>
+                      */}
+                    </TableCell>
+                  )}
                 </StyledTableRow>
               ))}
             </TableBody>

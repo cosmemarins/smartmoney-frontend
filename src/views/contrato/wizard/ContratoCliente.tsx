@@ -3,6 +3,9 @@
 // React Imports
 import { useEffect, useState } from 'react'
 
+// Type Imports
+import { useSession } from 'next-auth/react'
+
 // MUI Imports
 import Grid from '@mui/material/Grid'
 import {
@@ -49,6 +52,7 @@ import { trataErro } from '@/utils/erro'
 import DirectionalIcon from '@/components/DirectionalIcon'
 import { TaxasEnum } from '@/utils/enums/TaxasEnum'
 import { valorBr, valorEmReal } from '@/utils/string'
+import UsuarioService from '@/services/UsuarioService'
 
 locale('pt-br')
 
@@ -65,6 +69,7 @@ type ErrorType = {
 
 const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
   //contexto
+  const { data: session } = useSession()
   const { cliente } = useClienteContext()
   const { contrato, setContratoContext } = useContratoContext()
 
@@ -77,7 +82,10 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
   const [faixaValor, setFaixaValor] = useState([0])
 
   const schema = v.object({
-    valor: pipe(v.number('Informe um valor maior que 0'), v.minValue(1, 'É preciso inforar um valor.'))
+    valor: pipe(
+      v.number('É preciso inforar um valor.'),
+      v.minValue(faixaValor[0] | 1, `Informe um valor maior que ${faixaValor[0]}`)
+    )
 
     //taxaCliente: pipe(
     //  v.number('A taxa precisa ser maior que 0'),
@@ -179,13 +187,8 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
     }
   }
 
-  useEffect(() => {
-    //console.log('contrato', contrato)
-    console.log('cliente', cliente)
-
-    //recuperando as faixas de distribuicao
-    const gestorTaxas = cliente?.gestor?.faixasDistribuicao || cliente?.gestor?.gestor?.faixasDistribuicao
-    const faixasStrArray = gestorTaxas ? gestorTaxas.split('|') : ['0', '0']
+  const distFaixas = (strFaixas: string | undefined) => {
+    const faixasStrArray = strFaixas ? strFaixas.split('|') : ['0', '0']
 
     const taxas = faixasStrArray[0].split(';').map(e => Number(e))
 
@@ -196,6 +199,27 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
 
     console.log('valores', valores)
     setFaixaValor(valores)
+  }
+
+  useEffect(() => {
+    //console.log('contrato', contrato)
+    console.log('cliente', cliente)
+
+    if (cliente?.gestor?.faixasDistribuicao) {
+      distFaixas(cliente?.gestor?.faixasDistribuicao)
+    } else {
+      if (session?.user) {
+        //recuperando as faixas de distribuicao se ainda não veio
+        UsuarioService.get(session.user.token).then(respUsuario => {
+          console.log(respUsuario)
+          const faixasDistribuicao = respUsuario.faixasDistribuicao || respUsuario.gestor?.faixasDistribuicao
+
+          distFaixas(faixasDistribuicao)
+        })
+      } else {
+        toast.error('Parece que você não está logado!')
+      }
+    }
 
     if (contrato && (!contrato?.cliente || !contrato?.cliente?.token)) {
       console.log('atualiza cliente contrato p nao veio')

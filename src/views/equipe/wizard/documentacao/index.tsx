@@ -71,7 +71,7 @@ const Documentacao = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
           if (respResumo.podeAtivar) {
             handleNext()
           } else {
-            let msgErro = !respResumo.comprovanteResidenciaOk ? 'identidade/CNH' : ''
+            let msgErro = !respResumo.comprovanteResidenciaOk ? 'RG/CNH' : ''
 
             if (!respResumo.comprovanteResidenciaOk) {
               msgErro += msgErro === '' ? 'comprovante de residência' : ' e comprovante de residência'
