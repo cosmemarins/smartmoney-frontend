@@ -25,12 +25,13 @@ import StepperWrapper from '@core/styles/stepper'
 import { useEquipeContext } from '@/contexts/EquipeContext'
 
 import InicioCadatroUsuario from './InicioCadatroUsuario'
-import DadosUsuario from './DadosUsuario'
-import EnderecoUsuario from './EnderecoUsuario'
-import DadosBancarios from './DadosBancarios'
-import ConfiguracoesUsuario from './ConfiguracoesUsuario'
+import DadosUsuario from '../components/DadosUsuario'
+import EnderecoUsuario from '../components/EnderecoUsuario'
+import DadosBancariosEquipe from '../components/DadosBancariosEquipe'
+
 import Documentacao from './documentacao'
-import FinalizarCadastroUsuario from './FinalizarCadastroUsuario'
+import FinalizarCadastroUsuario from '../components/FinalizarCadastroUsuario'
+import ConfiguracoesUsuario from '../components/ConfiguracoesUsuario'
 
 // Vars
 const steps = [
@@ -88,7 +89,7 @@ const getStepContent = (step: number, handleNext: () => void, handlePrev: () => 
         : step === 2
           ? EnderecoUsuario
           : step === 3
-            ? DadosBancarios
+            ? DadosBancariosEquipe
             : step === 4
               ? Documentacao
               : step === 5

@@ -12,13 +12,13 @@ import 'moment/locale/pt-br'
 // Type Imports
 import { Chip } from '@mui/material'
 
-import { useUsuarioContext } from '@/contexts/UsuarioContext'
+import { useEquipeContext } from '@/contexts/EquipeContext'
 import { usuarioStatusColors } from '@/types/UsuarioType'
 
 locale('pt-br')
 
 const UsuarioPageHeader = () => {
-  const { usuario } = useUsuarioContext()
+  const { usuarioEquipe } = useEquipeContext()
 
   return (
     <Card>
@@ -28,42 +28,42 @@ const UsuarioPageHeader = () => {
           <img
             height={120}
             width={120}
-            src={usuario?.foto ? usuario?.foto : '/images/avatars/nobody.png'}
+            src={usuarioEquipe?.foto ? usuarioEquipe?.foto : '/images/avatars/nobody.png'}
             className='rounded'
             alt='Profile Background'
           />
         </div>
         <div className='flex is-full justify-start self-end flex-col items-center gap-6 sm-gap-0 sm:flex-row sm:justify-between sm:items-end '>
           <div className='flex flex-col items-center sm:items-start gap-2'>
-            <Typography variant='h4'>{usuario?.nome}</Typography>
+            <Typography variant='h4'>{usuarioEquipe?.nome}</Typography>
             <div className='flex flex-wrap gap-6 justify-center sm:justify-normal'>
               <div className='flex items-center gap-2' style={{ textTransform: 'capitalize' }}>
-                {usuario?.cidade && (
+                {usuarioEquipe?.cidade && (
                   <>
                     <i className='tabler-map-pin' />
-                    <Typography className='font-medium'>{usuario?.cidade}</Typography>
+                    <Typography className='font-medium'>{usuarioEquipe?.cidade}</Typography>
                   </>
                 )}
               </div>
               <div className='flex items-center gap-2' style={{ textTransform: 'capitalize' }}>
-                {usuario?.data && (
+                {usuarioEquipe?.data && (
                   <>
                     <i className='tabler-calendar' />
                     <Typography className='font-medium'>
-                      {usuario?.data ? moment(usuario?.data).format('MMMM YYYY') : ''}
+                      {usuarioEquipe?.data ? moment(usuarioEquipe?.data).format('MMMM YYYY') : ''}
                     </Typography>
                   </>
                 )}
               </div>
             </div>
           </div>
-          {usuario?.status && (
+          {usuarioEquipe?.status && (
             <Chip
               icon={<i className='tabler-user-check' />}
               variant='filled'
               className='flex gap-2 capitalize'
-              label={usuario?.status}
-              color={usuarioStatusColors[usuario?.status || 'primary']}
+              label={usuarioEquipe?.status}
+              color={usuarioStatusColors[usuarioEquipe?.status || 'primary']}
             />
           )}
         </div>

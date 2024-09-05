@@ -15,13 +15,12 @@ import { toast } from 'react-toastify'
 import CustomTextField from '@core/components/mui/TextField'
 
 import { tiposContaBancaria, tiposPix } from '@/types/DadosBancariosType'
-import { useEquipeContext } from '@/contexts/EquipeContext'
+import BancoService from '@/services/BancoService'
+import { useClienteContext } from '@/contexts/ClienteContext'
 import DirectionalIcon from '@/components/DirectionalIcon'
+import { salvarCliente } from '@/services/ClienteService'
 import { trataErro } from '@/utils/erro'
-
-import { bancoList, getTipoChavePix } from '@/utils/banco'
-import UsuarioService from '@/services/UsuarioService'
-import { getPerfilUsuarioEnumDesc } from '@/utils/enums/PerfilUsuarioEnum'
+import { bancoList } from '@/utils/banco'
 import CustomAutocomplete from '@/@core/components/mui/Autocomplete'
 import type { ItemListType } from '@/types/utilTypes'
 
@@ -32,33 +31,34 @@ type Props = {
   steps: { title: string; subtitle: string }[]
 }
 
-const DadosBancarios = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
+const DadosBancariosCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
   //contexto
-  const { usuarioEquipe, setUsuarioEquipeContext } = useEquipeContext()
+  const { cliente, setClienteContext } = useClienteContext()
 
   // States
   const [sending, setSending] = useState<boolean>(false)
   const [bancoSelect, setBancoSelect] = useState<ItemListType | null>(null)
 
   const onChageCavePix = (chave: string) => {
-    const tipoChave = getTipoChavePix(chave)
+    const tipoChave = BancoService.getTipoChavePix(chave)
 
-    setUsuarioEquipeContext({ ...usuarioEquipe, chavePix: chave, tipoPix: tipoChave })
+    setClienteContext({ ...cliente, chavePix: chave, tipoPix: tipoChave })
   }
 
   const onChangeBanco = (event: SyntheticEvent, itemSel: ItemListType | null) => {
     setBancoSelect(itemSel)
-    setUsuarioEquipeContext({ ...usuarioEquipe, banco: { codigo: itemSel?.key, nome: itemSel?.value } })
+    setClienteContext({ ...cliente, banco: { codigo: itemSel?.key, nome: itemSel?.value } })
   }
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement> | undefined) => {
     e?.preventDefault()
 
-    if (usuarioEquipe) {
+    if (cliente) {
       setSending(true)
-      UsuarioService.salvar(usuarioEquipe)
-        .then(respUsuario => {
-          setUsuarioEquipeContext(respUsuario)
+      salvarCliente(cliente)
+        .then(respCliente => {
+          setClienteContext(respCliente)
+          toast.success('Dados bancários salvo com sucesso')
           handleNext()
         })
         .catch(err => {
@@ -73,10 +73,10 @@ const DadosBancarios = ({ activeStep, handleNext, handlePrev, steps }: Props) =>
   }
 
   useEffect(() => {
-    if (usuarioEquipe && usuarioEquipe.banco && usuarioEquipe.banco.codigo != '') {
+    if (cliente && cliente.banco && cliente.banco.codigo != '') {
       setBancoSelect({
-        key: usuarioEquipe.banco.codigo,
-        value: usuarioEquipe.banco.nome
+        key: cliente.banco.codigo,
+        value: cliente.banco.nome
       })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -87,7 +87,7 @@ const DadosBancarios = ({ activeStep, handleNext, handlePrev, steps }: Props) =>
       <Grid item xs={12}>
         <Card>
           <form onSubmit={e => onSubmit(e)}>
-            <CardHeader title={`Dados Bancários do ${getPerfilUsuarioEnumDesc(usuarioEquipe?.perfil)}`} />
+            <CardHeader title='Dados Bancários' />
             <CardContent className='flex flex-col gap-4'>
               <Grid container spacing={5}>
                 <Grid item xs={12} sm={6}>
@@ -106,8 +106,8 @@ const DadosBancarios = ({ activeStep, handleNext, handlePrev, steps }: Props) =>
                   <CustomTextField
                     fullWidth
                     label='Agência'
-                    value={usuarioEquipe?.agencia || ''}
-                    onChange={e => setUsuarioEquipeContext({ ...usuarioEquipe, agencia: e.target.value })}
+                    value={cliente?.agencia || ''}
+                    onChange={e => setClienteContext({ ...cliente, agencia: e.target.value })}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -115,24 +115,24 @@ const DadosBancarios = ({ activeStep, handleNext, handlePrev, steps }: Props) =>
                     select
                     fullWidth
                     label='Tipo Conta'
-                    value={usuarioEquipe?.tipoConta || ''}
-                    onChange={e => setUsuarioEquipeContext({ ...usuarioEquipe, tipoConta: e.target.value })}
+                    value={cliente?.tipoConta || ''}
+                    onChange={e => setClienteContext({ ...cliente, tipoConta: e.target.value })}
                     placeholder='Selecione um tipo de conta'
                   >
                     {tiposContaBancaria.map((tipoConta, index) => (
-                      <MenuItem key={index} value={tipoConta} selected={usuarioEquipe?.tipoConta === tipoConta}>
+                      <MenuItem key={index} value={tipoConta} selected={cliente?.tipoConta === tipoConta}>
                         {tipoConta}
                       </MenuItem>
                     ))}
                   </CustomTextField>
                 </Grid>
-                {usuarioEquipe?.tipoConta === 'Poupança' && (
+                {cliente?.tipoConta === 'Poupança' && (
                   <Grid item xs={12} sm={6}>
                     <CustomTextField
                       fullWidth
                       label='Tipo poupança'
-                      value={usuarioEquipe?.tipoPoupanca || ''}
-                      onChange={e => setUsuarioEquipeContext({ ...usuarioEquipe, tipoPoupanca: e.target.value })}
+                      value={cliente?.tipoPoupanca || ''}
+                      onChange={e => setClienteContext({ ...cliente, tipoPoupanca: e.target.value })}
                     />
                   </Grid>
                 )}
@@ -140,8 +140,8 @@ const DadosBancarios = ({ activeStep, handleNext, handlePrev, steps }: Props) =>
                   <CustomTextField
                     fullWidth
                     label='Número da conta (com dv)'
-                    value={usuarioEquipe?.conta || ''}
-                    onChange={e => setUsuarioEquipeContext({ ...usuarioEquipe, conta: e.target.value })}
+                    value={cliente?.conta || ''}
+                    onChange={e => setClienteContext({ ...cliente, conta: e.target.value })}
                   />
                 </Grid>
               </Grid>
@@ -154,7 +154,7 @@ const DadosBancarios = ({ activeStep, handleNext, handlePrev, steps }: Props) =>
                   <CustomTextField
                     fullWidth
                     label='Chave pix'
-                    value={usuarioEquipe?.chavePix || ''}
+                    value={cliente?.chavePix || ''}
                     onChange={e => onChageCavePix(e.target.value)}
                   />
                 </Grid>
@@ -163,12 +163,12 @@ const DadosBancarios = ({ activeStep, handleNext, handlePrev, steps }: Props) =>
                     select
                     fullWidth
                     label='Tipo pix'
-                    value={usuarioEquipe?.tipoPix || ''}
-                    onChange={e => setUsuarioEquipeContext({ ...usuarioEquipe, tipoPix: e.target.value })}
+                    value={cliente?.tipoPix || ''}
+                    onChange={e => setClienteContext({ ...cliente, tipoPix: e.target.value })}
                   >
                     <MenuItem>Selecione um tipo de pix</MenuItem>
                     {tiposPix.map((tipoPix, index) => (
-                      <MenuItem key={index} value={tipoPix} selected={usuarioEquipe?.tipoPix === tipoPix}>
+                      <MenuItem key={index} value={tipoPix} selected={cliente?.tipoPix === tipoPix}>
                         {tipoPix === 'Random' ? 'Chave aleatória' : tipoPix}
                       </MenuItem>
                     ))}
@@ -177,41 +177,49 @@ const DadosBancarios = ({ activeStep, handleNext, handlePrev, steps }: Props) =>
               </Grid>
             </CardContent>
             <Divider />
-            <CardActions></CardActions>
+            <CardActions>
+              {steps.length === 0 && (
+                <Button variant='contained' onClick={() => onSubmit(undefined)}>
+                  Salvar
+                </Button>
+              )}
+            </CardActions>
           </form>
         </Card>
       </Grid>
-      <Grid item xs={12}>
-        <div className='flex items-center justify-between'>
-          <Button
-            variant='contained'
-            color='primary'
-            disabled={activeStep === 0}
-            onClick={handlePrev}
-            startIcon={<DirectionalIcon ltrIconClass='tabler-arrow-left' rtlIconClass='tabler-arrow-right' />}
-          >
-            Anterior
-          </Button>
-          <Button
-            variant='contained'
-            color={activeStep === steps.length - 1 ? 'success' : 'primary'}
-            onClick={() => onSubmit(undefined)}
-            endIcon={
-              activeStep === steps.length - 1 ? (
-                <i className='tabler-check' />
-              ) : !sending ? (
-                <DirectionalIcon ltrIconClass='tabler-arrow-right' rtlIconClass='tabler-arrow-left' />
-              ) : (
-                <CircularProgress size={20} color='inherit' />
-              )
-            }
-          >
-            {activeStep === steps.length - 1 ? 'Salvar Parceiro' : 'Próximo'}
-          </Button>
-        </div>
-      </Grid>
+      {steps.length > 0 && (
+        <Grid item xs={12}>
+          <div className='flex items-center justify-between'>
+            <Button
+              variant='contained'
+              color='primary'
+              disabled={activeStep === 0}
+              onClick={handlePrev}
+              startIcon={<DirectionalIcon ltrIconClass='tabler-arrow-left' rtlIconClass='tabler-arrow-right' />}
+            >
+              Anterior
+            </Button>
+            <Button
+              variant='contained'
+              color={activeStep === steps.length - 1 ? 'success' : 'primary'}
+              onClick={() => onSubmit(undefined)}
+              endIcon={
+                activeStep === steps.length - 1 ? (
+                  <i className='tabler-check' />
+                ) : !sending ? (
+                  <DirectionalIcon ltrIconClass='tabler-arrow-right' rtlIconClass='tabler-arrow-left' />
+                ) : (
+                  <CircularProgress size={20} color='inherit' />
+                )
+              }
+            >
+              {activeStep === steps.length - 1 ? 'Enviar Contrato' : 'Próximo'}
+            </Button>
+          </div>
+        </Grid>
+      )}
     </Grid>
   )
 }
 
-export default DadosBancarios
+export default DadosBancariosCliente

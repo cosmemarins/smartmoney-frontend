@@ -20,7 +20,7 @@ import CustomAvatar from '@core/components/mui/Avatar'
 import { ContratoProvider, useContratoContext } from '@/contexts/ContratoContext'
 import DadosCliente from './DadosCliente'
 import EnderecoCliente from './EnderecoCliente'
-import DadosBancariosCliente from './DadosBancariosCliente'
+import DadosBancariosCliente from '../../cliente/components/DadosBancariosCliente'
 import Documentacao from './documentacao'
 import ContratoCliente from './ContratoCliente'
 

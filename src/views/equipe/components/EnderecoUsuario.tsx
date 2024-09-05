@@ -75,6 +75,7 @@ const EnderecoUsuario = ({ activeStep, handleNext, handlePrev, steps }: Props) =
       UsuarioService.salvar(usuarioEquipe)
         .then(respUsuario => {
           setUsuarioEquipeContext(respUsuario)
+          toast.success('Endereço salvo com sucesso')
           handleNext()
         })
         .catch(err => {
@@ -220,39 +221,47 @@ const EnderecoUsuario = ({ activeStep, handleNext, handlePrev, steps }: Props) =
               </Grid>
             </CardContent>
             <Divider />
-            <CardActions></CardActions>
+            <CardActions>
+              {steps.length === 0 && (
+                <Button variant='contained' onClick={handleSubmit(onSubmit)}>
+                  Salvar
+                </Button>
+              )}
+            </CardActions>
           </form>
         </Card>
       </Grid>
-      <Grid item xs={12}>
-        <div className='flex items-center justify-between'>
-          <Button
-            variant='contained'
-            color='primary'
-            disabled={activeStep === 0}
-            onClick={handlePrev}
-            startIcon={<DirectionalIcon ltrIconClass='tabler-arrow-left' rtlIconClass='tabler-arrow-right' />}
-          >
-            Anterior
-          </Button>
-          <Button
-            variant='contained'
-            color={activeStep === steps.length - 1 ? 'success' : 'primary'}
-            onClick={handleSubmit(onSubmit)}
-            endIcon={
-              activeStep === steps.length - 1 ? (
-                <i className='tabler-check' />
-              ) : !sending ? (
-                <DirectionalIcon ltrIconClass='tabler-arrow-right' rtlIconClass='tabler-arrow-left' />
-              ) : (
-                <CircularProgress size={20} color='inherit' />
-              )
-            }
-          >
-            {activeStep === steps.length - 1 ? 'Salvar Parceiro' : 'Próximo'}
-          </Button>
-        </div>
-      </Grid>
+      {steps.length > 0 && (
+        <Grid item xs={12}>
+          <div className='flex items-center justify-between'>
+            <Button
+              variant='contained'
+              color='primary'
+              disabled={activeStep === 0}
+              onClick={handlePrev}
+              startIcon={<DirectionalIcon ltrIconClass='tabler-arrow-left' rtlIconClass='tabler-arrow-right' />}
+            >
+              Anterior
+            </Button>
+            <Button
+              variant='contained'
+              color={activeStep === steps.length - 1 ? 'success' : 'primary'}
+              onClick={handleSubmit(onSubmit)}
+              endIcon={
+                activeStep === steps.length - 1 ? (
+                  <i className='tabler-check' />
+                ) : !sending ? (
+                  <DirectionalIcon ltrIconClass='tabler-arrow-right' rtlIconClass='tabler-arrow-left' />
+                ) : (
+                  <CircularProgress size={20} color='inherit' />
+                )
+              }
+            >
+              {activeStep === steps.length - 1 ? 'Salvar Parceiro' : 'Próximo'}
+            </Button>
+          </div>
+        </Grid>
+      )}
     </Grid>
   )
 }

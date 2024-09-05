@@ -1,7 +1,7 @@
 'use client'
 
 import EquipePage from '@/views/equipe'
-import { UsuarioProvider } from '@/contexts/UsuarioContext'
+import { EquipeProvider } from '@/contexts/EquipeContext'
 
 interface Props {
   params: { token: string }
@@ -10,8 +10,8 @@ interface Props {
 //export default async function ClienteApp({ params }: Props) {
 export default function ClienteApp({ params }: Props) {
   return (
-    <UsuarioProvider>
+    <EquipeProvider>
       <EquipePage token={params.token} />
-    </UsuarioProvider>
+    </EquipeProvider>
   )
 }

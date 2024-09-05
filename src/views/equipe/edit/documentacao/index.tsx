@@ -1,36 +1,122 @@
 // MUI Imports
+import { useEffect, useState } from 'react'
+
 import Grid from '@mui/material/Grid'
 
 // Component Imports
-import { Card, CardContent, CardHeader } from '@mui/material'
+import { Button, Card, CardContent, CardHeader, Dialog, DialogContent, DialogTitle } from '@mui/material'
 
-import { TipoDocumentoEnum } from '@/utils/enums/TipoDocumentoEnum'
-import DocumentoUploadDropzone from './DocumentoUploadDropzone'
+import { toast } from 'react-toastify'
+
+import { useEquipeContext } from '@/contexts/EquipeContext'
+
+import ArquivoEdit from './ArquivoEdit'
+import type { ArquivoType } from '@/types/ArquivoType'
+import ArquivoService from '@/services/ArquivoService'
+import { trataErro } from '@/utils/erro'
+import ArquivoItem from './ArquivoItem'
+import { TipoArquivoRegistroEnum } from '@/utils/enums/TipoArquivoRegistroEnum'
 
 const DocumentacaoTab = () => {
+  //contexto
+  const { usuarioEquipe, setLoadingContext } = useEquipeContext()
+
+  const [openDlgArquivo, setOpenDlgArquivo] = useState<boolean>(false)
+  const [tituloDlgArquivo, setTituloDlgArquivo] = useState('Novo Upload de Arquivo')
+  const [arquivoList, setArquivoList] = useState<ArquivoType[]>([])
+  const [refreshArquivoList, setRefreshArquivoList] = useState<boolean>(true)
+
+  const arquivoInit = {
+    data: new Date(),
+    tipoRegistro: TipoArquivoRegistroEnum.USUARIO,
+    idRegistro: usuarioEquipe?.id,
+    usuario: { id: usuarioEquipe?.id, token: usuarioEquipe?.token, tipoPessoa: usuarioEquipe?.tipoPessoa }
+  }
+
+  const [arquivoEdit, setArquivoEdit] = useState<ArquivoType>(arquivoInit)
+
+  const handleNovoArquivo = () => {
+    setTituloDlgArquivo('Novo Upload de Arquivo')
+    setArquivoEdit(arquivoInit)
+    setOpenDlgArquivo(true)
+  }
+
+  const handleEditArquivo = (arquivo: ArquivoType) => {
+    setTituloDlgArquivo('Edição de Arquivo')
+    setArquivoEdit(arquivo)
+    setOpenDlgArquivo(true)
+  }
+
+  const handleCloseDlgArquivo = () => {
+    setOpenDlgArquivo(false)
+  }
+
+  useEffect(() => {
+    setRefreshArquivoList(false)
+
+    if (usuarioEquipe?.token) {
+      setLoadingContext(true)
+
+      //precisa recuperar por aqui pois tem que ser via axios por causa da validação de seção
+      ArquivoService.getListUsuario(usuarioEquipe.token)
+        .then(respList => {
+          setArquivoList(respList)
+        })
+        .catch(err => {
+          toast.error(trataErro(err))
+        })
+        .finally(() => {
+          setLoadingContext(false)
+        })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refreshArquivoList])
+
   return (
-    <Card>
-      <CardHeader title='Documentação' />
-      <CardContent className='flex flex-col gap-4'>
-        <Grid container spacing={4}>
-          <Grid item xs={12} sm={4}>
-            <DocumentoUploadDropzone titulo='RG/CNH' tipoUpload={TipoDocumentoEnum.IDENTIDADE} />
+    <>
+      <Card>
+        <CardHeader
+          title='Documentação'
+          action={
+            <Button variant='contained' startIcon={<i className='tabler-plus' />} onClick={() => handleNovoArquivo()}>
+              Upload Arquivo
+            </Button>
+          }
+        />
+        <CardContent className='flex flex-col gap-4'>
+          <Grid container spacing={4}>
+            {arquivoList.map((arquivo, key) => (
+              <Grid key={key} item xs={12} sm={4}>
+                <ArquivoItem
+                  arquivo={{ ...arquivo, usuario: { id: usuarioEquipe?.id, token: usuarioEquipe?.token } }}
+                  handleEditArquivo={handleEditArquivo}
+                />
+              </Grid>
+            ))}
           </Grid>
-          <Grid item xs={12} sm={4}>
-            <DocumentoUploadDropzone
-              titulo='Comprovante de Residência'
-              tipoUpload={TipoDocumentoEnum.COMPROVANTE_RESIDENCIA}
-            />
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <DocumentoUploadDropzone
-              titulo='Comprovante de Conta Bancária'
-              tipoUpload={TipoDocumentoEnum.COMPROVANTE_FINANCEIRO}
-            />
-          </Grid>
-        </Grid>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+      <Dialog
+        maxWidth='md'
+        open={openDlgArquivo}
+        aria-labelledby='form-dialog-title'
+        disableEscapeKeyDown
+        onClose={(event, reason) => {
+          if (reason !== 'backdropClick') {
+            handleCloseDlgArquivo()
+          }
+        }}
+      >
+        <DialogTitle id='form-dialog-title'>{tituloDlgArquivo}</DialogTitle>
+        <DialogContent>
+          <ArquivoEdit
+            arquivoData={arquivoEdit}
+            handleClose={handleCloseDlgArquivo}
+            setRefreshArquivoList={setRefreshArquivoList}
+          />
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }
 

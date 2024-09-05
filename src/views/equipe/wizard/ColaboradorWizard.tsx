@@ -17,15 +17,15 @@ import classnames from 'classnames'
 
 import CustomAvatar from '@core/components/mui/Avatar'
 
-import DadosUsuario from './DadosUsuario'
-import EnderecoUsuario from './EnderecoUsuario'
+import DadosUsuario from '../components/DadosUsuario'
+import EnderecoUsuario from '../components/EnderecoUsuario'
 
 // Styled Component Imports
 import StepperWrapper from '@core/styles/stepper'
 import InicioCadatroUsuario from './InicioCadatroUsuario'
 
 import { useEquipeContext } from '@/contexts/EquipeContext'
-import FinalizarCadastroUsuario from './FinalizarCadastroUsuario'
+import FinalizarCadastroUsuario from '../components/FinalizarCadastroUsuario'
 
 // Vars
 const steps = [

@@ -9,17 +9,17 @@ import { Backdrop, CircularProgress } from '@mui/material'
 import axios from 'axios'
 
 import UsuarioService from '@/services/UsuarioService'
-import UsuarioEdit from './edit'
-import { useUsuarioContext } from '@/contexts/UsuarioContext'
+import EquipeEdit from './edit'
+import { useEquipeContext } from '@/contexts/EquipeContext'
 import type { ValidationError } from '@/services/api'
 
 interface Props {
   token: string | undefined
 }
 
-const UsuaqioPage = ({ token }: Props) => {
+const EquipePage = ({ token }: Props) => {
   // States
-  const { setUsuarioContext, loading, setLoadingContext } = useUsuarioContext()
+  const { setUsuarioEquipeContext, loading, setLoadingContext } = useEquipeContext()
 
   useEffect(() => {
     if (token) {
@@ -27,7 +27,7 @@ const UsuaqioPage = ({ token }: Props) => {
 
       UsuarioService.get(token)
         .then(respUsuario => {
-          setUsuarioContext(respUsuario)
+          setUsuarioEquipeContext(respUsuario)
 
           //console.log('respUsuario', respUsuario)
         })
@@ -49,7 +49,7 @@ const UsuaqioPage = ({ token }: Props) => {
   return (
     <Grid container spacing={6}>
       <Grid item xs={12} lg={12} md={12}>
-        <UsuarioEdit />
+        <EquipeEdit />
       </Grid>
       <Backdrop open={loading} className='absolute text-white z-[cal(var(--mui-zIndex-mobileStepper)-1)]'>
         <CircularProgress color='inherit' />
@@ -58,4 +58,4 @@ const UsuaqioPage = ({ token }: Props) => {
   )
 }
 
-export default UsuaqioPage
+export default EquipePage

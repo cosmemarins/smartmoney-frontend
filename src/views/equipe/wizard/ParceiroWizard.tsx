@@ -24,10 +24,10 @@ import StepperWrapper from '@core/styles/stepper'
 
 import { useEquipeContext } from '@/contexts/EquipeContext'
 import InicioCadatroUsuario from './InicioCadatroUsuario'
-import DadosUsuario from './DadosUsuario'
-import EnderecoUsuario from './EnderecoUsuario'
-import DadosBancarios from './DadosBancarios'
-import ConfiguracoesUsuario from './ConfiguracoesUsuario'
+import DadosUsuario from '../components/DadosUsuario'
+import EnderecoUsuario from '../components/EnderecoUsuario'
+import DadosBancariosEquipe from '../components/DadosBancariosEquipe'
+import ConfiguracoesUsuario from '../components/ConfiguracoesUsuario'
 import Documentacao from './documentacao'
 import FinalizarCadastroUsuario from './FinalizarCadastroUsuario'
 
@@ -87,7 +87,7 @@ const getStepContent = (step: number, handleNext: () => void, handlePrev: () => 
         : step === 2
           ? EnderecoUsuario
           : step === 3
-            ? DadosBancarios
+            ? DadosBancariosEquipe
             : step === 4
               ? Documentacao
               : step === 5

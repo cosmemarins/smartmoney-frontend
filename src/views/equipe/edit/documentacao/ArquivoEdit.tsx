@@ -19,7 +19,7 @@ import { getTipoDocumentoEnumDesc, TipoDocumentoEnum } from '@/utils/enums/TipoD
 import ComprovanteUpload from '@/components/DocumentoUpload'
 import { trataErro } from '@/utils/erro'
 import DialogConfirma from '@/components/DialogConfirma'
-import { useClienteContext } from '@/contexts/ClienteContext'
+import { useEquipeContext } from '@/contexts/EquipeContext'
 import { TipoArquivoRegistroEnum } from '@/utils/enums/TipoArquivoRegistroEnum'
 
 locale('pt-br')
@@ -40,7 +40,7 @@ const ArquivoEdit = ({ arquivoData, handleClose, setRefreshArquivoList }: props)
   const [arquivoEdit, setArquivoEdit] = useState<ArquivoType>(arquivoData)
   const [dialogConfirma, setDialogConfirma] = useState<DialogConfirmaType>({ open: false })
 
-  const { setLoadingContext } = useClienteContext()
+  const { setLoadingContext } = useEquipeContext()
 
   const handleOpenDlgConfirmaExcluir = () => {
     setDialogConfirma({
@@ -222,8 +222,8 @@ const ArquivoEdit = ({ arquivoData, handleClose, setRefreshArquivoList }: props)
                           )}
 
                         {!arquivoData?.token &&
-                          arquivoData.tipoRegistro === TipoArquivoRegistroEnum.CLIENTE &&
-                          arquivoEdit.cliente?.tipoPessoa == 'J' && (
+                          arquivoData.tipoRegistro === TipoArquivoRegistroEnum.USUARIO &&
+                          arquivoEdit.usuario?.tipoPessoa == 'J' && (
                             <MenuItem
                               value={TipoDocumentoEnum.CARTAO_CNPJ}
                               selected={arquivoEdit?.tipoDocumento === TipoDocumentoEnum.CARTAO_CNPJ}
@@ -232,7 +232,7 @@ const ArquivoEdit = ({ arquivoData, handleClose, setRefreshArquivoList }: props)
                             </MenuItem>
                           )}
 
-                        {!arquivoData?.token && arquivoData.tipoRegistro === TipoArquivoRegistroEnum.CLIENTE && (
+                        {!arquivoData?.token && arquivoData.tipoRegistro === TipoArquivoRegistroEnum.USUARIO && (
                           <MenuItem
                             value={TipoDocumentoEnum.COMPROVANTE_RESIDENCIA}
                             selected={arquivoEdit?.tipoDocumento === TipoDocumentoEnum.COMPROVANTE_RESIDENCIA}
@@ -242,8 +242,8 @@ const ArquivoEdit = ({ arquivoData, handleClose, setRefreshArquivoList }: props)
                         )}
 
                         {!arquivoData?.token &&
-                          arquivoData.tipoRegistro === TipoArquivoRegistroEnum.CLIENTE &&
-                          arquivoEdit.cliente?.tipoPessoa == 'J' && (
+                          arquivoData.tipoRegistro === TipoArquivoRegistroEnum.USUARIO &&
+                          arquivoEdit.usuario?.tipoPessoa == 'J' && (
                             <MenuItem
                               value={TipoDocumentoEnum.CONTRATO_SOCIAL}
                               selected={arquivoEdit?.tipoDocumento === TipoDocumentoEnum.CONTRATO_SOCIAL}
@@ -252,7 +252,7 @@ const ArquivoEdit = ({ arquivoData, handleClose, setRefreshArquivoList }: props)
                             </MenuItem>
                           )}
 
-                        {!arquivoData?.token && arquivoData.tipoRegistro === TipoArquivoRegistroEnum.CLIENTE && (
+                        {!arquivoData?.token && arquivoData.tipoRegistro === TipoArquivoRegistroEnum.USUARIO && (
                           <MenuItem
                             value={TipoDocumentoEnum.IDENTIDADE}
                             selected={arquivoEdit?.tipoDocumento === TipoDocumentoEnum.IDENTIDADE}
@@ -261,7 +261,7 @@ const ArquivoEdit = ({ arquivoData, handleClose, setRefreshArquivoList }: props)
                           </MenuItem>
                         )}
 
-                        {!arquivoData?.token && arquivoData.tipoRegistro === TipoArquivoRegistroEnum.CLIENTE && (
+                        {!arquivoData?.token && arquivoData.tipoRegistro === TipoArquivoRegistroEnum.USUARIO && (
                           <MenuItem
                             value={TipoDocumentoEnum.OUTROS}
                             selected={arquivoEdit?.tipoDocumento === TipoDocumentoEnum.OUTROS}

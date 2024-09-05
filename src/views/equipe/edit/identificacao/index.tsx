@@ -27,7 +27,7 @@ import { cpfCnpjMask, telefoleMask } from '@/utils/string'
 import type { erroType } from '@/types/utilTypes'
 import UsuarioService from '@/services/UsuarioService'
 
-import { useUsuarioContext } from '@/contexts/UsuarioContext'
+import { useEquipeContext } from '@/contexts/EquipeContext'
 
 locale('pt-br')
 
@@ -41,12 +41,12 @@ const Identificacao = () => {
   const [reload, setReload] = useState(false)
   const [usuarioEdit, setUsuarioEdit] = useState<UsuarioType>()
 
-  const { usuario, setUsuarioContext } = useUsuarioContext()
+  const { usuarioEquipe, setUsuarioEquipeContext } = useEquipeContext()
 
   const { replace } = useRouter()
 
   const handleReset = () => {
-    setUsuarioEdit(usuario)
+    setUsuarioEdit(usuarioEquipe)
   }
 
   const getCep = (value: string): cepType | undefined => {
@@ -81,12 +81,12 @@ const Identificacao = () => {
   }
 
   useEffect(() => {
-    setUsuarioEdit(usuario)
-  }, [usuario])
+    setUsuarioEdit(usuarioEquipe)
+  }, [usuarioEquipe])
 
   const onChangeNome = (value: string) => {
     setUsuarioEdit({ ...usuarioEdit, nome: value })
-    setUsuarioContext({ ...usuario, nome: value })
+    setUsuarioEquipeContext({ ...usuarioEquipe, nome: value })
 
     // updateusuarioHeader(value)
   }
@@ -105,7 +105,7 @@ const Identificacao = () => {
       UsuarioService.salvar(usuarioEdit)
         .then(respUsuario => {
           //console.log(respUsuario)
-          setUsuarioContext(respUsuario)
+          setUsuarioEquipeContext(respUsuario)
           toast.success('Usuário salvo com sucesso!')
 
           //if (usuarioEdit.token === '') window.location.href = `/usuario/${respUsuario.token}`

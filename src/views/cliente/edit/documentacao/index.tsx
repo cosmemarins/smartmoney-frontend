@@ -30,7 +30,7 @@ const DocumentacaoTab = () => {
     data: new Date(),
     tipoRegistro: TipoArquivoRegistroEnum.CLIENTE,
     idRegistro: cliente?.id,
-    cliente: { id: cliente?.id, token: cliente?.token }
+    cliente: { id: cliente?.id, token: cliente?.token, tipoPessoa: cliente?.tipoPessoa }
   }
 
   const [arquivoEdit, setArquivoEdit] = useState<ArquivoType>(arquivoInit)

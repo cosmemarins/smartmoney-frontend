@@ -16,25 +16,34 @@ import { useSession } from 'next-auth/react'
 import CustomTabList from '@core/components/mui/TabList'
 import UsuarioPageHeader from '../components/UsuarioPageHeader'
 
-import Identificacao from './identificacao'
 import DocumentacaoTab from './documentacao'
 import DadosBancarios from './dadosBancarios'
-import ConfiguracoesUsuario from './configuracoes'
-import { useUsuarioContext } from '@/contexts/UsuarioContext'
-import SegurancaTab from './seguranca'
 
-const UsuarioEdit = () => {
+import { useEquipeContext } from '@/contexts/EquipeContext'
+
+import DadosUsuario from '@/views/equipe/components/DadosUsuario'
+import { getPerfilUsuarioEnumDesc } from '@/utils/enums/PerfilUsuarioEnum'
+import EnderecoUsuario from '../components/EnderecoUsuario'
+import ConfiguracoesUsuario from '../components/ConfiguracoesUsuario'
+import SegurancaTab from './seguranca'
+import { isPerfilColaborador } from '@/utils/utils'
+
+const EquipeEdit = () => {
   //hooks
   const { data: session } = useSession()
 
   // States
   const [activeTab, setActiveTab] = useState('identificacao')
 
-  const { usuario } = useUsuarioContext()
+  const { usuarioEquipe } = useEquipeContext()
 
   const handleChange = (event: SyntheticEvent, value: string) => {
     setActiveTab(value)
   }
+
+  const handleNext = () => {}
+
+  const handlePrev = () => {}
 
   return (
     <Grid container spacing={6}>
@@ -49,18 +58,21 @@ const UsuarioEdit = () => {
                 <Tab
                   icon={<i className='tabler-users' />}
                   value='identificacao'
-                  label='Dados pessoais'
+                  label={`Dados do ${usuarioEquipe?.perfil ? getPerfilUsuarioEnumDesc(usuarioEquipe?.perfil) : 'Usuário'}`}
                   iconPosition='start'
                 />
-                {usuario?.token && (
+                {usuarioEquipe?.token && (
+                  <Tab icon={<i className='tabler-map' />} value='endereco' label='Endereço' iconPosition='start' />
+                )}
+                {usuarioEquipe?.token && (
                   <Tab
                     icon={<i className='tabler-building-bank' />}
                     value='dadosBancarios'
-                    label='Dados bancários'
+                    label='Dados Bancários'
                     iconPosition='start'
                   />
                 )}
-                {usuario?.token && (
+                {usuarioEquipe?.token && usuarioEquipe?.perfil && !isPerfilColaborador(usuarioEquipe?.perfil) && (
                   <Tab
                     icon={<i className='tabler-id-badge-2' />}
                     value='documentacao'
@@ -68,39 +80,47 @@ const UsuarioEdit = () => {
                     iconPosition='start'
                   />
                 )}
-                {usuario?.token && session?.user.token != usuario.token && (
-                  <Tab
-                    icon={<i className='tabler-settings' />}
-                    value='configuracoesUsuario'
-                    label='Configuracões'
-                    iconPosition='start'
-                  />
-                )}
-                {usuario?.token && (
+                {usuarioEquipe?.token &&
+                  session?.user.token != usuarioEquipe.token &&
+                  usuarioEquipe?.perfil &&
+                  !isPerfilColaborador(usuarioEquipe?.perfil) && (
+                    <Tab
+                      icon={<i className='tabler-settings' />}
+                      value='configuracoesUsuario'
+                      label='Configuracões'
+                      iconPosition='start'
+                    />
+                  )}
+                {usuarioEquipe?.token && (
                   <Tab icon={<i className='tabler-lock' />} value='seguranca' label='Segurança' iconPosition='start' />
                 )}
               </CustomTabList>
             </Grid>
             <Grid item xs={12}>
               <TabPanel value='identificacao' className='p-0'>
-                <Identificacao />
+                <DadosUsuario activeStep={0} steps={[]} handleNext={handleNext} handlePrev={handlePrev} />
               </TabPanel>
-              {usuario?.token && (
+              {usuarioEquipe?.token && (
+                <TabPanel value='endereco' className='p-0'>
+                  <EnderecoUsuario activeStep={0} steps={[]} handleNext={handleNext} handlePrev={handlePrev} />
+                </TabPanel>
+              )}
+              {usuarioEquipe?.token && (
                 <TabPanel value='dadosBancarios' className='p-0'>
                   <DadosBancarios />
                 </TabPanel>
               )}
-              {usuario?.token && (
+              {usuarioEquipe?.token && (
                 <TabPanel value='documentacao' className='p-0'>
                   <DocumentacaoTab />
                 </TabPanel>
               )}
-              {usuario?.token && session?.user.token != usuario.token && (
+              {usuarioEquipe?.token && session?.user.token != usuarioEquipe.token && (
                 <TabPanel value='configuracoesUsuario' className='p-0'>
-                  <ConfiguracoesUsuario />
+                  <ConfiguracoesUsuario activeStep={0} steps={[]} handleNext={handleNext} handlePrev={handlePrev} />
                 </TabPanel>
               )}
-              {usuario?.token && (
+              {usuarioEquipe?.token && (
                 <TabPanel value='seguranca' className='p-0'>
                   <SegurancaTab />
                 </TabPanel>
@@ -113,4 +133,4 @@ const UsuarioEdit = () => {
   )
 }
 
-export default UsuarioEdit
+export default EquipeEdit

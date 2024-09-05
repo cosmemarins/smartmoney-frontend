@@ -21,7 +21,7 @@ import axios from 'axios'
 
 import CustomTextField from '@core/components/mui/TextField'
 import UsuarioService from '@/services/UsuarioService'
-import { useUsuarioContext } from '@/contexts/UsuarioContext'
+import { useEquipeContext } from '@/contexts/EquipeContext'
 import type UsuarioSenhaDTO from '@/types/UsuarioSenha.dto'
 import type { ValidationError } from '@/services/api'
 
@@ -36,7 +36,7 @@ const AlterarSenha = () => {
   //const [erroSenha, setErroSenha] = useState(false)
 
   //contexto
-  const { usuario } = useUsuarioContext()
+  const { usuarioEquipe } = useEquipeContext()
 
   function handleSalvarSenha() {
     // Password requirements
@@ -45,10 +45,13 @@ const AlterarSenha = () => {
       novaSenha.length >= 6,
 
       // Must contain at least 1 uppercase letter
-      /[A-Z]/.test(novaSenha),
+      ///[A-Z]/.test(novaSenha),
 
       // Must contain at least 1 lowercase letter
-      /[a-z]/.test(novaSenha),
+      ///[a-z]/.test(novaSenha),
+
+      // Must contain at least 1 letter
+      /[a-zA-Z]/.test(novaSenha),
 
       // Must contain at least 1 number
       /\d/.test(novaSenha)
@@ -58,7 +61,7 @@ const AlterarSenha = () => {
     const isValid = requirements.every(Boolean)
 
     if (!isValid) {
-      toast.error(`Senha inválida, veja a regra de formação da senha`)
+      toast.error(`Senha inválida, a senha precisa conter letras e números e ter ao menos 6 caracteres`)
 
       return
     }
@@ -69,14 +72,14 @@ const AlterarSenha = () => {
       return
     }
 
-    if (usuario?.token) {
+    if (usuarioEquipe?.token) {
       const usuarioSenha = {
-        token: usuario?.token,
+        token: usuarioEquipe?.token,
         novaSenha,
         confirmacaoSenha
       } as UsuarioSenhaDTO
 
-      UsuarioService.salvarSenha(usuario?.token, usuarioSenha)
+      UsuarioService.salvarSenha(usuarioEquipe?.token, usuarioSenha)
         .then(() => {
           //console.log(respUsuario)
           setNovaSenha('')
@@ -105,7 +108,7 @@ const AlterarSenha = () => {
       <CardContent className='flex flex-col gap-4'>
         <Alert icon={false} severity='warning' onClose={() => {}}>
           <AlertTitle>Requisitos para a senha</AlertTitle>
-          Mínimo de 6 caracteres, ao menos uma letra maiúscula e ao menos um número
+          Mínimo de 6 caracteres, ao menos uma letra e ao menos um número
         </Alert>
         <form>
           <Grid container spacing={4}>
