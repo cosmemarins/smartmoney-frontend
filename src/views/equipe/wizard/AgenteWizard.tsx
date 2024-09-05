@@ -30,7 +30,7 @@ import EnderecoUsuario from '../components/EnderecoUsuario'
 import DadosBancariosEquipe from '../components/DadosBancariosEquipe'
 
 import Documentacao from './documentacao'
-import FinalizarCadastroUsuario from '../components/FinalizarCadastroUsuario'
+import FinalizarCadastroUsuario from './FinalizarCadastroUsuario'
 import ConfiguracoesUsuario from '../components/ConfiguracoesUsuario'
 
 // Vars

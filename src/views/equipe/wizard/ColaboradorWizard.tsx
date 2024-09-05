@@ -25,7 +25,7 @@ import StepperWrapper from '@core/styles/stepper'
 import InicioCadatroUsuario from './InicioCadatroUsuario'
 
 import { useEquipeContext } from '@/contexts/EquipeContext'
-import FinalizarCadastroUsuario from '../components/FinalizarCadastroUsuario'
+import FinalizarCadastroUsuario from './FinalizarCadastroUsuario'
 
 // Vars
 const steps = [
