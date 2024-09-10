@@ -290,7 +290,7 @@ const DadosUsuario = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
                             : ''
                         }
                         onChange={e => {
-                          field.onChange(new Date(e.target.value))
+                          field.onChange(moment(e.target.value).toDate())
                           setUsuarioEquipeContext({ ...usuarioEquipe, dataNascimento: e.target.value })
                           errorState !== null && setErrorState(null)
                         }}

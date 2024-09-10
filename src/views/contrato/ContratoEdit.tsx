@@ -400,11 +400,11 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
           </Grid>
           <Grid item xs={12} sm={6}>
             <CustomTextField
-              type='datetime-local'
+              type='date'
               fullWidth
               label='Data'
-              value={contratoEdit?.data ? moment(contratoEdit?.data).format('YYYY-MM-DD HH:mm') : ''}
-              onChange={e => setContratoEdit({ ...contratoEdit, data: new Date(e.target.value) })}
+              value={contratoEdit?.data ? moment(contratoEdit?.data).format('YYYY-MM-DD') : ''}
+              onChange={e => setContratoEdit({ ...contratoEdit, data: moment(e.target.value).toDate() })}
               disabled={!!contratoEdit.status && contratoEdit.status != StatusContratoEnum.NOVO}
             />
           </Grid>

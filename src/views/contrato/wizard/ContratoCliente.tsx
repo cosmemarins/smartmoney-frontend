@@ -257,7 +257,7 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
                       fullWidth
                       label='Data'
                       value={contrato?.data ? moment(contrato?.data).format('YYYY-MM-DD') : ''}
-                      onChange={e => setContratoContext({ ...contrato, data: new Date(e.target.value) })}
+                      onChange={e => setContratoContext({ ...contrato, data: moment(e.target.value).toDate() })}
                       disabled={!!contrato?.status && contrato?.status != StatusContratoEnum.NOVO}
                     />
                   </Grid>

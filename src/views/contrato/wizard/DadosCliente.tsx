@@ -239,7 +239,7 @@ const DadosCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
                         label={isCpf ? 'Data de Nascimento' : 'Data Abertura'}
                         value={cliente?.dataNascimento ? moment(cliente?.dataNascimento).format('YYYY-MM-DD') : ''}
                         onChange={e => {
-                          field.onChange(new Date(e.target.value))
+                          field.onChange(moment(e.target.value).toDate())
                           setClienteContext({ ...cliente, dataNascimento: e.target.value })
                           errorState !== null && setErrorState(null)
                         }}

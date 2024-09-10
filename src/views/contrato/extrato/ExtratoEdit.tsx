@@ -206,7 +206,7 @@ const ExtratoEdit = ({ extratoData, handleClose, tipoExtrato }: props) => {
                       fullWidth
                       label='Data'
                       value={extratoEdit?.data ? moment(extratoEdit?.data).format('YYYY-MM-DD') : ''}
-                      onChange={e => setExtratoEdit({ ...extratoEdit, data: new Date(e.target.value) })}
+                      onChange={e => setExtratoEdit({ ...extratoEdit, data: moment(e.target.value).toDate() })}
                     />
                   </Grid>
                   <Grid item xs={12} sm={12}>

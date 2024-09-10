@@ -319,7 +319,7 @@ const DocumentoContratoEdit = ({ arquivoData, extratoData, handleClose, setRefre
                         fullWidth
                         label='Data'
                         value={arquivoEdit?.data ? moment(arquivoEdit?.data).format('YYYY-MM-DD') : ''}
-                        onChange={e => setArquivoEdit({ ...arquivoEdit, data: new Date(e.target.value) })}
+                        onChange={e => setArquivoEdit({ ...arquivoEdit, data: moment(e.target.value).toDate() })}
                       />
                     </Grid>
                     <Grid item xs={12} sm={12}>
