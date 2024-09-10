@@ -272,7 +272,7 @@ const ComissaoAgentesListTable = () => {
               className='is-full sm:is-auto'
             />
             <Button
-              href='/equipe/comissao/list'
+              href='/financeiro/comissao/agentes'
               variant='contained'
               startIcon={<i className='tabler-refresh' />}
               className='is-full sm:is-auto'

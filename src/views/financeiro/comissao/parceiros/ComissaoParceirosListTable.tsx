@@ -270,7 +270,7 @@ const ComissaoParceirosListTable = () => {
               className='is-full sm:is-auto'
             />
             <Button
-              href='/equipe/comissao/list'
+              href='/financeiro/comissao/parceiros'
               variant='contained'
               startIcon={<i className='tabler-refresh' />}
               className='is-full sm:is-auto'

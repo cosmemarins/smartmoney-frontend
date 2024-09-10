@@ -268,7 +268,7 @@ const ComissaoInvestidoresListTable = () => {
               className='is-full sm:is-auto'
             />
             <Button
-              href='/equipe/comissao/list'
+              href='/financeiro/comissao/investidores'
               variant='contained'
               startIcon={<i className='tabler-refresh' />}
               className='is-full sm:is-auto'
