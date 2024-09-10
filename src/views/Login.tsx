@@ -27,7 +27,7 @@ import * as v from 'valibot'
 import { pipe } from 'valibot'
 
 // Component Imports
-import { CircularProgress, Grid } from '@mui/material'
+import { CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Grid } from '@mui/material'
 
 import Logo from '@/components/layout/shared/Logo-h'
 import CustomTextField from '@core/components/mui/TextField'
@@ -36,6 +36,7 @@ import CustomTextField from '@core/components/mui/TextField'
 import themeConfig from '@configs/themeConfig'
 import { trataErro } from '@/utils/erro'
 import type { SystemMode } from '@/@core/types'
+import AvisoLegal from '@/components/AvisoLegal'
 
 type ErrorType = {
   message: string[]
@@ -54,6 +55,7 @@ const Login = ({ mode }: { mode: SystemMode }) => {
   const [isPasswordShown, setIsPasswordShown] = useState(false)
   const [errorState, setErrorState] = useState<ErrorType | null>(null)
   const [sending, setSending] = useState(false)
+  const [openDlgAviso, setOpenDlgAviso] = useState<boolean>(false)
 
   // Hooks
   const router = useRouter()
@@ -203,9 +205,36 @@ const Login = ({ mode }: { mode: SystemMode }) => {
                   'Entrar'
                 )}
               </Button>
+              <div className='flex justify-center items-center flex-wrap gap-2'>
+                <Button
+                  variant='text'
+                  onClick={() => {
+                    setOpenDlgAviso(true)
+                  }}
+                >
+                  Leia agora nossos termos e condições de uso
+                </Button>
+              </div>
             </form>
           </CardContent>
         </Card>
+        <Dialog maxWidth='md' open={openDlgAviso} aria-labelledby='form-dialog-title' disableEscapeKeyDown>
+          <DialogTitle id='form-dialog-title'>Avisos Legais - LGPD - PLDFT</DialogTitle>
+          <DialogContent>
+            <AvisoLegal />
+          </DialogContent>
+          <DialogActions className='dialog-actions-dense'>
+            <Button
+              variant='contained'
+              color='primary'
+              onClick={() => {
+                setOpenDlgAviso(false)
+              }}
+            >
+              Fechar
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Grid>
     </Grid>
   )

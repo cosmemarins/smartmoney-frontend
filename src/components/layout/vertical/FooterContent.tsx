@@ -38,7 +38,7 @@ const FooterContent = () => {
         <p>
           <span className='text-textSecondary'>{`© ${new Date().getFullYear()}, by `}</span>
           <Link href='#' target='_blank' className='text-primary'>
-            Smart Money
+            Smart Money Group
           </Link>
           <span className='text-textSecondary'>{`  - todos os direitos reservados `}</span>
         </p>
@@ -61,7 +61,7 @@ const FooterContent = () => {
           </div>
         )}
       </div>
-      <Dialog maxWidth='sm' open={openDlgAviso} aria-labelledby='form-dialog-title' disableEscapeKeyDown>
+      <Dialog maxWidth='md' open={openDlgAviso} aria-labelledby='form-dialog-title' disableEscapeKeyDown>
         <DialogTitle id='form-dialog-title'>Avisos Legais - LGPD - PLDFT</DialogTitle>
         <DialogContent>
           <AvisoLegal />
