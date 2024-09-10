@@ -20,7 +20,7 @@ const AvisoLegal = () => {
       <Typography align='justify' color='text.primary' gutterBottom={true}>
         Os manuais de políticas da ICA BANK podem ser encontrados no site{' '}
         <Link href='https://www.icabank.com.br' target='_blank' className='text-primary'>
-          www.ica bank.com.br
+          www.icabank.com.br
         </Link>
         .
       </Typography>
