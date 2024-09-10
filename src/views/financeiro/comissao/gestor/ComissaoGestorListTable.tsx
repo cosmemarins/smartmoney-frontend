@@ -147,7 +147,9 @@ const ComissaoGestorListTable = () => {
       columnHelper.accessor('dataAporte', {
         header: 'Data Aporte',
         cell: ({ row }) => (
-          <Typography color='text.primary'>{moment(row.original.dataAporte).format('DD/MM/YYYY')}</Typography>
+          <Typography color='text.primary'>
+            {moment(row.original.dataAporte).utcOffset('+0300').format('DD/MM/YYYY')}
+          </Typography>
         )
       }),
       columnHelper.accessor('dataCredito', {
