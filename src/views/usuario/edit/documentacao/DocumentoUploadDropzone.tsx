@@ -53,7 +53,7 @@ const DocumentoUploadDropzone = ({ titulo, tipoUpload }: props) => {
   // Hooks
   const { getRootProps, getInputProps } = useDropzone({
     multiple: false,
-    maxSize: 1024 * 1024,
+    maxSize: 1024 * 1024 * 1024,
     accept: {
       'image/*': ['.png', '.jpg', '.jpeg', '.gif'],
       'application/pdf': ['.pdf']
@@ -62,7 +62,7 @@ const DocumentoUploadDropzone = ({ titulo, tipoUpload }: props) => {
       setFiles(acceptedFiles.map((file: File) => Object.assign(file)))
     },
     onDropRejected: () => {
-      toast.error('O arquivo só poder ter até 1 MB.', {
+      toast.error('O arquivo só poder ter até 3 MB.', {
         autoClose: 3000
       })
     }
@@ -211,7 +211,7 @@ const DocumentoUploadDropzone = ({ titulo, tipoUpload }: props) => {
                 Arraste e solte o arquivo aqui ou click para upload
               </Typography>
               <Typography>arqruivos permitidos *.jpeg, *.jpg, *.png, *.pdf</Typography>
-              <Typography>Tamanho máximo do arquivo de 1 MB</Typography>
+              <Typography>Tamanho máximo do arquivo de 3 MB</Typography>
             </div>
           )}
         </div>
@@ -221,7 +221,7 @@ const DocumentoUploadDropzone = ({ titulo, tipoUpload }: props) => {
           <small className='w-full '>
             arquivos permitidos *.jpeg, *.jpg, *.png e *.pdf
             <br />
-            tamanho máximo do arquivo de 1 MB
+            tamanho máximo do arquivo de 3 MB
           </small>
         )}
         {files.length > 0 && (
