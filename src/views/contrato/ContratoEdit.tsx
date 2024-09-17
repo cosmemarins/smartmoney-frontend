@@ -380,7 +380,7 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
               variant='tonal'
               label={
                 contratoEdit?.dataEnvio
-                  ? `Data do Envio: ${contratoEdit?.dataEnvio ? moment(contratoEdit?.dataEnvio).format('DD-MM-YYYY HH:mm') : ''}`
+                  ? `Data do Envio: ${contratoEdit?.dataEnvio ? moment(contratoEdit?.dataEnvio).utcOffset('+0300').format('DD-MM-YYYY HH:mm') : ''}`
                   : 'Não enviado'
               }
               color='primary'
@@ -403,7 +403,7 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
               type='date'
               fullWidth
               label='Data'
-              value={contratoEdit?.data ? moment(contratoEdit?.data).format('YYYY-MM-DD') : ''}
+              value={contratoEdit?.data ? moment(contratoEdit?.data).utcOffset('+0300').format('YYYY-MM-DD') : ''}
               onChange={e => setContratoEdit({ ...contratoEdit, data: moment(e.target.value).toDate() })}
               disabled={!!contratoEdit.status && contratoEdit.status != StatusContratoEnum.NOVO}
             />

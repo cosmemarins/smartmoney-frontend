@@ -228,7 +228,8 @@ export default function ExtratoContrato({ token }: props) {
             title={
               <>
                 <span>
-                  {contrato.cliente?.nome} - {moment(contrato?.data).format('DD/MM/YYYY')} - {contrato.token}
+                  {contrato.cliente?.nome} - {moment(contrato?.data).utcOffset('+0300').format('DD/MM/YYYY')} -{' '}
+                  {contrato.token}
                 </span>
                 <Chip
                   size='small'
