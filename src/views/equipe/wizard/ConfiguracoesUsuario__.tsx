@@ -50,7 +50,7 @@ const ConfiguracoesUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pro
     id: usuarioEquipe?.id,
     token: usuarioEquipe?.token,
     taxaDistribuicao: usuarioEquipe?.taxaDistribuicao || 0,
-    faixasDistribuicao: usuarioEquipe?.faixasDistribuicao || '0|0',
+    faixasDistribuicao: usuarioEquipe?.faixasDistribuicao || '2|10000',
     podeCriarEquipe: false
   })
 

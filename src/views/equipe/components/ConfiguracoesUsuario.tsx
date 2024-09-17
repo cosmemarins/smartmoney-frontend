@@ -50,7 +50,7 @@ const ConfiguracoesUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pro
     id: usuarioEquipe?.id,
     token: usuarioEquipe?.token,
     taxaDistribuicao: usuarioEquipe?.taxaDistribuicao || 0,
-    faixasDistribuicao: usuarioEquipe?.faixasDistribuicao || '0|0',
+    faixasDistribuicao: usuarioEquipe?.faixasDistribuicao || '2|10000',
     podeCriarEquipe: false
   })
 
@@ -116,6 +116,9 @@ const ConfiguracoesUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pro
         let taxaAnterior = 0
         let maiorTaxa = 0
         let erroTaxa = undefined
+
+        //TODO: é preciso fazer este teste lá no inicio da inclusão de um agente
+        if (!faixaTaxa) toast.error('É preciso configurar uma faixa de taxas para este parceiro')
 
         faixaTaxa.forEach(taxa => {
           if (taxa === 0) erroTaxa = 'Taxa não pode ser zero'

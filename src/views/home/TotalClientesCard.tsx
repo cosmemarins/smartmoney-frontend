@@ -64,15 +64,17 @@ const TotalClientesCard = () => {
                 <Typography variant='body2'>Meus Clientes</Typography>
               </div>
             </Grid>
-            <Grid item xs className='flex items-center gap-4'>
-              <CustomAvatar color='info' variant='rounded' size={40} skin='light'>
-                <i className='tabler-users'></i>
-              </CustomAvatar>
-              <div className='flex flex-col'>
-                <Typography variant='h5'>{tamanhoEquipe?.totalOutrosClentesDaEquipe}</Typography>
-                <Typography variant='body2'>Clientes da equipe</Typography>
-              </div>
-            </Grid>
+            {session?.user.podeCriarEquipe && (
+              <Grid item xs className='flex items-center gap-4'>
+                <CustomAvatar color='info' variant='rounded' size={40} skin='light'>
+                  <i className='tabler-users'></i>
+                </CustomAvatar>
+                <div className='flex flex-col'>
+                  <Typography variant='h5'>{tamanhoEquipe?.totalOutrosClentesDaEquipe}</Typography>
+                  <Typography variant='body2'>Clientes da equipe</Typography>
+                </div>
+              </Grid>
+            )}
           </Grid>
         )}
       </CardContent>

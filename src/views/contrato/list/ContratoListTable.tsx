@@ -357,12 +357,12 @@ const ContratoListTable = () => {
                 </Link>
               </IconButton>
             )}
-            <IconButton onClick={() => handleOpenDlgContrato(row.original)}>
+            <IconButton onClick={() => handleOpenDlgContrato(row.original)} title='Dados do contrato'>
               <i className='tabler-edit text-[22px] text-textSecondary' />
             </IconButton>
             {(isMaster(session?.user) || isParceiroMaster(session?.user)) &&
               row.original.status == StatusContratoEnum.NOVO && (
-                <IconButton onClick={() => handleOpenDlgConfirmaExcluir(row.original)}>
+                <IconButton onClick={() => handleOpenDlgConfirmaExcluir(row.original)} title='Excluir contrato'>
                   <i className='tabler-trash text-[22px] text-textSecondary' />
                 </IconButton>
               )}

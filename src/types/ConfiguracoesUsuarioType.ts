@@ -13,6 +13,6 @@ export const ConfiguracoesUsuarioInit = {
   id: 0,
   token: '',
   taxaDistribuicao: 0,
-  faixasDistribuicao: '0|0',
+  faixasDistribuicao: '2|10000',
   podeCriarEquipe: false
 }

@@ -525,7 +525,7 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
           </Grid>
           <Divider />
           <Grid item xs={12} sm={12}>
-            {(isMaster(session?.user) || isParceiroMaster(session?.user)) &&
+            {isMaster(session?.user) &&
               (contratoEdit.status === StatusContratoEnum.NOVO ||
                 contratoEdit.status === StatusContratoEnum.AGUARDANDO ||
                 contratoEdit.status === StatusContratoEnum.ATIVO) && (
@@ -543,7 +543,7 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
                 Trocar Contrato
               </Button>
             )}
-            {(isMaster(session?.user) || isParceiroMaster(session?.user)) &&
+            {isMaster(session?.user) &&
               (contratoEdit.status === StatusContratoEnum.AGUARDANDO ||
                 contratoEdit.status === StatusContratoEnum.NOVO) && (
                 <Button
