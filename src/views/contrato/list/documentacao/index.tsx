@@ -127,23 +127,24 @@ const Documentacao = ({ contrato, cliente, handleClose }: Props) => {
     }
   }
 
-  const handleAtivarEEnviarContrato = () => {
+  const handleEnviarContrato = () => {
     if (contrato?.token) {
-      if (!resumoContrato.isAtivo) {
-        ContratoService.ativarEEnviarContrato(contrato?.token)
-          .then(() => {
-            //console.log(respContrato)
-            toast.success(`Contrato ${contrato?.token} ativado!`)
-            handleClose(true)
-          })
-          .catch(err => {
-            console.log('ERRO contratoAtivar', err)
-            toast.error(trataErro(err))
-          })
-          .finally(() => {})
-      } else {
-        toast.success(`Contrato ${contrato?.token} já está ativado!`)
-      }
+      //if (!resumoContrato.isAtivo) {
+      ContratoService.enviarContrato(contrato?.token)
+        .then(() => {
+          //console.log(respContrato)
+          toast.success(`Contrato ${contrato?.token} enviado!`)
+          handleClose(true)
+        })
+        .catch(err => {
+          console.log('ERRO handleEnviarContrato', err)
+          toast.error(trataErro(err))
+        })
+        .finally(() => {})
+
+      //} else {
+      //  toast.success(`Contrato ${contrato?.token} já está ativado!`)
+      //}
     }
   }
 
@@ -274,10 +275,10 @@ const Documentacao = ({ contrato, cliente, handleClose }: Props) => {
             variant='contained'
             color='info'
             onClick={() => {
-              handleAtivarEEnviarContrato()
+              handleEnviarContrato()
             }}
           >
-            Ativar e Enviar contrato
+            Enviar contrato
           </Button>
           <Button
             variant='contained'
