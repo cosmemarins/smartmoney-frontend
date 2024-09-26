@@ -232,7 +232,7 @@ const ContratoListTable = () => {
           <div className='flex items-center gap-4'>
             <div className='flex flex-col'>
               <Typography color='text.primary' className='font-medium'>
-                {moment(row.original.data).utcOffset('+0300').format('DD/MM/YYYY HH:mm')}
+                {moment(row.original.data).utcOffset('+0300').format('DD/MM/YYYY')}
               </Typography>
               <Typography variant='body2'>Contrato: {row.original.token}</Typography>
             </div>

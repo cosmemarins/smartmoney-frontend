@@ -169,10 +169,11 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
     //if (contrato && contrato.cliente && contrato.cliente.token && data.valor && data.taxaCliente) {
     if (contrato && contrato.cliente && contrato.cliente.token && data.valor) {
       setSending(true)
-      console.log('contrato', contrato)
+
+      //console.log('contrato', contrato)
       ContratoService.salvarContrato(contrato, false)
         .then(respContrato => {
-          console.log('respContrato', respContrato)
+          //console.log('respContrato', respContrato)
           setContratoContext(respContrato)
           handleNext()
         })
@@ -222,7 +223,7 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
     }
 
     if (contrato && (!contrato?.cliente || !contrato?.cliente?.token)) {
-      console.log('atualiza cliente contrato p nao veio')
+      //console.log('atualiza cliente contrato p nao veio')
 
       //é um contrato novo, tem que setar o cliente
       setContratoContext({

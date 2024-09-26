@@ -52,7 +52,7 @@ const ContratoService = {
       if (!contrato.contratoPai?.token) throw new Error('Contrato pai precisa ser informado!')
 
       //simplificando o objeto para envio
-      const contratoEvia = {
+      const contratoEnvia = {
         ...contrato,
         cliente: {
           token: contrato.cliente?.token
@@ -62,11 +62,11 @@ const ContratoService = {
         }
       }
 
-      console.log('contratoEvia', contratoEvia)
+      //console.log('contratoEnvia', contratoEvia)
 
       const { data } = await api.post<ContratoType>(
         `${path}/trocar-contrato/${contrato.contratoPai?.token}`,
-        contratoEvia
+        contratoEnvia
       )
 
       return data
@@ -75,6 +75,12 @@ const ContratoService = {
 
   enviarContrato: async function enviarContrato(token: string): Promise<ContratoType> {
     const { data } = await api.post<ContratoType>(`${path}/enviar-contrato/${token}`, { token })
+
+    return data
+  },
+
+  enviarContratoEAlterarStatus: async function enviarContratoEAlterarStatus(token: string): Promise<ContratoType> {
+    const { data } = await api.post<ContratoType>(`${path}/enviar-contrato-status/${token}`, { token })
 
     return data
   },

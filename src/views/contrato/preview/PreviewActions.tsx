@@ -29,6 +29,9 @@ const PreviewActions = () => {
   //state
   const [dialogConfirma, setDialogConfirma] = useState<DialogConfirmaType>({ open: false })
 
+  //sandro pediu para sempre enviar o contrato dirto, pois agora não vai mais enviar para o banco, apenas internamente
+  //é uma maneira de avisar que o contrato foi criado
+  /****
   const handleOpenDlgConfirmaEnviar = () => {
     if ((isMaster(session?.user) || isParceiroMaster(session?.user)) && resumoContrato?.podeEnviar) {
       setDialogConfirma({
@@ -39,19 +42,22 @@ const PreviewActions = () => {
         handleConfirma: handleEnviarContrato
       })
     } else {
+      //esse salamento é fake pois já salvou no passo anterior
+      //o sandro pediu para que o usuário se sentisse seguro de que o contrato foi salvo
       toast.success('Contrato salvo com sucesso!')
       setContratoContext({})
       setResumoContratoContext(undefined)
       window.location.reload()
     }
   }
+  *****/
 
   const handleEnviarContrato = () => {
     if (contrato && contrato.token) {
       ContratoService.enviarContrato(contrato.token)
         .then(() => {
           //console.log('respContrato', respContrato)
-          toast.success('Contrato enviado!')
+          toast.success('Contrato salvo!')
           setContratoContext({})
           setResumoContratoContext(undefined)
           window.location.reload()
@@ -86,7 +92,7 @@ const PreviewActions = () => {
               startIcon={
                 resumoContrato?.podeEnviar ? <i className='tabler-send' /> : <i className='tabler-file-filled' />
               }
-              onClick={() => handleOpenDlgConfirmaEnviar()}
+              onClick={() => handleEnviarContrato()}
             >
               {resumoContrato?.podeEnviar
                 ? `Salvar ${isMaster(session?.user) || isParceiroMaster(session?.user) ? 'e enviar' : ''} contrato`
