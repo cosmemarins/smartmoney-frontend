@@ -16,7 +16,9 @@ import {
   CardHeader,
   CircularProgress,
   Divider,
+  FormControl,
   FormControlLabel,
+  Slider,
   MenuItem,
   Paper,
   Radio,
@@ -27,7 +29,8 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Typography
+  Typography,
+  FormHelperText
 } from '@mui/material'
 import moment, { locale } from 'moment'
 import 'moment/locale/pt-br'
@@ -41,7 +44,7 @@ import { valibotResolver } from '@hookform/resolvers/valibot'
 import type { SubmitHandler } from 'react-hook-form'
 
 import CustomTextField from '@core/components/mui/TextField'
-import { prazoList } from '@/types/ContratoType'
+import { prazoList, taxaContratoMarks } from '@/types/ContratoType'
 import ContratoService from '@/services/ContratoService'
 
 import { StatusContratoEnum } from '@/utils/enums/StatusContratoEnum'
@@ -53,6 +56,8 @@ import DirectionalIcon from '@/components/DirectionalIcon'
 import { TaxasEnum } from '@/utils/enums/TaxasEnum'
 import { valorBr, valorEmReal } from '@/utils/string'
 import UsuarioService from '@/services/UsuarioService'
+
+import { isMaster, isParceiroMaster } from '@/utils/utils'
 
 locale('pt-br')
 
@@ -77,21 +82,20 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
   const [errorState, setErrorState] = useState<ErrorType | null>(null)
   const [sending, setSending] = useState<boolean>(false)
 
-  //const [maxTaxa, setMaxTaxa] = useState<number>(3)
+  const [maxTaxa, setMaxTaxa] = useState<number>(3)
   const [faixaTaxa, setFaixaTaxa] = useState([0])
   const [faixaValor, setFaixaValor] = useState([0])
 
   const schema = v.object({
     valor: pipe(
       v.number('É preciso inforar um valor.'),
-      v.minValue(faixaValor[0] | 1, `Informe um valor maior que ${faixaValor[0]}`)
+      v.minValue((Number(faixaValor[0]) - 1) | 1, `Informe um valor maior que ${Number(faixaValor[0])}`)
+    ),
+    taxaCliente: pipe(
+      v.number('A taxa precisa ser maior que 0'),
+      v.minValue(0.01, 'A taxa precisa ser maior que 0.'),
+      v.maxValue(maxTaxa || 3, `O valor da taxa não pode ser maior que ${maxTaxa}`)
     )
-
-    //taxaCliente: pipe(
-    //  v.number('A taxa precisa ser maior que 0'),
-    //  v.minValue(0.01, 'A taxa precisa ser maior que 0.'),
-    //  v.maxValue(maxTaxa || 3, `O valor da taxa não pode ser maior que ${maxTaxa}`)
-    //)
   })
 
   type FormData = v.InferInput<typeof schema>
@@ -103,14 +107,13 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
   } = useForm<FormData>({
     resolver: valibotResolver(schema),
     defaultValues: {
-      valor: contrato?.valor
-
-      //taxaCliente: contrato?.taxaCliente
+      valor: contrato?.valor,
+      taxaCliente: contrato?.taxaCliente
     }
   })
 
   const calculaTaxa = (valor: number) => {
-    let taxaCliente: number = 2
+    let taxaCliente: number = 0
 
     for (let i = faixaValor.length - 1; i >= 0; i--) {
       if (valor >= faixaValor[i]) {
@@ -126,6 +129,8 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
   const calculaTaxaMaxima = (valor: number) => {
     let taxaMax: number = TaxasEnum.MAXIMO_CLIENTE
 
+    console.log('calculaTaxaMaxima.taxaMax', taxaMax)
+
     if (valor < 100000) {
       taxaMax = 2
     } else if (valor < 250000) {
@@ -138,7 +143,8 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
       taxaMax = 3
     }
 
-    // setMaxTaxa(taxaMax)
+    setMaxTaxa(taxaMax)
+
     return taxaMax
   }
 
@@ -146,6 +152,7 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
     const valorStr = value.replace(/[^\d]+/g, '')
     const valor = parseFloat(valorStr) / 100
 
+    //calculaTaxaMaxima(valor)
     let taxaCliente = 0
 
     if (faixaTaxa.length > 0) {
@@ -154,6 +161,7 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
       taxaCliente = calculaTaxaMaxima(valor)
     }
 
+    console.log('taxa cliente ao mudar o valor', taxaCliente)
     setContratoContext({
       ...contrato,
       valor,
@@ -169,6 +177,8 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
     //if (contrato && contrato.cliente && contrato.cliente.token && data.valor && data.taxaCliente) {
     if (contrato && contrato.cliente && contrato.cliente.token && data.valor) {
       setSending(true)
+
+      //console.log('contrato: ', contrato)
 
       //console.log('contrato', contrato)
       ContratoService.salvarContrato(contrato, false)
@@ -193,18 +203,18 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
 
     const taxas = faixasStrArray[0].split(';').map(e => Number(e))
 
-    console.log('taxas', taxas)
+    //console.log('taxas', taxas)
     setFaixaTaxa(taxas)
 
     const valores = faixasStrArray[1].split(';').map(e => Number(e))
 
-    console.log('valores', valores)
+    //console.log('valores', valores)
     setFaixaValor(valores)
   }
 
   useEffect(() => {
     //console.log('contrato', contrato)
-    console.log('cliente', cliente)
+    //console.log('cliente', cliente)
 
     if (cliente?.gestor?.faixasDistribuicao) {
       distFaixas(cliente?.gestor?.faixasDistribuicao)
@@ -236,6 +246,8 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
   }, [])
 
   useEffect(() => {
+    console.log('useEffect contrato', contrato)
+
     if (contrato && contrato.cliente && contrato?.valor && contrato?.valor <= 0) {
       console.log('contrato antes de calcular a taxa', contrato)
       if (!(faixaTaxa.length > 0)) calculaTaxaMaxima(contrato?.valor || 0)
@@ -329,45 +341,42 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
                     </CustomTextField>
                   </Grid>
                   <Grid item xs={12} sm={12}>
-                    <Typography className='font-medium'>
-                      Taxa do cliente: <b>{contrato?.taxaCliente}%</b>
-                    </Typography>
-                    {/*
                     <FormControl error={Boolean(errors.taxaCliente)} fullWidth>
                       <Typography className='font-medium'>
                         Taxa do cliente: <b>{contrato?.taxaCliente}%</b>
                       </Typography>
-                      <Controller
-                        name='taxaCliente'
-                        control={control}
-                        rules={{ required: true }}
-                        render={({ field }) => (
-                          <Slider
-                            {...field}
-                            key={`slider-taxaCliente`}
-                            marks={taxaContratoMarks}
-                            min={0}
-                            max={maxTaxa || 3}
-                            step={0.01}
-                            defaultValue={contrato?.taxaCliente || TaxasEnum.MAXIMO_CLIENTE}
-                            valueLabelDisplay='auto'
-                            aria-labelledby='continuous-slider'
-                            disabled={!!contrato?.status && contrato?.status != StatusContratoEnum.NOVO}
-                            onChangeCommitted={(e, sliderValue) => {
-                              if (typeof sliderValue === 'number') {
-                                field.onChange(sliderValue)
-                                setContratoContext({
-                                  ...contrato,
-                                  taxaCliente: sliderValue
-                                })
-                              }
-                            }}
-                          />
-                        )}
-                      />
+                      {(isMaster(session?.user) || isParceiroMaster(session?.user)) && (
+                        <Controller
+                          name='taxaCliente'
+                          control={control}
+                          rules={{ required: true }}
+                          render={({ field }) => (
+                            <Slider
+                              {...field}
+                              key={`slider-taxaCliente`}
+                              marks={taxaContratoMarks}
+                              min={0}
+                              max={maxTaxa || 3}
+                              step={0.01}
+                              defaultValue={contrato?.taxaCliente || TaxasEnum.MAXIMO_CLIENTE}
+                              valueLabelDisplay='auto'
+                              aria-labelledby='continuous-slider'
+                              disabled={!!contrato?.status && contrato?.status != StatusContratoEnum.NOVO}
+                              onChangeCommitted={(e, sliderValue) => {
+                                if (typeof sliderValue === 'number') {
+                                  field.onChange(sliderValue)
+                                  setContratoContext({
+                                    ...contrato,
+                                    taxaCliente: sliderValue
+                                  })
+                                }
+                              }}
+                            />
+                          )}
+                        />
+                      )}
                       {errors.taxaCliente && <FormHelperText error>{errors.taxaCliente?.message}</FormHelperText>}
                     </FormControl>
-                      */}
                   </Grid>
                   <Grid item xs={12} sm={12}>
                     <CustomTextField

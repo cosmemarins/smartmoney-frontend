@@ -93,10 +93,10 @@ const Login = ({ mode }: { mode: SystemMode }) => {
         const redirectURL = searchParams.get('redirectTo') ?? '/'
 
         //router.push(getLocalizedUrl(redirectURL, locale as Locale))
+        console.log('redirectURL ', redirectURL)
         router.push(redirectURL)
       } else {
         if (res?.error) {
-          console.log('res.error', res.error)
           const msgErro = trataErro(res?.error)
 
           // é preciso definir o objeto error que tenha a propriedade message

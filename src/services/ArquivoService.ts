@@ -36,14 +36,12 @@ const ArquivoService = {
   },
 
   getListCliente: async function getListCliente(token: string): Promise<ArquivoType[]> {
-    console.log('AQUIIIIIIIIIIIII 22222222')
     const { data } = await api.get<ArquivoType[]>(`${path}/cliente/${token}`)
 
     return data
   },
 
   getListUsuario: async function getListUsuario(token: string): Promise<ArquivoType[]> {
-    console.log('AQUIIIIIIIIIIIII 1111111')
     const { data } = await api.get<ArquivoType[]>(`${path}/usuario/${token}`)
 
     return data

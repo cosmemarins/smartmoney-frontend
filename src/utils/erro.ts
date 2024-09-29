@@ -20,8 +20,19 @@ export const trataErro = (err: any) => {
       msgErro = request.responseText
     }
   } else {
-    console.error(err)
     msgErro = err
+
+    try {
+      const msgObj = JSON.parse(err)
+
+      if (msgObj.message) {
+        msgErro = msgObj.message.constructor === Array ? msgObj.message[0] : msgObj.message
+      } else {
+        msgErro = `Erro: ${err}`
+      }
+    } catch (e) {
+      console.error('erro nao tratado: ' + err)
+    }
   }
 
   return msgErro

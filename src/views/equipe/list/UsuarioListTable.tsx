@@ -40,6 +40,7 @@ import UsuarioService from '@/services/UsuarioService'
 import { cpfCnpjMask } from '@/utils/string'
 import { trataErro } from '@/utils/erro'
 import { getPerfilUsuarioEnumDesc, PerfilUsuarioEnum } from '@/utils/enums/PerfilUsuarioEnum'
+import { StatusUsuarioEnum } from '@/utils/enums/StatusUsuarioEnum'
 
 // Column Definitions
 const columnHelper = createColumnHelper<UsuarioTypeWithAction>()
@@ -98,10 +99,45 @@ const UsuarioListTable = ({ perfil }: Props) => {
   const [globalFilter, setGlobalFilter] = useState('')
   const [dialogConfirma, setDialogConfirma] = useState<DialogConfirmaType>({ open: false })
   const [usuarioExcluir, setUsuarioExcluir] = useState<UsuarioType | undefined>()
+  const [usuarioEdit, setUsuarioEdit] = useState<UsuarioType>({} as UsuarioType)
   const [refreshTable, setRefreshTable] = useState<boolean>(true)
 
   const handleOpenDlgConfirmaExcluir = (usuario: UsuarioType) => {
     setUsuarioExcluir(usuario)
+  }
+
+  const handleAtivarUsuario = (usuario: UsuarioType) => {
+    if (usuario.token) {
+      setUsuarioEdit(usuario)
+      setDialogConfirma({
+        open: true,
+        titulo: 'Ativar Usuário',
+        texto: (
+          <div>
+            Tem certeza que deseja ativar o usuário? <br />
+            <br />
+            {usuario?.nome}
+          </div>
+        ),
+        botaoConfirma: 'Ativar',
+        handleConfirma: confirmAtivarUsuario
+      } as DialogConfirmaType)
+    }
+  }
+
+  const confirmAtivarUsuario = () => {
+    if (usuarioEdit && usuarioEdit.token) {
+      UsuarioService.ativar(usuarioEdit?.token)
+        .then(() => {
+          setUsuarioEdit({})
+          setRefreshTable(true)
+          toast.success(`Usuário ${usuarioEdit?.nome} ativado com sucesso!`)
+        })
+        .catch((err: any) => {
+          toast.error(trataErro(err))
+        })
+        .finally(() => {})
+    }
   }
 
   useEffect(() => {
@@ -202,6 +238,17 @@ const UsuarioListTable = ({ perfil }: Props) => {
         header: 'Action',
         cell: ({ row }) => (
           <div className='flex items-center'>
+            {row.original.status != StatusUsuarioEnum.ATIVO && (
+              <IconButton
+                title='Ativar usuário'
+                aria-label='capture screenshot'
+                onClick={() => {
+                  handleAtivarUsuario(row.original)
+                }}
+              >
+                <i className='tabler-check' />
+              </IconButton>
+            )}
             <IconButton onClick={() => handleOpenDlgConfirmaExcluir(row.original)}>
               <i className='tabler-trash text-[22px] text-textSecondary' />
             </IconButton>

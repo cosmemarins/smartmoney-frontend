@@ -40,8 +40,8 @@ api.interceptors.request.use(function (config) {
   const storedToken = getCookie('token')
 
   //console.log('storedToken:', storedToken)
-  console.log('config.baseURL', config.baseURL)
-  console.log('config.url', config.url)
+  //console.log('config.baseURL', config.baseURL)
+  //console.log('config.url', config.url)
 
   if (
     !storedToken &&

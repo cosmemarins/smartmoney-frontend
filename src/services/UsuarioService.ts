@@ -122,6 +122,12 @@ const UsuarioService = {
     return data
   },
 
+  ativar: async function ativar(token: string): Promise<UsuarioType> {
+    const { data } = await api.post<UsuarioType>(`${path}/ativar/${token}`)
+
+    return data
+  },
+
   excluir: async function (token: string): Promise<void | undefined> {
     await api.delete(`${path}/${token}`)
   },

@@ -30,6 +30,8 @@ export const authOptions: NextAuthOptions = {
          */
         const { email, password, rememberMe } = credentials as { email: string; password: string; rememberMe: boolean }
 
+        //console.log('passou aqui no authorize')
+
         try {
           // ** Login API Call to match the user credentials and receive user data in response along with his role
           const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL_API}/auth/login`, {
@@ -40,11 +42,10 @@ export const authOptions: NextAuthOptions = {
             body: JSON.stringify({ email, password, rememberMe })
           })
 
-          //console.log('res auth', res)
           const data = await res.json()
 
           if (res.status === 400 || res.status === 401) {
-            throw new Error(JSON.stringify({ message: ['Email ou senha inválidos'] }))
+            throw new Error(JSON.stringify({ message: [data.message] }))
           }
 
           if (res.status === 200 || res.status === 201) {
