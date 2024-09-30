@@ -51,7 +51,7 @@ const ConfiguracoesUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pro
     token: usuarioEquipe?.token,
     taxaDistribuicao: usuarioEquipe?.taxaDistribuicao || 0,
     faixasDistribuicao: usuarioEquipe?.faixasDistribuicao || '2|10000',
-    podeCriarEquipe: false
+    podeCriarEquipe: usuarioEquipe?.podeCriarEquipe ? true : false
   })
 
   const [sending, setSending] = useState<boolean>(false)
