@@ -1,8 +1,8 @@
-import type { ComissaoProrataType } from './ComissaoProrataType'
-
-export type ComissaoType = {
+export type ComissaoProrataType = {
   id?: number
   token?: string
+  contrato?: number
+  tokenContrato?: string
   cliente?: number
   tokenCliente?: string
   nomeCliente?: string
@@ -41,18 +41,18 @@ export type ComissaoType = {
   taxaMaster?: number
   valorRepasseMaster?: number
 
-  proratas?: ComissaoProrataType[]
-
   //valores só de retorno
   taxa?: number
   valorRepasse?: number
-  totalRepasse?: number
 
-  dataAporte?: Date
+  dataContrato?: Date
+  diasProrata?: number
+  dataAditivo?: Date
+
   dataCredito?: Date
   dataVencimento?: Date
 }
 
-export type ComissaoTypeAction = ComissaoType & {
+export type ComissaoProrataAction = ComissaoProrataType & {
   action?: string
 }

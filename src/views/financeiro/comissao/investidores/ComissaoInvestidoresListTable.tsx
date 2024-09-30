@@ -7,14 +7,26 @@ import { useEffect, useMemo, useState } from 'react'
 import { useSession } from 'next-auth/react'
 
 import type { TextFieldProps } from '@mui/material'
-import { Button, Card, CardHeader, MenuItem, TablePagination, Typography } from '@mui/material'
+import {
+  Button,
+  Card,
+  CardHeader,
+  Grid,
+  IconButton,
+  MenuItem,
+  Paper,
+  styled,
+  TableContainer,
+  TablePagination,
+  Typography
+} from '@mui/material'
 import Table from '@mui/material/Table'
 import TableBody from '@mui/material/TableBody'
-import TableCell from '@mui/material/TableCell'
+import TableCell, { tableCellClasses } from '@mui/material/TableCell'
 import TableHead from '@mui/material/TableHead'
 import TableRow from '@mui/material/TableRow'
 
-import type { ColumnDef, FilterFn } from '@tanstack/react-table'
+import type { ColumnDef, FilterFn, Row } from '@tanstack/react-table'
 import {
   createColumnHelper,
   flexRender,
@@ -25,7 +37,8 @@ import {
   getFacetedUniqueValues,
   getFacetedMinMaxValues,
   getPaginationRowModel,
-  getSortedRowModel
+  getSortedRowModel,
+  getExpandedRowModel
 } from '@tanstack/react-table'
 
 import classnames from 'classnames'
@@ -43,7 +56,7 @@ import { type ComissaoType, type ComissaoTypeAction } from '@/types/ComissaoType
 // Style Imports
 import tableStyles from '@core/styles/table.module.css'
 import TablePaginationComponent from '@/components/TablePaginationComponent'
-import { valorBr } from '@/utils/string'
+import { valorBr, valorEmReal } from '@/utils/string'
 import FinanceiroService from '@/services/FinanceiroService'
 import { trataErro } from '@/utils/erro'
 import type { TotaisComissaoType } from '@/types/TotaisComissaoType'
@@ -94,6 +107,56 @@ const DebouncedInput = ({
   }, [value])
 
   return <CustomTextField {...props} value={value} onChange={e => setValue(e.target.value)} />
+}
+
+const StyledTableCell = styled(TableCell)(({ theme }) => ({
+  [`&.${tableCellClasses.head}`]: {
+    color: theme.palette.common.black,
+    fontSize: 12,
+    fontWeight: 700
+  },
+  [`&.${tableCellClasses.body}`]: {
+    fontSize: 12
+  }
+}))
+
+const renderSubComponent = ({ row }: { row: Row<ComissaoType> }) => {
+  return (
+    <>
+      <Grid container spacing={0} direction='column' alignItems='end' justifyContent='center'>
+        <TableContainer sx={{ width: 600 }} component={Paper}>
+          <Table size='small' aria-label='Prorata'>
+            <TableHead>
+              <StyledTableCell sx={{ textAlign: 'center' }}>Data</StyledTableCell>
+              <StyledTableCell align='center'>Dias Prorata</StyledTableCell>
+              <StyledTableCell align='center'>Valor</StyledTableCell>
+              <StyledTableCell align='center'>Taxa</StyledTableCell>
+              <StyledTableCell align='center'>Valor Repasse</StyledTableCell>
+            </TableHead>
+            <TableBody>
+              {row.original.proratas?.map((prorata, index) => (
+                <TableRow key={index}>
+                  <StyledTableCell align='center' scope='row'>
+                    {moment(prorata?.dataAditivo).utcOffset('+0300').format('DD/MM/YYYY')}
+                  </StyledTableCell>
+                  <StyledTableCell align='center' scope='row'>
+                    {prorata.diasProrata}
+                  </StyledTableCell>
+                  <StyledTableCell align='center' scope='row'>
+                    {valorEmReal.format(prorata.valor || 0)}
+                  </StyledTableCell>
+                  <StyledTableCell align='center' scope='row'>
+                    {valorBr.format(prorata.taxa || 0)}%
+                  </StyledTableCell>
+                  <StyledTableCell align='center'>{valorEmReal.format(prorata.valorRepasse || 0)}</StyledTableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Grid>
+    </>
+  )
 }
 
 const ComissaoInvestidoresListTable = () => {
@@ -157,7 +220,35 @@ const ComissaoInvestidoresListTable = () => {
       }),
       columnHelper.accessor('saldo', {
         header: 'Saldo',
-        cell: ({ row }) => <Typography color='text.primary'>{valorBr.format(row.original.saldo || 0)}</Typography>
+        cell: ({ row }) => (
+          <>
+            <div className='text-center'>
+              <Typography color='text.primary'>{valorBr.format(row.original.saldo || 0)}</Typography>
+              {row.original.proratas && row.original.proratas.length > 0 && (
+                <small>
+                  saldo: {valorBr.format(row.original.valor || 0)}
+                  <br />
+                  prorata:{' '}
+                  {valorBr.format(
+                    row.original.proratas.reduce(function (total, item) {
+                      return total + (item?.valor || 0)
+                    }, 0)
+                  )}
+                </small>
+              )}
+
+              {row.getCanExpand() && (
+                <IconButton size='small' onClick={() => row.toggleExpanded()}>
+                  {row.getIsExpanded() ? (
+                    <i className='tabler-arrow-big-up-filled' />
+                  ) : (
+                    <i className='tabler-arrow-big-down-filled' />
+                  )}
+                </IconButton>
+              )}
+            </div>
+          </>
+        )
       }),
       columnHelper.accessor('taxa', {
         header: 'Taxa',
@@ -166,7 +257,23 @@ const ComissaoInvestidoresListTable = () => {
       columnHelper.accessor('valorRepasse', {
         header: 'Valor Repasse',
         cell: ({ row }) => (
-          <Typography color='text.primary'>{valorBr.format(row.original.valorRepasse || 0)}</Typography>
+          <>
+            <div className='text-center'>
+              <Typography color='text.primary'>{valorBr.format(row.original.totalRepasse || 0)}</Typography>
+              {row.original.proratas && row.original.proratas.length > 0 && (
+                <small>
+                  saldo: {valorBr.format(row.original.valorRepasse || 0)}
+                  <br />
+                  prorata:{' '}
+                  {valorBr.format(
+                    row.original.proratas.reduce(function (total, item) {
+                      return total + (item?.valorRepasse || 0)
+                    }, 0)
+                  )}
+                </small>
+              )}
+            </div>
+          </>
         )
       })
     ],
@@ -200,7 +307,11 @@ const ComissaoInvestidoresListTable = () => {
     getPaginationRowModel: getPaginationRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
-    getFacetedMinMaxValues: getFacetedMinMaxValues()
+    getFacetedMinMaxValues: getFacetedMinMaxValues(),
+    getExpandedRowModel: getExpandedRowModel(),
+    getRowCanExpand: row => {
+      return row.original.proratas.length > 0 ? true : false
+    }
   })
 
   useEffect(() => {
@@ -323,11 +434,19 @@ const ComissaoInvestidoresListTable = () => {
                   .rows.slice(0, table.getState().pagination.pageSize)
                   .map(row => {
                     return (
-                      <tr key={row.id} className={classnames({ selected: row.getIsSelected() })}>
-                        {row.getVisibleCells().map(cell => (
-                          <td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
-                        ))}
-                      </tr>
+                      <>
+                        <tr key={row.id} className={classnames({ selected: row.getIsSelected() })}>
+                          {row.getVisibleCells().map(cell => (
+                            <td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
+                          ))}
+                        </tr>
+                        {row.getIsExpanded() && (
+                          <tr>
+                            {/* 2nd row is a custom 1 cell row */}
+                            <td colSpan={row.getVisibleCells().length}>{renderSubComponent({ row })}</td>
+                          </tr>
+                        )}
+                      </>
                     )
                   })}
               </tbody>
