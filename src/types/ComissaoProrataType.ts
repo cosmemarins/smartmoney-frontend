@@ -47,6 +47,7 @@ export type ComissaoProrataType = {
 
   dataContrato?: Date
   diasProrata?: number
+  diasNoMes?: number
   dataAditivo?: Date
 
   dataCredito?: Date

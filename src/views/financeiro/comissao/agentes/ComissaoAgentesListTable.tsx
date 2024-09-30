@@ -125,10 +125,11 @@ const renderSubComponent = ({ row }: { row: Row<ComissaoType> }) => {
   return (
     <>
       <Grid container spacing={0} direction='column' alignItems='end' justifyContent='center'>
-        <TableContainer sx={{ width: 600 }} component={Paper}>
+        <TableContainer sx={{ width: 700 }} component={Paper}>
           <Table size='small' aria-label='Prorata'>
             <TableHead>
-              <StyledTableCell sx={{ textAlign: 'center' }}>Data</StyledTableCell>
+              <StyledTableCell sx={{ textAlign: 'center' }}>Data Aditivo</StyledTableCell>
+              <StyledTableCell align='center'>Dias Mês</StyledTableCell>
               <StyledTableCell align='center'>Dias Prorata</StyledTableCell>
               <StyledTableCell align='center'>Valor</StyledTableCell>
               <StyledTableCell align='center'>Taxa</StyledTableCell>
@@ -139,6 +140,9 @@ const renderSubComponent = ({ row }: { row: Row<ComissaoType> }) => {
                 <TableRow key={index}>
                   <StyledTableCell align='center' scope='row'>
                     {moment(prorata?.dataAditivo).utcOffset('+0300').format('DD/MM/YYYY')}
+                  </StyledTableCell>
+                  <StyledTableCell align='center' scope='row'>
+                    {prorata.diasNoMes}
                   </StyledTableCell>
                   <StyledTableCell align='center' scope='row'>
                     {prorata.diasProrata}
