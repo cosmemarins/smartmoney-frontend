@@ -99,7 +99,7 @@ const UsuarioListTable = ({ perfil }: Props) => {
   const [globalFilter, setGlobalFilter] = useState('')
   const [dialogConfirma, setDialogConfirma] = useState<DialogConfirmaType>({ open: false })
   const [usuarioExcluir, setUsuarioExcluir] = useState<UsuarioType | undefined>()
-  const [usuarioEdit, setUsuarioEdit] = useState<UsuarioType>({} as UsuarioType)
+  const [usuarioEdit, setUsuarioEdit] = useState<UsuarioType | undefined>()
   const [refreshTable, setRefreshTable] = useState<boolean>(true)
 
   const handleOpenDlgConfirmaExcluir = (usuario: UsuarioType) => {
@@ -107,31 +107,18 @@ const UsuarioListTable = ({ perfil }: Props) => {
   }
 
   const handleAtivarUsuario = (usuario: UsuarioType) => {
-    if (usuario.token) {
-      setUsuarioEdit(usuario)
-      setDialogConfirma({
-        open: true,
-        titulo: 'Ativar Usuário',
-        texto: (
-          <div>
-            Tem certeza que deseja ativar o usuário? <br />
-            <br />
-            {usuario?.nome}
-          </div>
-        ),
-        botaoConfirma: 'Ativar',
-        handleConfirma: confirmAtivarUsuario
-      } as DialogConfirmaType)
-    }
+    //TIP: para setar o usuario foi preciso colocar o { ...usuario }, pq se usar apenas "usuario",
+    //o react não atualizar e não dispara o useeffect
+    setUsuarioEdit({ ...usuario })
   }
 
   const confirmAtivarUsuario = () => {
     if (usuarioEdit && usuarioEdit.token) {
       UsuarioService.ativar(usuarioEdit?.token)
         .then(() => {
-          setUsuarioEdit({})
           setRefreshTable(true)
           toast.success(`Usuário ${usuarioEdit?.nome} ativado com sucesso!`)
+          setUsuarioEdit(undefined)
         })
         .catch((err: any) => {
           toast.error(trataErro(err))
@@ -139,6 +126,25 @@ const UsuarioListTable = ({ perfil }: Props) => {
         .finally(() => {})
     }
   }
+
+  useEffect(() => {
+    if (usuarioEdit) {
+      setDialogConfirma({
+        open: true,
+        titulo: 'Ativar Usuário',
+        texto: (
+          <div>
+            Tem certeza que deseja ativar o usuário? <br />
+            <br />
+            {usuarioEdit.nome}
+          </div>
+        ),
+        botaoConfirma: 'Ativar',
+        handleConfirma: confirmAtivarUsuario
+      } as DialogConfirmaType)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [usuarioEdit])
 
   useEffect(() => {
     if (usuarioExcluir) {
