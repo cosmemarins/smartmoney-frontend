@@ -90,7 +90,7 @@ const Login = ({ mode }: { mode: SystemMode }) => {
 
       if (res && res.ok && res.error === null) {
         // Vars
-        const redirectURL = searchParams.get('redirectTo') ?? '/'
+        const redirectURL = searchParams.get('redirectTo') ?? '/home'
 
         //router.push(getLocalizedUrl(redirectURL, locale as Locale))
         console.log('redirectURL ', redirectURL)

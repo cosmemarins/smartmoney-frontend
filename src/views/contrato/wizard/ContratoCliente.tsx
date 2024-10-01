@@ -93,7 +93,12 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
     ),
     taxaCliente: pipe(
       v.number('A taxa precisa ser maior que 0'),
-      v.minValue(0.01, 'A taxa precisa ser maior que 0.'),
+      v.minValue(
+        // eslint-disable-next-line lines-around-comment
+        //só valida se o valor não for tabelado
+        isMaster(session?.user) || isParceiroMaster(session?.user) ? 0.01 : -1,
+        `A taxa precisa ser maior que 0.`
+      ),
       v.maxValue(maxTaxa || 3, `O valor da taxa não pode ser maior que ${maxTaxa}`)
     )
   })
@@ -162,6 +167,7 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
     }
 
     console.log('taxa cliente ao mudar o valor', taxaCliente)
+    console.log(schema)
     setContratoContext({
       ...contrato,
       valor,
@@ -222,7 +228,7 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
       if (session?.user) {
         //recuperando as faixas de distribuicao se ainda não veio
         UsuarioService.get(session.user.token).then(respUsuario => {
-          console.log(respUsuario)
+          //console.log(respUsuario)
           const faixasDistribuicao = respUsuario.faixasDistribuicao || respUsuario.gestor?.faixasDistribuicao
 
           distFaixas(faixasDistribuicao)
@@ -246,10 +252,10 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
   }, [])
 
   useEffect(() => {
-    console.log('useEffect contrato', contrato)
+    //console.log('useEffect contrato', contrato)
 
     if (contrato && contrato.cliente && contrato?.valor && contrato?.valor <= 0) {
-      console.log('contrato antes de calcular a taxa', contrato)
+      //console.log('contrato antes de calcular a taxa', contrato)
       if (!(faixaTaxa.length > 0)) calculaTaxaMaxima(contrato?.valor || 0)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
