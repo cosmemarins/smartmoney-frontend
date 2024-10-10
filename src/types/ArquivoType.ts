@@ -18,4 +18,5 @@ export type ArquivoType = {
   contentType?: string
   data?: Date
   dataExclusao?: Date
+  enviar?: boolean
 }

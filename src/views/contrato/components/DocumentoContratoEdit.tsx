@@ -60,7 +60,7 @@ const DocumentoContratoEdit = ({ arquivoData, extratoData, handleClose, setRefre
     })
   }
 
-  console.log('DocumentoContratoEdit 1')
+  //console.log('DocumentoContratoEdit 1')
 
   const handleExcluirArquivo = () => {
     setErro(undefined)
@@ -160,6 +160,8 @@ const DocumentoContratoEdit = ({ arquivoData, extratoData, handleClose, setRefre
   }
 
   const salvarExtratoComDocumento = () => {
+    console.log('extratoEdit', extratoEdit)
+
     if (!extratoEdit) {
       toast.error('Dados não localizado')
 
@@ -174,6 +176,7 @@ const DocumentoContratoEdit = ({ arquivoData, extratoData, handleClose, setRefre
       'arquivo',
       JSON.stringify({
         ...extratoEdit.arquivo,
+        enviar: arquivoData.enviar,
         tipoDocumento: extratoEdit.tipo,
         tipoRegistro: TipoArquivoRegistroEnum.EXTRATO
       })
@@ -274,7 +277,7 @@ const DocumentoContratoEdit = ({ arquivoData, extratoData, handleClose, setRefre
   }
 
   useEffect(() => {
-    console.log('DocumentoContratoEdit useeffect[] arquivoData', arquivoData)
+    //console.log('DocumentoContratoEdit useeffect[] arquivoData', arquivoData)
 
     if (arquivoData?.token) {
       //precisa recuperar por aqui pois tem que ser via axios por causa da validação de seção

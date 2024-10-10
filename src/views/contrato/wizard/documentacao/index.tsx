@@ -231,7 +231,10 @@ const Documentacao = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
         <DialogTitle id='form-dialog-title'>{tituloDlgArquivo}</DialogTitle>
         <DialogContent>
           <DocumentoContratoEdit
-            arquivoData={arquivoEdit}
+            arquivoData={{
+              ...arquivoEdit,
+              enviar: false
+            }}
             extratoData={extratoEdit}
             handleClose={handleCloseDlgArquivo}
             setRefresh={setRefreshArquivoList}

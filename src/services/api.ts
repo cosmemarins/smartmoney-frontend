@@ -25,7 +25,7 @@ const onResponse = (response: AxiosResponse): AxiosResponse => {
 }
 
 const onResponseError = (error: AxiosError): Promise<AxiosError> => {
-  console.error('onResponseError:', `${error.response?.status} - ${error.response?.statusText}`)
+  console.error('onResponseError: Erro no response da API', `${error.response?.status} - ${error.response?.statusText}`)
 
   return Promise.reject(error)
 }

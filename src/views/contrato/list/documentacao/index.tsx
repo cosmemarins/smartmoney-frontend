@@ -164,7 +164,7 @@ const Documentacao = ({ contrato, cliente, handleClose }: Props) => {
         //atualiza o objeto resumo do contrato
         ContratoService.getResumo(contrato.token)
           .then(respResumo => {
-            console.log('respResumo', respResumo)
+            //console.log('list documentaca list respResumo', respResumo)
             setResumoContrato(respResumo)
             if (respResumo.podeAtivar) setOpenDlgAtivarContrato(true)
           })
@@ -250,7 +250,10 @@ const Documentacao = ({ contrato, cliente, handleClose }: Props) => {
         <DialogTitle id='form-dialog-title'>{tituloDlgArquivo}</DialogTitle>
         <DialogContent>
           <DocumentoContratoEdit
-            arquivoData={arquivoEdit}
+            arquivoData={{
+              ...arquivoEdit,
+              enviar: true
+            }}
             extratoData={extratoEdit}
             handleClose={handleCloseDlgArquivo}
             setRefresh={setRefreshArquivoList}

@@ -428,7 +428,7 @@ const ContratoListTable = () => {
       setRefreshTable(false)
       ContratoService.getList()
         .then(respListContrato => {
-          console.log('respListContrato', respListContrato)
+          //console.log('respListContrato', respListContrato)
           setData(respListContrato)
         })
         .catch(err => {
@@ -618,7 +618,8 @@ const ContratoListTable = () => {
               data: new Date(),
               tipoRegistro: TipoArquivoRegistroEnum.EXTRATO,
               tipoDocumento: TipoDocumentoEnum.ADITIVO,
-              idRegistro: contratoEdit?.id
+              idRegistro: contratoEdit?.id,
+              enviar: true
             }}
             extratoData={{
               data: new Date(),

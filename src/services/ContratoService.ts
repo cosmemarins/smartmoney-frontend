@@ -32,6 +32,12 @@ const ContratoService = {
     return data
   },
 
+  salvarAporte: async function salvarAporte(formData: any): Promise<ArquivoType> {
+    const { data } = await api.post<ArquivoType>(`${path}/aporte`, formData)
+
+    return data
+  },
+
   getUltimoContratoNovo: async function getUltimoContratoNovo(token: string): Promise<ContratoType> {
     const { data } = await api.get<ContratoType>(`${path}/cliente/ultimo-novo/${token}`)
 
@@ -152,7 +158,7 @@ const ContratoService = {
   },
 
   salvarExtratoComDocumento: async function salvarExtratoComDocumento(formData: any): Promise<ExtratoType> {
-    console.log('salvarExtratoComDocumento', formData.values)
+    //console.log('salvarExtratoComDocumento', formData.values)
     const { data } = await api.post<ExtratoType>(`${path}/extrato/com-documento`, formData)
 
     return data
