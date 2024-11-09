@@ -44,3 +44,12 @@ export function getStatusContratoEnumColor(item: string) {
       return 'default'
   }
 }
+
+export const StatusContratoEnumList = [
+  { value: 'NOVO', label: 'Novo' },
+  { value: 'AGUARDANDO', label: 'Aguardando' },
+  { value: 'ATIVO', label: 'Ativo' },
+  { value: 'SUBSTITUIDO', label: 'Substituido' },
+  { value: 'CANCELADO', label: 'Cancelado' },
+  { value: 'FINALIZADO', label: 'Finalizado' }
+]

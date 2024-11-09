@@ -23,7 +23,7 @@ import {
   Typography
 } from '@mui/material'
 
-import type { ColumnDef, FilterFn } from '@tanstack/react-table'
+import type { ColumnDef, ColumnFiltersState, FilterFn } from '@tanstack/react-table'
 import {
   createColumnHelper,
   flexRender,
@@ -46,7 +46,7 @@ import { toast } from 'react-toastify'
 import moment, { locale } from 'moment'
 
 import CustomTextField from '@/@core/components/mui/TextField'
-import { type ContratoType, type ContratoTypeWithAction } from '@/types/ContratoType'
+import type { ContratoFilterType, ContratoType, ContratoTypeWithAction } from '@/types/ContratoType'
 
 // Style Imports
 import tableStyles from '@core/styles/table.module.css'
@@ -55,7 +55,11 @@ import DialogConfirma from '@/components/DialogConfirma'
 import type { DialogConfirmaType } from '@/types/utilTypes'
 import ContratoService from '@/services/ContratoService'
 import { trataErro } from '@/utils/erro'
-import { StatusContratoEnum, getStatusContratoEnumColor } from '@/utils/enums/StatusContratoEnum'
+import {
+  StatusContratoEnum,
+  StatusContratoEnumList,
+  getStatusContratoEnumColor
+} from '@/utils/enums/StatusContratoEnum'
 import ContratoEdit from '../ContratoEdit'
 import { cpfCnpjMask, valorBr } from '@/utils/string'
 import Documentacao from './documentacao'
@@ -81,6 +85,13 @@ const fuzzyFilter: FilterFn<any> = (row, columnId, value, addMeta) => {
 
   // Return if the item should be filtered in/out
   return itemRank.passed
+}
+
+const tipoSaldoFilter: FilterFn<any> = (row, columnId, value) => {
+  if (value === 'TODOS') return true
+
+  if (value === 'COM_PENDENCIA') return row.original.saldoPendente > 0
+  else return row.original.saldoPendente === 0
 }
 
 const DebouncedInput = ({
@@ -120,6 +131,7 @@ const ContratoListTable = () => {
   const [rowSelection, setRowSelection] = useState({})
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [data, setData] = useState<ContratoType[]>([])
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([{ id: 'status', value: 'NOVO' }])
   const [globalFilter, setGlobalFilter] = useState('')
   const [dialogConfirma, setDialogConfirma] = useState<DialogConfirmaType>({ open: false })
   const [contratoExcluir, setContratoExcluir] = useState<ContratoType | undefined>()
@@ -128,6 +140,7 @@ const ContratoListTable = () => {
   const [openDlgContrato, setOpenDlgContrato] = useState<boolean>(false)
   const [openDlgDocumentacao, setOpenDlgDocumentacao] = useState<boolean>(false)
   const [openDlgArquivo, setOpenDlgArquivo] = useState<boolean>(false)
+  const [contratoFilter, setContratoFilter] = useState<ContratoFilterType>()
 
   const handleOpenDlgContrato = (contrato: ContratoType) => {
     setContratoEdit(contrato)
@@ -306,9 +319,16 @@ const ContratoListTable = () => {
           </div>
         )
       }),
+      columnHelper.accessor('saldoPendente', {
+        header: 'Saldo pendente',
+        enableHiding: true,
+        filterFn: tipoSaldoFilter,
+        cell: ({ row }) => row.original.saldoPendente
+      }),
       */
       columnHelper.accessor('saldo', {
         header: 'Saldo',
+        filterFn: tipoSaldoFilter,
         cell: ({ row }) => (
           <div className='text-center'>
             <Typography color='text.primary' className='font-medium'>
@@ -383,7 +403,8 @@ const ContratoListTable = () => {
     },
     state: {
       rowSelection,
-      globalFilter
+      globalFilter,
+      columnFilters
     },
     initialState: {
       pagination: {
@@ -396,13 +417,45 @@ const ContratoListTable = () => {
     onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
     onGlobalFilterChange: setGlobalFilter,
+    onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
-    getFacetedMinMaxValues: getFacetedMinMaxValues()
+    getFacetedMinMaxValues: getFacetedMinMaxValues(),
+    debugColumns: false
   })
+
+  useEffect(() => {
+    setContratoFilter({
+      page: {
+        page: 1,
+        orderDirection: 'ASC'
+      }
+    })
+  }, [])
+
+  useEffect(() => {
+    const filters = []
+
+    if (contratoFilter?.tipoSaldo && contratoFilter?.tipoSaldo !== 'TODOS') {
+      filters.push({
+        id: 'saldo',
+        value: contratoFilter?.tipoSaldo
+      })
+    }
+
+    if (contratoFilter?.status && contratoFilter?.status !== 'TODOS') {
+      filters.push({
+        id: 'status',
+        value: contratoFilter?.status
+      })
+    }
+
+    setColumnFilters(filters)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contratoFilter])
 
   useEffect(() => {
     if (contratoExcluir) {
@@ -440,7 +493,24 @@ const ContratoListTable = () => {
   return (
     <>
       <Card>
-        <CardHeader title='Contratos' className='pbe-4' />
+        <CardHeader
+          className='pbe-4'
+          title={
+            <>
+              <span>Contratos</span>
+              <Button
+                href='/contrato/new'
+                variant='contained'
+                startIcon={<i className='tabler-plus' />}
+                className='is-full sm:is-auto'
+                sx={{ float: 'right' }}
+              >
+                Adicionar Contrato
+              </Button>
+            </>
+          }
+        />
+
         <div className='flex justify-between flex-col items-start md:flex-row md:items-center p-6 border-bs gap-4'>
           <CustomTextField
             select
@@ -452,23 +522,51 @@ const ContratoListTable = () => {
             <MenuItem value='25'>25</MenuItem>
             <MenuItem value='50'>50</MenuItem>
           </CustomTextField>
+
           <div className='flex flex-col sm:flex-row is-full sm:is-auto items-start sm:items-center gap-4'>
+            <CustomTextField
+              select
+              label='Tipo saldo'
+              value={contratoFilter?.tipoSaldo || 'TODOS'}
+              onChange={e => setContratoFilter({ ...contratoFilter, tipoSaldo: e.target.value })}
+              sx={{ width: '170px' }}
+            >
+              <MenuItem value='TODOS' selected={contratoFilter?.tipoSaldo === 'TODOS'}>
+                Todos
+              </MenuItem>
+              <MenuItem value='COM_PENDENCIA' selected={contratoFilter?.tipoSaldo === 'COM_PENDENCIA'}>
+                Com pendência
+              </MenuItem>
+              <MenuItem value='SEM_PENDENCIA' selected={contratoFilter?.tipoSaldo === 'SEM_PENDENCIA'}>
+                Sem pendência
+              </MenuItem>
+            </CustomTextField>
+            <CustomTextField
+              select
+              label='Status'
+              value={contratoFilter?.status || 'TODOS'}
+              onChange={e => setContratoFilter({ ...contratoFilter, status: e.target.value })}
+              sx={{ width: '150px' }}
+            >
+              <MenuItem value='TODOS' selected={contratoFilter?.tipoSaldo === 'TODOS'}>
+                Todos
+              </MenuItem>
+              {StatusContratoEnumList.map((status, index) => (
+                <MenuItem key={index} value={status.value} selected={contratoFilter?.status === status.value}>
+                  {status.label}
+                </MenuItem>
+              ))}
+            </CustomTextField>
             <DebouncedInput
+              label='Localizar'
               value={globalFilter ?? ''}
               onChange={value => setGlobalFilter(String(value))}
-              placeholder='Localizar'
+              placeholder='Digite um texto...'
               className='is-full sm:is-auto'
             />
-            <Button
-              href='/contrato/new'
-              variant='contained'
-              startIcon={<i className='tabler-plus' />}
-              className='is-full sm:is-auto'
-            >
-              Adicionar Contrato
-            </Button>
           </div>
         </div>
+
         <div className='overflow-x-auto'>
           <table className={tableStyles.table}>
             <thead>
