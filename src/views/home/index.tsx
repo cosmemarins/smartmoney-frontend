@@ -8,6 +8,8 @@ import { useSession } from 'next-auth/react'
 import TotalClientesCard from './TotalClientesCard'
 import TotalEquipeCard from './TotalEquipeCard'
 import TotalContratosCard from './TotalContratosCard'
+import ContratosPendentes from '../contrato/components/ContratosPendentes'
+import ContratosValoresPendentes from '../contrato/components/ContratosValoresPendentes'
 
 const HomePage = () => {
   const { data: session } = useSession()
@@ -53,6 +55,12 @@ const HomePage = () => {
       </Grid>
       <Grid item xs={12} sm={6} md={4}>
         <TotalClientesCard />
+      </Grid>
+      <Grid item xs={12} md={6}>
+        <ContratosValoresPendentes />
+      </Grid>
+      <Grid item xs={12} md={6}>
+        <ContratosPendentes />
       </Grid>
     </Grid>
   )

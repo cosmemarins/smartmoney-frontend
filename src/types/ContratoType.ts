@@ -2,7 +2,7 @@
 
 import { StatusContratoEnum } from '@/utils/enums/StatusContratoEnum'
 import type { ClienteType } from './ClienteType'
-import type { PageType } from './PageType'
+import type FilterOptions from './FilterOptions'
 
 export type ContratoType = {
   id?: number
@@ -54,8 +54,9 @@ export type ContratoFilterType = ContratoType & {
   parceiro?: number
   agente?: number
   cliente?: number
+  tipoStatus?: string
   tipoSaldo?: string
-  page?: PageType
+  options?: FilterOptions
 }
 
 export const prazoList = [12, 24, 36]

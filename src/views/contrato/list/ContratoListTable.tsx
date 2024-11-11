@@ -429,7 +429,7 @@ const ContratoListTable = () => {
 
   useEffect(() => {
     setContratoFilter({
-      page: {
+      options: {
         page: 1,
         orderDirection: 'ASC'
       }

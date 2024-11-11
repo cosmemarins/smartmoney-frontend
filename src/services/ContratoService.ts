@@ -1,4 +1,4 @@
-import type { ContratoType } from '@/types/ContratoType'
+import type { ContratoFilterType, ContratoType } from '@/types/ContratoType'
 import api from './api'
 import type { ExtratoType } from '@/types/ExtratoType'
 import type TamanhoEquipeDTO from '@/types/TamanhoEquipe.dto'
@@ -8,8 +8,8 @@ import type { ResumoContratoType } from '@/types/ResumoContratoType'
 const path = 'contratos'
 
 const ContratoService = {
-  getList: async function getList(): Promise<ContratoType[]> {
-    const { data } = await api.get<ContratoType[]>(`${path}`)
+  getList: async function getList(contratoFilter: ContratoFilterType = {}): Promise<ContratoType[]> {
+    const { data } = await api.post<ContratoType[]>(`${path}`, contratoFilter)
 
     return data
   },
