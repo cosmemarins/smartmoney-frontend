@@ -318,6 +318,8 @@ const ContratoEdit = ({ contrato, handleClose }: props) => {
   }
 
   useEffect(() => {
+    //console.log('contratoEdit', contratoEdit)
+
     if (contratoEdit && contratoEdit.cliente && contratoEdit.cliente.token) {
       setMaxTaxa(
         contratoEdit.cliente?.gestor?.taxaDistribuicao && contratoEdit.cliente?.gestor?.taxaDistribuicao <= 3

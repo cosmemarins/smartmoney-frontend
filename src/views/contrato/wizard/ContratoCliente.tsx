@@ -167,7 +167,8 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
     }
 
     console.log('taxa cliente ao mudar o valor', taxaCliente)
-    console.log(schema)
+
+    //console.log(schema)
     setContratoContext({
       ...contrato,
       valor,
@@ -189,7 +190,7 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
       //console.log('contrato', contrato)
       ContratoService.salvarContrato(contrato, false)
         .then(respContrato => {
-          //console.log('respContrato', respContrato)
+          console.log('respContrato', respContrato)
           setContratoContext(respContrato)
           handleNext()
         })

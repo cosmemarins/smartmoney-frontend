@@ -96,12 +96,14 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
             </SubMenu>
           </SubMenu>
         )}
-        <SubMenu label='Clientes' icon={<i className='tabler-users' />}>
-          <MenuItem href={`/cliente/list`}>Listar Clientes</MenuItem>
-          {/*
+        {session?.user.isAdmin && (
+          <SubMenu label='Clientes' icon={<i className='tabler-users' />}>
+            <MenuItem href={`/cliente/list`}>Listar Clientes</MenuItem>
+            {/*
           <MenuItem href={`/cliente/new`}>Novo cliente</MenuItem>
           */}
-        </SubMenu>
+          </SubMenu>
+        )}
         <SubMenu label='Contratos' icon={<i className='tabler-files' />}>
           <MenuItem href={`/contrato/list`}>Listar Contratos</MenuItem>
           <MenuItem href={`/contrato/new`}>Novo contrato</MenuItem>

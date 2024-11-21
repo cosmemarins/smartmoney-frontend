@@ -9,7 +9,11 @@ const path = 'contratos'
 
 const ContratoService = {
   getList: async function getList(contratoFilter: ContratoFilterType = {}): Promise<ContratoType[]> {
-    const { data } = await api.post<ContratoType[]>(`${path}`, contratoFilter)
+    const queryString = new URLSearchParams()
+
+    Object.entries(contratoFilter ?? {}).map(prop => queryString.append(prop[0], `${prop[1]}`))
+
+    const { data } = await api.get<ContratoType[]>(`${path}/?${queryString.toString()}`)
 
     return data
   },
