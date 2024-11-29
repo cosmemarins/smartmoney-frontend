@@ -3,6 +3,7 @@
 import { StatusContratoEnum } from '@/utils/enums/StatusContratoEnum'
 import type { ArquivoType } from './ArquivoType'
 import type { ContratoType } from './ContratoType'
+import type FilterOptions from './FilterOptions'
 
 export type ExtratoType = {
   contrato: ContratoType
@@ -22,4 +23,12 @@ export const ExtratoInit = {
   valor: 0,
   status: StatusContratoEnum.NOVO,
   prazo: 12
+}
+
+export type ExtratoFilterType = ExtratoType & {
+  agente?: number
+  cliente?: number
+  tipoStatus?: string
+  tipoExtrato?: string
+  options?: FilterOptions
 }

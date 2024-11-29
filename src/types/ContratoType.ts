@@ -3,11 +3,13 @@
 import { StatusContratoEnum } from '@/utils/enums/StatusContratoEnum'
 import type { ClienteType } from './ClienteType'
 import type FilterOptions from './FilterOptions'
+import type { UsuarioType } from './UsuarioType'
 
 export type ContratoType = {
   id?: number
   token?: string
   cliente?: ClienteType
+  gestor?: UsuarioType
   contratoPai?: ContratoType
   data?: Date
   valor?: number

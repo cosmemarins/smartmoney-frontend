@@ -14,6 +14,18 @@ const ExtratoService = {
     const { data } = await api.get<ExtratoType>(`${path}/id/${id}`)
 
     return data
+  },
+
+  getLastAditivo: async function getLastAditivo(numRegs: number): Promise<ExtratoType[]> {
+    const { data } = await api.get<ExtratoType[]>(`${path}/aditivo/last/${numRegs}`)
+
+    return data
+  },
+
+  getLastAporte: async function getLastAporte(numRegs: number): Promise<ExtratoType[]> {
+    const { data } = await api.get<ExtratoType[]>(`${path}/aporte/last/${numRegs}`)
+
+    return data
   }
 }
 

@@ -10,6 +10,8 @@ import TotalEquipeCard from './TotalEquipeCard'
 import TotalContratosCard from './TotalContratosCard'
 import ContratosPendentes from '../contrato/components/ContratosPendentes'
 import ContratosValoresPendentes from '../contrato/components/ContratosValoresPendentes'
+import LastAditivos from '../contrato/extrato/components/LastAditivos'
+import LastAportes from '../contrato/extrato/components/LastAportes'
 
 const HomePage = () => {
   const { data: session } = useSession()
@@ -61,6 +63,12 @@ const HomePage = () => {
       </Grid>
       <Grid item xs={12} md={6}>
         <ContratosPendentes />
+      </Grid>
+      <Grid item xs={12} md={6}>
+        <LastAditivos />
+      </Grid>
+      <Grid item xs={12} md={6}>
+        <LastAportes />
       </Grid>
     </Grid>
   )
