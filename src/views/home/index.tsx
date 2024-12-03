@@ -65,10 +65,10 @@ const HomePage = () => {
         <ContratosPendentes />
       </Grid>
       <Grid item xs={12} md={6}>
-        <LastAditivos />
+        <LastAportes />
       </Grid>
       <Grid item xs={12} md={6}>
-        <LastAportes />
+        <LastAditivos />
       </Grid>
     </Grid>
   )
