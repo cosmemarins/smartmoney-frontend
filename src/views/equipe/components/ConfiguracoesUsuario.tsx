@@ -28,6 +28,7 @@ import UsuarioService from '@/services/UsuarioService'
 import { getPerfilUsuarioEnumDesc, PerfilUsuarioEnum } from '@/utils/enums/PerfilUsuarioEnum'
 import { TaxasEnum } from '@/utils/enums/TaxasEnum'
 import CustomTextField from '@/@core/components/mui/TextField'
+import { TipoPercentualEnum } from '@/utils/enums/TipoPercentualEnum'
 
 type Props = {
   activeStep: number
@@ -49,6 +50,7 @@ const ConfiguracoesUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pro
   const [configuracoesUsuario, setConfiguracoesUsuario] = useState<ConfiguracoesUsuarioType>({
     id: usuarioEquipe?.id,
     token: usuarioEquipe?.token,
+    percentualFixo: usuarioEquipe?.percentualFixo,
     taxaDistribuicao: usuarioEquipe?.taxaDistribuicao || 0,
     faixasDistribuicao: usuarioEquipe?.faixasDistribuicao || '2|10000',
     podeCriarEquipe: usuarioEquipe?.podeCriarEquipe ? true : false
@@ -57,6 +59,12 @@ const ConfiguracoesUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pro
   const [sending, setSending] = useState<boolean>(false)
   const [maxTaxa, setMaxTaxa] = useState<number>(Number(taxaInit))
   const [faixas, setFaixas] = useState(['faixa'])
+
+  const [tipoPercentual, setTipoPercentual] = useState<string>(
+    usuarioEquipe?.percentualFixo && usuarioEquipe?.percentualFixo > 0
+      ? TipoPercentualEnum.FIXO
+      : TipoPercentualEnum.VARIAVEL
+  )
 
   const [faixaTaxa, setFaixaTaxa] = useState([0])
   const [faixaValor, setFaixaValor] = useState([0])
@@ -109,75 +117,130 @@ const ConfiguracoesUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pro
     setFaixaTaxa(currentFaixaTaxa)
   }
 
+  const handleSubmitFixo = () => {
+    setSending(true)
+    UsuarioService.salvarConfiguracoes(configuracoesUsuario)
+      .then(respUsuario => {
+        setUsuarioEquipeContext(respUsuario)
+        toast.success('Dados salvo com sucesso!')
+        handleNext()
+      })
+      .catch(err => {
+        const msgErro = trataErro(err)
+
+        toast.error(msgErro)
+      })
+      .finally(() => {
+        setSending(false)
+      })
+  }
+
+  const handleSubmitVariavel = () => {
+    //confere as taxas
+    let taxaAnterior = 0
+    let maiorTaxa = 0
+    let erroTaxa = undefined
+
+    //TODO: é preciso fazer este teste lá no inicio da inclusão de um agente
+    if (!faixaTaxa) toast.error('É preciso configurar uma faixa de taxas para este parceiro')
+
+    faixaTaxa.forEach(taxa => {
+      if (taxa === 0) erroTaxa = 'Taxa não pode ser zero'
+      if (taxa < taxaAnterior) erroTaxa = 'taxa não pode ser menor que a taxa anterior'
+      if (taxa > maiorTaxa) maiorTaxa = taxa
+      taxaAnterior = taxa
+    })
+    console.log('configuracoesUsuario', configuracoesUsuario)
+    console.log('maiorTaxa', maiorTaxa)
+
+    if (configuracoesUsuario?.taxaDistribuicao && configuracoesUsuario?.taxaDistribuicao > maiorTaxa) {
+      erroTaxa = `A taxa não pode ser maior que a taxa de distribuição (${maiorTaxa}%)`
+    }
+
+    if (erroTaxa) {
+      toast.error(erroTaxa)
+
+      return
+    }
+
+    //confere os valores
+    let index = 0
+    let valorAnterior = 0
+    let erroValor = undefined
+
+    faixaValor.forEach(valor => {
+      if (valor === 0 && index > 0) erroValor = 'Valor não pode ser zero'
+      if (valor < valorAnterior) erroValor = 'Valor não pode ser menor que o valor anterior'
+      valorAnterior = valor
+      index++
+    })
+
+    if (erroValor) {
+      toast.error(erroValor)
+
+      return
+    }
+
+    const faixasDistribuicao = `${faixaTaxa.join(';')}|${faixaValor.join(';')}`
+
+    setSending(true)
+    UsuarioService.salvarConfiguracoes({
+      ...configuracoesUsuario,
+      faixasDistribuicao
+    })
+      .then(respUsuario => {
+        setUsuarioEquipeContext(respUsuario)
+        toast.success('Dados salvo com sucesso!')
+        handleNext()
+      })
+      .catch(err => {
+        const msgErro = trataErro(err)
+
+        toast.error(msgErro)
+      })
+      .finally(() => {
+        setSending(false)
+      })
+  }
+
   const handleSubmit = () => {
+    console.log('configuracoesUsuario', configuracoesUsuario)
+
     if (usuarioEquipe && usuarioEquipe.token && configuracoesUsuario) {
-      if (configuracoesUsuario.taxaDistribuicao && configuracoesUsuario.taxaDistribuicao > 0) {
-        //confere as taxas
-        let taxaAnterior = 0
-        let maiorTaxa = 0
-        let erroTaxa = undefined
-
-        //TODO: é preciso fazer este teste lá no inicio da inclusão de um agente
-        if (!faixaTaxa) toast.error('É preciso configurar uma faixa de taxas para este parceiro')
-
-        faixaTaxa.forEach(taxa => {
-          if (taxa === 0) erroTaxa = 'Taxa não pode ser zero'
-          if (taxa < taxaAnterior) erroTaxa = 'taxa não pode ser menor que a taxa anerior'
-          if (taxa > maiorTaxa) maiorTaxa = taxa
-          taxaAnterior = taxa
-        })
-
-        if (maiorTaxa > configuracoesUsuario?.taxaDistribuicao) {
-          erroTaxa = 'A taixa não pode ser maior que a taxa de distribuição'
-        }
-
-        if (erroTaxa) {
-          toast.error(erroTaxa)
-
-          return
-        }
-
-        //confere os valores
-        let index = 0
-        let valorAnterior = 0
-        let erroValor = undefined
-
-        faixaValor.forEach(valor => {
-          if (valor === 0 && index > 0) erroValor = 'Valor não pode ser zero'
-          if (valor < valorAnterior) erroValor = 'Valor não pode ser menor que o valor anerior'
-          valorAnterior = valor
-          index++
-        })
-
-        if (erroValor) {
-          toast.error(erroValor)
-
-          return
-        }
-
-        const faixasDistribuicao = `${faixaTaxa.join(';')}|${faixaValor.join(';')}`
-
-        setSending(true)
-        UsuarioService.salvarConfiguracoes({
-          ...configuracoesUsuario,
-          faixasDistribuicao
-        })
-          .then(respUsuario => {
-            setUsuarioEquipeContext(respUsuario)
-            toast.success('Dados salvo com sucesso!')
-            handleNext()
-          })
-          .catch(err => {
-            const msgErro = trataErro(err)
-
-            toast.error(msgErro)
-          })
-          .finally(() => {
-            setSending(false)
-          })
+      if (
+        tipoPercentual === TipoPercentualEnum.VARIAVEL &&
+        configuracoesUsuario.taxaDistribuicao &&
+        configuracoesUsuario.taxaDistribuicao > 0
+      ) {
+        handleSubmitVariavel()
+      } else if (
+        tipoPercentual === TipoPercentualEnum.FIXO &&
+        configuracoesUsuario.percentualFixo &&
+        configuracoesUsuario.percentualFixo > 0
+      ) {
+        handleSubmitFixo()
       } else {
-        toast.error(`A taxa de distribuição do ${usuarioEquipe.perfil} precisa ser maior que zero`)
+        toast.error(
+          `${tipoPercentual === TipoPercentualEnum.FIXO ? 'O percentual' : 'A taxa de distribuição'} do ${usuarioEquipe.perfil} precisa ser maior que zero`
+        )
       }
+    }
+  }
+
+  function handleTipoPercentualChange(value: string) {
+    setTipoPercentual(value)
+
+    if (value === TipoPercentualEnum.VARIAVEL) {
+      setConfiguracoesUsuario({
+        ...configuracoesUsuario,
+        taxaDistribuicao: configuracoesUsuario.percentualFixo,
+        percentualFixo: 0
+      })
+    } else if (value === TipoPercentualEnum.FIXO) {
+      setConfiguracoesUsuario({
+        ...configuracoesUsuario,
+        percentualFixo: configuracoesUsuario.taxaDistribuicao
+      })
     }
   }
 
@@ -189,7 +252,9 @@ const ConfiguracoesUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pro
       if (sliderValue < TaxasEnum.MAXIMO_CONSULTOR - 1) {
         setConfiguracoesUsuario({
           ...configuracoesUsuario,
-          taxaDistribuicao: sliderValue
+          taxaDistribuicao:
+            tipoPercentual === TipoPercentualEnum.VARIAVEL ? sliderValue : configuracoesUsuario.taxaDistribuicao,
+          percentualFixo: tipoPercentual === TipoPercentualEnum.FIXO ? sliderValue : 0
 
           //retirado controle de criacao de equipe
           //podeCriarEquipe: false
@@ -197,7 +262,9 @@ const ConfiguracoesUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pro
       } else {
         setConfiguracoesUsuario({
           ...configuracoesUsuario,
-          taxaDistribuicao: sliderValue
+          taxaDistribuicao:
+            tipoPercentual === TipoPercentualEnum.VARIAVEL ? sliderValue : configuracoesUsuario.taxaDistribuicao,
+          percentualFixo: tipoPercentual === TipoPercentualEnum.FIXO ? sliderValue : 0
         })
       }
     }
@@ -215,20 +282,24 @@ const ConfiguracoesUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pro
   }
 
   useEffect(() => {
-    //console.log('usuarioEquipe', usuarioEquipe)
-
     if (usuarioEquipe && usuarioEquipe.token) {
+      console.log('usuarioEquipe', usuarioEquipe)
       setConfiguracoesUsuario({
         ...configuracoesUsuario,
         id: usuarioEquipe.id,
         token: usuarioEquipe.token,
+        percentualFixo: usuarioEquipe.percentualFixo,
+        taxaDistribuicao:
+          usuarioEquipe?.taxaDistribuicao && usuarioEquipe?.taxaDistribuicao > 0
+            ? usuarioEquipe?.taxaDistribuicao
+            : usuarioEquipe?.percentualFixo, //serve para dar um valor inicial no slider
         podeCriarEquipe:
           usuarioEquipe.taxaDistribuicao && usuarioEquipe.taxaDistribuicao < TaxasEnum.MAXIMO_CONSULTOR - 1
             ? false
             : usuarioEquipe.podeCriarEquipe
       })
 
-      //se ver setada então pega faixas de distribuicao do proprio usuario
+      //se vier setada então pega faixas de distribuicao do proprio usuario
       if (usuarioEquipe.faixasDistribuicao) distFaixas(usuarioEquipe.faixasDistribuicao)
 
       //define a taxa de distribuicao
@@ -314,20 +385,53 @@ const ConfiguracoesUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pro
             <CardContent className='flex flex-col gap-4'>
               <Grid container spacing={5}>
                 <Grid item xs={12} sm={12}>
+                  <label>Tipo de percentual do {getPerfilUsuarioEnumDesc(usuarioEquipe?.perfil)}</label>
+                  <RadioGroup
+                    row
+                    name='radio-buttons-group'
+                    value={tipoPercentual}
+                    onChange={e => handleTipoPercentualChange(e.target.value)}
+                  >
+                    <FormControlLabel value='FIXO' control={<Radio />} label='Percentual FIXO' />
+                    <FormControlLabel value='VARIAVEL' control={<Radio />} label='Percentual VARIÁVEL' />
+                  </RadioGroup>
+                </Grid>
+                <Grid item xs={12} sm={12}>
                   <Typography className='font-medium'>
-                    Taxa de distribuição: <b>{configuracoesUsuario?.taxaDistribuicao}%</b>
+                    {tipoPercentual === TipoPercentualEnum.FIXO ? 'Percentual fixo' : 'Taxa de distribuição'}:{' '}
+                    <b>
+                      {tipoPercentual === TipoPercentualEnum.FIXO
+                        ? configuracoesUsuario?.percentualFixo
+                        : configuracoesUsuario?.taxaDistribuicao}
+                      %
+                    </b>
                   </Typography>
-                  <Slider
-                    key={`slider-${configuracoesUsuario?.taxaDistribuicao}`} /* fixed issue */
-                    marks={taxaContratoMarks}
-                    min={0}
-                    max={maxTaxa}
-                    step={0.1}
-                    defaultValue={configuracoesUsuario?.taxaDistribuicao || 0}
-                    valueLabelDisplay='auto'
-                    aria-labelledby='continuous-slider'
-                    onChangeCommitted={(e, value) => handleSlideChange(e, value)}
-                  />
+                  {tipoPercentual === TipoPercentualEnum.VARIAVEL && (
+                    <Slider
+                      key={`slider-${configuracoesUsuario?.taxaDistribuicao}`} /* fixed issue */
+                      marks={taxaContratoMarks}
+                      min={0}
+                      max={maxTaxa}
+                      step={0.1}
+                      defaultValue={configuracoesUsuario?.taxaDistribuicao || 0}
+                      valueLabelDisplay='auto'
+                      aria-labelledby='continuous-slider'
+                      onChangeCommitted={(e, value) => handleSlideChange(e, value)}
+                    />
+                  )}
+                  {tipoPercentual === TipoPercentualEnum.FIXO && (
+                    <Slider
+                      key={`slider-${configuracoesUsuario?.percentualFixo}`} /* fixed issue */
+                      marks={taxaContratoMarks}
+                      min={0}
+                      max={maxTaxa}
+                      step={0.1}
+                      defaultValue={configuracoesUsuario?.percentualFixo || 0}
+                      valueLabelDisplay='auto'
+                      aria-labelledby='continuous-slider'
+                      onChangeCommitted={(e, value) => handleSlideChange(e, value)}
+                    />
+                  )}
                 </Grid>
                 {usuarioEquipe?.perfil === PerfilUsuarioEnum.PARCEIRO && (
                   <Grid item xs={12} sm={6}>

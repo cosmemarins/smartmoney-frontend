@@ -27,6 +27,7 @@ import type { ConfiguracoesUsuarioType } from '@/types/ConfiguracoesUsuarioType'
 import UsuarioService from '@/services/UsuarioService'
 import { getPerfilUsuarioEnumDesc, PerfilUsuarioEnum } from '@/utils/enums/PerfilUsuarioEnum'
 import { TaxasEnum } from '@/utils/enums/TaxasEnum'
+import { TipoPercentualEnum } from '@/utils/enums/TipoPercentualEnum'
 
 type Props = {
   activeStep: number
@@ -49,6 +50,7 @@ const ConfiguracoesUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pro
   })
 
   const [sending, setSending] = useState<boolean>(false)
+  const [tipoPercentual, setTipoPercentual] = useState<string>(TipoPercentualEnum.FIXO)
   const [maxTaxa, setMaxTaxa] = useState<number>(Number(TaxasEnum.MAXIMO_CONSULTOR) || 5)
 
   const handleSubmit = () => {
@@ -127,6 +129,18 @@ const ConfiguracoesUsuario = ({ activeStep, handleNext, handlePrev, steps }: Pro
             <CardHeader title={`Configurações do ${getPerfilUsuarioEnumDesc(usuarioEquipe?.perfil)}`} />
             <CardContent className='flex flex-col gap-4'>
               <Grid container spacing={5}>
+                <Grid item xs={12} sm={12}>
+                  <label>Tipo de percentual do {getPerfilUsuarioEnumDesc(usuarioEquipe?.perfil)}</label>
+                  <RadioGroup
+                    row
+                    name='radio-buttons-group'
+                    value={tipoPercentual}
+                    onChange={e => setTipoPercentual(e.target.value)}
+                  >
+                    <FormControlLabel value='FIXO' control={<Radio />} label='Percentual FIXO' />
+                    <FormControlLabel value='VARIAVEL' control={<Radio />} label='Percentual VARIÁVEL' />
+                  </RadioGroup>
+                </Grid>
                 <Grid item xs={12} sm={12}>
                   <Typography className='font-medium'>
                     Taxa de distribuição: <b>{configuracoesUsuario?.taxaDistribuicao}%</b>

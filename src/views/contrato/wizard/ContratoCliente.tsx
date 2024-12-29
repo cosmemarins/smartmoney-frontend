@@ -92,11 +92,11 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
       v.minValue((Number(faixaValor[0]) - 1) | 1, `Informe um valor maior que ${Number(faixaValor[0])}`)
     ),
     taxaCliente: pipe(
-      v.number('A taxa precisa ser maior que 0'),
+      v.number(`A taxa precisa ser informada e tem que ser um número.`),
       v.minValue(
         // eslint-disable-next-line lines-around-comment
         //só valida se o valor não for tabelado
-        isMaster(session?.user) || isParceiroMaster(session?.user) ? 0.01 : -1,
+        isMaster(session?.user) || isParceiroMaster(session?.user) ? -1 : 0,
         `A taxa precisa ser maior que 0.`
       ),
       v.maxValue(maxTaxa || 3, `O valor da taxa não pode ser maior que ${maxTaxa}`)
@@ -366,6 +366,7 @@ const ContratoCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) =
                               max={maxTaxa || 3}
                               step={0.01}
                               defaultValue={contrato?.taxaCliente || TaxasEnum.MAXIMO_CLIENTE}
+                              value={contrato?.taxaCliente}
                               valueLabelDisplay='auto'
                               aria-labelledby='continuous-slider'
                               disabled={!!contrato?.status && contrato?.status != StatusContratoEnum.NOVO}

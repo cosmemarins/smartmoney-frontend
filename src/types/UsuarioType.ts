@@ -35,6 +35,7 @@ export type UsuarioType = {
   status?: string
   isAdmin?: boolean
   podeCriarEquipe?: boolean
+  percentualFixo?: number
   taxaDistribuicao?: number
   faixasDistribuicao?: string
   roles?: string
