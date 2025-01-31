@@ -104,6 +104,7 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
         </SubMenu>
         <SubMenu label='Contratos' icon={<i className='tabler-files' />}>
           <MenuItem href={`/contrato/list`}>Listar Contratos</MenuItem>
+          <MenuItem href={`/extrato/list`}>Listar Lançamentos</MenuItem>
           <MenuItem href={`/contrato/new`}>Novo contrato</MenuItem>
         </SubMenu>
         <SubMenu label='Financeiro' icon={<i className='tabler-currency-dollar' />}>

@@ -10,8 +10,8 @@ import TotalEquipeCard from './TotalEquipeCard'
 import TotalContratosCard from './TotalContratosCard'
 import ContratosPendentes from '../contrato/components/ContratosPendentes'
 import ContratosValoresPendentes from '../contrato/components/ContratosValoresPendentes'
-import LastAditivos from '../contrato/extrato/components/LastAditivos'
-import LastAportes from '../contrato/extrato/components/LastAportes'
+import LastAditivos from '../extrato/components/LastAditivos'
+import LastAportes from '../extrato/components/LastAportes'
 
 const HomePage = () => {
   const { data: session } = useSession()

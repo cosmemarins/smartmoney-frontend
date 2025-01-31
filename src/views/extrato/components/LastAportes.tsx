@@ -25,7 +25,7 @@ const LastAportes = () => {
   useEffect(() => {
     ExtratoService.getLastAporte(10)
       .then(respListExtrato => {
-        console.log('respListContrato', respListExtrato)
+        console.log('respListExtrato', respListExtrato)
         setData(respListExtrato)
       })
       .catch(err => {
@@ -55,7 +55,7 @@ const LastAportes = () => {
                   </div>
                 </td>
                 <td className='pli-2 plb-3'>
-                  <div className='flex flex-col'>{row.contrato.cliente?.nome}</div>
+                  <div className='flex flex-col'>{row.contrato?.cliente?.nome}</div>
                 </td>
                 <td className='pli-2 plb-3'>{row.contrato?.gestor?.nome || row.contrato?.cliente?.gestor?.nome}</td>
                 <td className='pli-2 plb-3'>

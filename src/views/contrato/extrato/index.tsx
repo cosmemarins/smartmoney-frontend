@@ -42,7 +42,7 @@ import {
   StatusContratoEnum
 } from '@/utils/enums/StatusContratoEnum'
 import { getTipoExtratoEnumColor, getTipoExtratoEnumDesc, TipoExtratoEnum } from '@/utils/enums/TipoExtratoEnum'
-import ExtratoEdit from './ExtratoEdit'
+import ExtratoEdit from '../../extrato/ExtratoEdit'
 import { trataErro } from '@/utils/erro'
 import type { ContratoType } from '@/types/ContratoType'
 import { TipoDocumentoEnum } from '@/utils/enums/TipoDocumentoEnum'

@@ -548,7 +548,7 @@ const ContratoListTable = () => {
               onChange={e => setContratoFilter({ ...contratoFilter, status: e.target.value })}
               sx={{ width: '150px' }}
             >
-              <MenuItem value='TODOS' selected={contratoFilter?.tipoSaldo === 'TODOS'}>
+              <MenuItem value='TODOS' selected={contratoFilter?.status === 'TODOS'}>
                 Todos
               </MenuItem>
               {StatusContratoEnumList.map((status, index) => (

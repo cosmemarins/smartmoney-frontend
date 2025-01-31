@@ -6,7 +6,7 @@ import type { ContratoType } from './ContratoType'
 import type FilterOptions from './FilterOptions'
 
 export type ExtratoType = {
-  contrato: ContratoType
+  contrato?: ContratoType
   id?: number
   token?: string
   data?: Date
@@ -23,6 +23,11 @@ export const ExtratoInit = {
   valor: 0,
   status: StatusContratoEnum.NOVO,
   prazo: 12
+}
+
+export type ExtratoTypeWithAction = ExtratoType & {
+  tipoExtrato: string
+  action?: string
 }
 
 export type ExtratoFilterType = ExtratoType & {
