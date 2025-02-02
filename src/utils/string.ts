@@ -67,8 +67,16 @@ export const valorEmReal = new Intl.NumberFormat('pt-BR', { style: 'currency', c
 export const valorBr = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
 export const capitalizeFirstLetter = (str?: string) => {
-  console.log(str)
+  //console.log(str)
   if (!str) return ''
 
   return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()
+}
+
+export const cutString = (str?: string, len?: number) => {
+  if (!str) return ''
+  if (!len) len = 10
+  if (str.length <= len) return str
+
+  return str.slice(0, len) + '...'
 }

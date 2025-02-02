@@ -7,7 +7,7 @@ import Card from '@mui/material/Card'
 import CardHeader from '@mui/material/CardHeader'
 
 // Components Imports
-import { Chip } from '@mui/material'
+import { Button, Chip } from '@mui/material'
 
 // Style Imports
 import moment, { locale } from 'moment'
@@ -16,11 +16,16 @@ import tableStyles from '@core/styles/table.module.css'
 import type { ExtratoType } from '@/types/ExtratoType'
 import { getStatusContratoEnumColor } from '@/utils/enums/StatusContratoEnum'
 import ExtratoService from '@/services/ExtratoService'
+import { cutString } from '@/utils/string'
 
 locale('pt-br')
 
 const LastAportes = () => {
   const [data, setData] = useState<ExtratoType[]>([])
+
+  const handleClick = () => {
+    window.location.href = '/extrato/list'
+  }
 
   useEffect(() => {
     ExtratoService.getLastAporte(10)
@@ -35,7 +40,14 @@ const LastAportes = () => {
 
   return (
     <Card>
-      <CardHeader title='Últimos Aportes' />
+      <CardHeader
+        title='Últimos Aportes'
+        action={
+          <Button variant='contained' endIcon={<i className='tabler-eye' />} onClick={handleClick}>
+            Ver todos
+          </Button>
+        }
+      />
       <div className='overflow-x-auto'>
         <table className={tableStyles.table}>
           <thead className='uppercase'>
@@ -55,9 +67,13 @@ const LastAportes = () => {
                   </div>
                 </td>
                 <td className='pli-2 plb-3'>
-                  <div className='flex flex-col'>{row.contrato?.cliente?.nome}</div>
+                  <div className='flex flex-col' title={row.contrato?.cliente?.nome}>
+                    {cutString(row.contrato?.cliente?.nome, 15)}
+                  </div>
                 </td>
-                <td className='pli-2 plb-3'>{row.contrato?.gestor?.nome || row.contrato?.cliente?.gestor?.nome}</td>
+                <td className='pli-2 plb-3' title={row.contrato?.gestor?.nome || row.contrato?.cliente?.gestor?.nome}>
+                  {cutString(row.contrato?.gestor?.nome || row.contrato?.cliente?.gestor?.nome, 15)}
+                </td>
                 <td className='pli-2 plb-3'>
                   <div className='text-center'>
                     <Chip
