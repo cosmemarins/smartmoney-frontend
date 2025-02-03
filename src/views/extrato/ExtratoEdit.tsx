@@ -96,7 +96,7 @@ const ExtratoEdit = ({ extratoData, handleClose, tipoExtrato }: props) => {
         ...extratoEdit,
         contrato: {
           //so precisa enviar o token do contrato
-          token: extratoEdit.contrato.token
+          token: extratoEdit.contrato?.token
         }
       })
     )
