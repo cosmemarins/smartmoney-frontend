@@ -80,3 +80,8 @@ export const cutString = (str?: string, len?: number) => {
 
   return str.slice(0, len) + '...'
 }
+
+//export const objectToQueryString = (obj: object) => {
+//  const queryString = new URLSearchParams()
+//  return queryString;
+//}

@@ -3,22 +3,20 @@
 import api from '@/services/api'
 import type { ClienteType } from '@/types/ClienteType'
 import type { DadosBancariosType } from '@/types/DadosBancariosType'
+import type FilterOptions from '@/types/FilterOptions'
 import type TamanhoEquipeDTO from '@/types/TamanhoEquipe.dto'
-import type { DataOptionsType } from '@/types/utilTypes'
 import { TipoDocumentoEnum } from '@/utils/enums/TipoDocumentoEnum'
 
 const path = 'clientes'
 
-async function getListCliente(dataOptions?: DataOptionsType): Promise<ClienteType[]> {
+async function getListCliente(options?: FilterOptions): Promise<ClienteType[]> {
   const queryString = new URLSearchParams()
 
-  //Object.entries(cliente ?? {}).map(prop => queryString.append(prop[0], `${prop[1]}`))
-
-  Object.entries(dataOptions ?? {}).map(prop => queryString.append(prop[0], `${prop[1]}`))
-
+  Object.entries(options ?? {}).map(prop => queryString.append(prop[0], `${prop[1]}`))
+  console.log(options)
   const { data } = await api.get<ClienteType[]>(`${path}/?${queryString.toString()}`)
 
-  //console.log('getList', data)
+  console.log(data)
 
   return data
 }

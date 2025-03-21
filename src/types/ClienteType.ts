@@ -1,6 +1,7 @@
 // Typos para o objoto Cliente
 
 import type { BancoType } from './BancoType'
+import type FilterOptions from './FilterOptions'
 import type { UsuarioType } from './UsuarioType'
 import type { StatusColorType } from './utilTypes'
 
@@ -42,6 +43,11 @@ export type ClienteType = {
 
 export type ClienteTypeWithAction = ClienteType & {
   action?: string
+}
+
+export type ClienteFilterType = ClienteType & {
+  tipoStatus?: string
+  options?: FilterOptions
 }
 
 export type IdentificacaoType = {
