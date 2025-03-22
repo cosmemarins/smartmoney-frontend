@@ -61,6 +61,16 @@ const ArquivoService = {
     })
 
     return Buffer.from(response.data, 'binary').toString('base64')
+  },
+
+  getFile: async function getFile(token: string) {
+    //console.log(`${path}/thumb/${token}`)
+
+    const response = await api.get(`${path}/file/${token}`, {
+      responseType: 'arraybuffer'
+    })
+
+    return Buffer.from(response.data, 'binary').toString('base64')
   }
 }
 
