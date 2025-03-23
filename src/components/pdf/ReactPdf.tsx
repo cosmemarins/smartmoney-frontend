@@ -14,8 +14,9 @@ import type { PdfProps } from '@/types/ReactPdfType'
 import './styles.css'
 
 // Importing the PDF.js worker.
-//pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`
-pdfjs.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString()
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`
+
+//pdfjs.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString()
 
 const ReactPdf = ({ base64Content, fileName }: PdfProps) => {
   const [numPages, setNumPages] = useState<number>(0)
