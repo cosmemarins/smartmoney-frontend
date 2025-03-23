@@ -25,7 +25,6 @@ import {
 } from '@tanstack/react-table'
 import { rankItem } from '@tanstack/match-sorter-utils'
 import type { ColumnFiltersState, FilterFn, ColumnDef } from '@tanstack/react-table'
-import type { RankingInfo } from '@tanstack/match-sorter-utils'
 
 // Component Imports
 import { Button } from '@mui/material'
@@ -46,15 +45,6 @@ import { getListCliente } from '@/services/ClienteService'
 
 // Column Definitions
 const columnHelper = createColumnHelper<ClienteTypeWithAction>()
-
-declare module '@tanstack/table-core' {
-  interface FilterFns {
-    fuzzy: FilterFn<unknown>
-  }
-  interface FilterMeta {
-    itemRank: RankingInfo
-  }
-}
 
 const fuzzyFilter: FilterFn<any> = (row, columnId, value, addMeta) => {
   // Rank the item
