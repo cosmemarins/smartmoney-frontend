@@ -3,4 +3,6 @@ export interface PdfProps {
   base64Content?: string
   height?: number
   fileName?: string
+  maxHeight?: number
+  theme?: string
 }

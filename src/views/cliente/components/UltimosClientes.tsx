@@ -7,7 +7,7 @@ import Card from '@mui/material/Card'
 import CardHeader from '@mui/material/CardHeader'
 
 // Components Imports
-import { Chip } from '@mui/material'
+import { Chip, Link, Typography } from '@mui/material'
 
 // Style Imports
 import moment, { locale } from 'moment'
@@ -60,7 +60,13 @@ const UltimosClientes = () => {
                   </div>
                 </td>
                 <td className='pli-2 plb-3'>
-                  <div className='flex flex-col'>{row.nome}</div>
+                  <div className='flex flex-col'>
+                    <Link href={`/cliente/${row.token}`} title='Ir para o cadastro do cliente'>
+                      <Typography color='text.primary' className='font-medium'>
+                        {row.nome}
+                      </Typography>
+                    </Link>
+                  </div>
                 </td>
                 <td className='pli-2 plb-3'>{row.gestor?.nome}</td>
                 <td className='pli-2 plb-3'>

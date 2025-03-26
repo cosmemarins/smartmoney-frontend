@@ -18,7 +18,7 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/b
 
 //pdfjs.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString()
 
-const ReactPdf = ({ base64Content, fileName }: PdfProps) => {
+const ReactPdf = ({ base64Content, fileName, theme, maxHeight }: PdfProps) => {
   const [numPages, setNumPages] = useState<number>(0)
   const [pageNumber, setPageNumber] = useState<number>(1)
 
@@ -26,6 +26,7 @@ const ReactPdf = ({ base64Content, fileName }: PdfProps) => {
     setNumPages(numPages)
   }
 
+  console.log('theme', theme)
   const goToPrevPage = () => setPageNumber(v => (v > 1 ? --v : 1))
 
   const goToNextPage = () => setPageNumber(v => (v < numPages ? ++v : numPages))
@@ -47,24 +48,26 @@ const ReactPdf = ({ base64Content, fileName }: PdfProps) => {
   }
 
   return (
-    <div className='page'>
-      <nav>
-        <Button variant='contained' startIcon={<i className='tabler-arrow-big-left' />} onClick={goToPrevPage}>
-          Anterior
-        </Button>
-        <p>
-          Página {pageNumber} de {numPages}
-        </p>
-        <Button variant='contained' endIcon={<i className='tabler-arrow-big-right' />} onClick={goToNextPage}>
-          Próxima
-        </Button>
-        <IconButton onClick={download} title='clique para fazer o download do documento' sx={{ marginLeft: '70px' }}>
-          <i className='tabler-download'></i>
-        </IconButton>
-      </nav>
+    <div className='page' style={{ maxHeight: `${maxHeight}` }}>
+      {!theme && (
+        <nav>
+          <Button variant='contained' startIcon={<i className='tabler-arrow-big-left' />} onClick={goToPrevPage}>
+            Anterior
+          </Button>
+          <p>
+            Página {pageNumber} de {numPages}
+          </p>
+          <Button variant='contained' endIcon={<i className='tabler-arrow-big-right' />} onClick={goToNextPage}>
+            Próxima
+          </Button>
+          <IconButton onClick={download} title='clique para fazer o download do documento' sx={{ marginLeft: '70px' }}>
+            <i className='tabler-download'></i>
+          </IconButton>
+        </nav>
+      )}
 
       <Document file={`data:application/pdf;base64,${base64Content}`} onLoadSuccess={onDocumentLoadSuccess}>
-        <Page pageNumber={pageNumber} renderAnnotationLayer={false} renderTextLayer={false} />
+        <Page height={maxHeight} pageNumber={pageNumber} renderAnnotationLayer={false} renderTextLayer={false} />
       </Document>
     </div>
   )
