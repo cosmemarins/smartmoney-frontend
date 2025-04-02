@@ -10,7 +10,6 @@ import ArquivoService from '@/services/ArquivoService'
 import type { TipoDocumentoEnum } from '@/utils/enums/TipoDocumentoEnum'
 import { getTipoDocumentoEnumDesc } from '@/utils/enums/TipoDocumentoEnum'
 import { trataErro } from '@/utils/erro'
-import ReactPdf from '@/components/pdf/ReactPdf'
 
 interface props {
   arquivo: ArquivoType
@@ -66,44 +65,39 @@ const ArquivoItem = ({ arquivo, handleEditArquivo }: props) => {
 
   return (
     <Card>
-      <CardHeader
-        title={titulo}
-        action={
-          fileDocumento &&
-          fileDocumento.indexOf('JVBERi0') === 0 && (
-            <IconButton
-              onClick={download}
-              title='clique para fazer o download do documento'
-              sx={{ marginLeft: '70px' }}
-            >
-              <i className='tabler-download'></i>
-            </IconButton>
-          )
-        }
-      />
-      <CardContent>
+      <CardHeader title={titulo} />
+      <CardContent sx={{ textAlign: 'center' }}>
         {erro && (
           <Alert icon={false} severity='error' onClose={() => {}}>
             <AlertTitle>Erro</AlertTitle>
             {erro}
           </Alert>
         )}
-        <a target='_blank' href={`/arquivos/${arquivo.token}/view`} rel='noopener noreferrer'>
-          {fileDocumento ? (
-            fileDocumento.indexOf('JVBERi0') === 0 ? (
-              <ReactPdf base64Content={fileDocumento} fileName={`${arquivo.token}.pdf`} maxHeight={460} theme='min' />
-            ) : (
+        {fileDocumento ? (
+          fileDocumento.indexOf('JVBERi0') === 0 ? (
+            <>
+              <a target='_blank' href={`/arquivos/${arquivo.token}/view`} rel='noopener noreferrer'>
+                <IconButton title='clique para vizualizar o pdf' sx={{ marginRight: '20px' }}>
+                  <i className='tabler-eye' style={{ height: '80px', width: '80px' }}></i>
+                </IconButton>
+              </a>
+              <IconButton onClick={download} title='clique para fazer o download do documento'>
+                <i className='tabler-download' style={{ height: '80px', width: '80px' }}></i>
+              </IconButton>
+            </>
+          ) : (
+            <a target='_blank' href={`/arquivos/${arquivo.token}/view`} rel='noopener noreferrer'>
               <img
                 key={arquivo?.token}
                 src={`data:image/jpeg;base64, ${fileDocumento}`}
                 style={{ maxHeight: 460 }}
                 title={titulo}
               />
-            )
-          ) : (
-            <p>{msgAguarde}</p>
-          )}
-        </a>
+            </a>
+          )
+        ) : (
+          <p>{msgAguarde}</p>
+        )}
       </CardContent>
 
       <CardActions className='card-actions-dense'>
