@@ -42,21 +42,6 @@ type ErrorType = {
   message: string[]
 }
 
-type FormData = v.InferInput<typeof schema>
-
-const schema = v.object({
-  nome: v.string('É preciso digitar um nome'),
-  email: pipe(v.string('É preciso digitar um email'), v.email('Email inválido')),
-  identidade: v.string('É preciso informar o RG ou CNH'),
-  telefone: v.string('É preciso informar um celular'),
-  dataNascimento: pipe(
-    v.date('É preciso infromar uma data válida'),
-    v.minValue(moment().subtract(110, 'years').toDate(), 'Não pode ser tão velho')
-
-    //v.maxValue(moment().subtract(18, 'years').toDate(), 'Preciser ser maior de 18 anos')
-  )
-})
-
 const DadosCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
   // States
   const [errorState, setErrorState] = useState<ErrorType | null>(null)
@@ -66,6 +51,22 @@ const DadosCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
   const { cliente, setClienteContext, isCpf } = useClienteContext()
   const { contrato, setContratoContext } = useContratoContext()
 
+  type FormData = v.InferInput<typeof schema>
+
+  const schema = v.object({
+    nome: v.string('É preciso digitar um nome'),
+    nomeMae: isCpf ? v.string('É preciso digitar o nome da mãe') : v.optional(v.string()),
+    email: pipe(v.string('É preciso digitar um email'), v.email('Email inválido')),
+    identidade: v.string('É preciso informar o RG ou CNH'),
+    telefone: v.string('É preciso informar um celular'),
+    dataNascimento: pipe(
+      v.date('É preciso infromar uma data válida'),
+      v.minValue(moment().subtract(110, 'years').toDate(), 'Não pode ser tão velho')
+
+      //v.maxValue(moment().subtract(18, 'years').toDate(), 'Preciser ser maior de 18 anos')
+    )
+  })
+
   const {
     control,
     handleSubmit,
@@ -74,6 +75,7 @@ const DadosCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
     resolver: valibotResolver(schema),
     defaultValues: {
       nome: cliente?.nome,
+      nomeMae: cliente?.nomeMae || undefined,
       email: cliente?.email,
       identidade: cliente?.identidade,
       telefone: cliente?.telefone,
@@ -251,6 +253,44 @@ const DadosCliente = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
                     )}
                   />
                 </Grid>
+                {isCpf && (
+                  <Grid item xs={12} sm={6}>
+                    <Controller
+                      name='nomeMae'
+                      control={control}
+                      rules={{ required: true }}
+                      render={({ field }) => (
+                        <CustomTextField
+                          {...field}
+                          fullWidth
+                          label={'Nome da Mãe'}
+                          placeholder={'Nome da Mãe'}
+                          value={cliente?.nomeMae || ''}
+                          onChange={e => {
+                            field.onChange(e.target.value)
+                            setClienteContext({ ...cliente, nomeMae: e.target.value })
+                            errorState !== null && setErrorState(null)
+                          }}
+                          {...((errors.nomeMae || errorState !== null) && {
+                            error: true,
+                            helperText: errors?.nomeMae?.message || errorState?.message
+                          })}
+                        />
+                      )}
+                    />
+                  </Grid>
+                )}
+                {isCpf && (
+                  <Grid item xs={12} sm={6}>
+                    <CustomTextField
+                      fullWidth
+                      label='Ocupação'
+                      placeholder='Ocupação'
+                      value={cliente?.ocupacao || ''}
+                      onChange={e => setClienteContext({ ...cliente, ocupacao: e.target.value })}
+                    />
+                  </Grid>
+                )}
               </Grid>
             </CardContent>
             <CardActions></CardActions>

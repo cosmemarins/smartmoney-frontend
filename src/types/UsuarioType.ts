@@ -8,6 +8,8 @@ export type UsuarioType = {
   tipoPessoa?: string
   cpfCnpj?: string
   nome?: string
+  nomeMae?: string
+  ocupacao?: string
   dataNascimento?: string
   identidade?: string
   razaoSocial?: string

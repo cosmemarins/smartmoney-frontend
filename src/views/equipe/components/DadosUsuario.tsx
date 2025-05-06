@@ -64,6 +64,7 @@ const DadosUsuario = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
 
   const schema = v.object({
     nome: v.string('É preciso digitar um nome'),
+    nomeMae: mostRestrictPf ? v.string('É preciso digitar o nome da mãe') : v.optional(v.string()),
     email: pipe(v.string('É preciso digitar um email'), v.email('Email inválido')),
     telefone: v.string('É preciso informar um telefone'),
     dataNascimento: mostRestrictPf
@@ -85,6 +86,7 @@ const DadosUsuario = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
     resolver: valibotResolver(schema),
     defaultValues: {
       nome: usuarioEquipe?.nome,
+      nomeMae: usuarioEquipe?.nomeMae || undefined,
       email: usuarioEquipe?.email,
       telefone: usuarioEquipe?.telefone,
       dataNascimento: usuarioEquipe?.dataNascimento ? moment(usuarioEquipe?.dataNascimento).toDate() : undefined,
@@ -302,6 +304,44 @@ const DadosUsuario = ({ activeStep, handleNext, handlePrev, steps }: Props) => {
                     )}
                   />
                 </Grid>
+                {mostRestrictPf && (
+                  <Grid item xs={12} sm={6}>
+                    <Controller
+                      name='nomeMae'
+                      control={control}
+                      rules={{ required: true }}
+                      render={({ field }) => (
+                        <CustomTextField
+                          {...field}
+                          fullWidth
+                          label={'Nome da Mãe'}
+                          placeholder={'Nome da Mãe'}
+                          value={usuarioEquipe?.nomeMae || ''}
+                          onChange={e => {
+                            field.onChange(e.target.value)
+                            setUsuarioEquipeContext({ ...usuarioEquipe, nomeMae: e.target.value })
+                            errorState !== null && setErrorState(null)
+                          }}
+                          {...((errors.nomeMae || errorState !== null) && {
+                            error: true,
+                            helperText: errors?.nomeMae?.message || errorState?.message
+                          })}
+                        />
+                      )}
+                    />
+                  </Grid>
+                )}
+                {mostRestrictPf && (
+                  <Grid item xs={12} sm={6}>
+                    <CustomTextField
+                      fullWidth
+                      label='Ocupação'
+                      placeholder='Ocupação'
+                      value={usuarioEquipe?.ocupacao || ''}
+                      onChange={e => setUsuarioEquipeContext({ ...usuarioEquipe, ocupacao: e.target.value })}
+                    />
+                  </Grid>
+                )}
               </Grid>
             </CardContent>
             <CardActions>

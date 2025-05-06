@@ -41,7 +41,8 @@ const Identificacao = () => {
   const [reload, setReload] = useState(false)
   const [clienteEdit, setClienteEdit] = useState<ClienteType>({})
 
-  const { cliente, setClienteContext } = useClienteContext()
+  //context
+  const { cliente, setClienteContext, isCpf } = useClienteContext()
 
   const { replace } = useRouter()
 
@@ -180,7 +181,7 @@ const Identificacao = () => {
               <CustomTextField
                 type='tel'
                 fullWidth
-                label='celular'
+                label='Celular'
                 placeholder='(00) 00000-0000'
                 value={telefoleMask(clienteEdit?.telefone)}
                 onChange={e => setClienteEdit({ ...clienteEdit, telefone: e.target.value })}
@@ -190,11 +191,34 @@ const Identificacao = () => {
               <CustomTextField
                 type='date'
                 fullWidth
-                label='Data de Nascimento'
+                label={isCpf ? 'Data de Nascimento' : 'Data Abertura'}
                 value={clienteEdit?.dataNascimento ? moment(clienteEdit?.dataNascimento).format('YYYY-MM-DD') : ''}
                 onChange={e => setClienteEdit({ ...clienteEdit, dataNascimento: e.target.value })}
               />
             </Grid>
+            {isCpf && (
+              <Grid item xs={12} sm={6}>
+                <CustomTextField
+                  fullWidth
+                  label='Nome da Mãe'
+                  placeholder='Nome da mãe'
+                  value={clienteEdit?.nomeMae || ''}
+                  onChange={e => setClienteEdit({ ...clienteEdit, nomeMae: e.target.value })}
+                  required
+                />
+              </Grid>
+            )}
+            {isCpf && (
+              <Grid item xs={12} sm={6}>
+                <CustomTextField
+                  fullWidth
+                  label='Ocupação'
+                  placeholder='Ocupação'
+                  value={clienteEdit?.ocupacao || ''}
+                  onChange={e => setClienteEdit({ ...clienteEdit, ocupacao: e.target.value })}
+                />
+              </Grid>
+            )}
           </Grid>
         </CardContent>
         <Divider />

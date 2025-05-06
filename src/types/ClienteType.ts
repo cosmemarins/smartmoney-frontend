@@ -9,6 +9,8 @@ export type ClienteType = {
   id?: number
   token?: string
   nome?: string
+  nomeMae?: string
+  ocupacao?: string
   razaoSocial?: string
   nomeSocio?: string
   dataNascimento?: string
