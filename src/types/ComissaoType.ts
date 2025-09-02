@@ -1,5 +1,4 @@
 import type { ComissaoProrataType } from './ComissaoProrataType'
-import FilterOptions from './FilterOptions'
 
 export type ComissaoType = {
   id?: number

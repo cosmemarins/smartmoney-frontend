@@ -6,7 +6,6 @@ import { useEffect, useMemo, useState } from 'react'
 // Type Imports
 import { useSession } from 'next-auth/react'
 
-import type { TextFieldProps } from '@mui/material'
 import {
   Button,
   Card,
@@ -52,8 +51,7 @@ import moment, { locale } from 'moment'
 import 'moment/locale/pt-br'
 
 import CustomTextField from '@/@core/components/mui/TextField'
-import { type ComissaoType, type ComissaoTypeAction } from '@/types/ComissaoType'
-import { ComissaoFilterType } from '@/types/ComissaoFilterType'
+import type { ComissaoType, ComissaoTypeAction } from '@/types/ComissaoType'
 
 // Style Imports
 import tableStyles from '@core/styles/table.module.css'
@@ -62,11 +60,11 @@ import type { ValidationError } from '@/services/api'
 import { valorBr, valorEmReal } from '@/utils/string'
 import FinanceiroService from '@/services/FinanceiroService'
 import { PerfilUsuarioEnum } from '@/utils/enums/PerfilUsuarioEnum'
+
 import type { TotaisComissaoType } from '@/types/TotaisComissaoType'
-import { useSearchParams } from 'next/navigation'
+
 import UsuarioService from '@/services/UsuarioService'
-import { UsuarioType } from '@/types/UsuarioType'
-import { ParceiroType } from '@/types/ParceiroType'
+import type { UsuarioType } from '@/types/UsuarioType'
 
 locale('pt-br')
 
@@ -84,35 +82,6 @@ const fuzzyFilter: FilterFn<any> = (row, columnId, value, addMeta) => {
 
   // Return if the item should be filtered in/out
   return itemRank.passed
-}
-
-const DebouncedInput = ({
-  value: initialValue,
-  onChange,
-  debounce = 500,
-  ...props
-}: {
-  value: string | number
-  onChange: (value: string | number) => void
-  debounce?: number
-} & Omit<TextFieldProps, 'onChange'>) => {
-  // States
-  const [value, setValue] = useState(initialValue)
-
-  useEffect(() => {
-    setValue(initialValue)
-  }, [initialValue])
-
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      onChange(value)
-    }, debounce)
-
-    return () => clearTimeout(timeout)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value])
-
-  return <CustomTextField {...props} value={value} onChange={e => setValue(e.target.value)} />
 }
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -176,8 +145,7 @@ interface Props {
 const ComissaoParceirosListTable = ({ token }: Props) => {
   // Hooks
   const { data: session } = useSession()
-  const searchParams = useSearchParams()
-
+  
   // States
   const [rowSelection, setRowSelection] = useState({})
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -423,7 +391,6 @@ const ComissaoParceirosListTable = ({ token }: Props) => {
               fullWidth
               value={tokenParceiroFilter || 'todos'}
               onChange={e => setTokenParceiroFilter(e.target.value)}
-              //placeholder='Selecione um parceiro'
             >
               {listParceiros.map((parceiro, index) => (
                 <MenuItem key={index} value={parceiro.token} selected={parceiro.token === tokenParceiroFilter}>

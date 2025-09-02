@@ -1,5 +1,4 @@
 import api from '@/services/api'
-import { ComissaoFilterType } from '@/types/ComissaoFilterType'
 import type { ComissaoViewType } from '@/types/ComissaoView'
 
 const path = 'financeiro'
