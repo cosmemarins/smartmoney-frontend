@@ -50,6 +50,12 @@ const UsuarioService = {
     return data
   },
 
+  getListParceirosSelect: async function (): Promise<UsuarioType[]> {
+    const { data } = await api.get<UsuarioType[]>(`${path}/parceiros/select`)
+
+    return data
+  },
+  
   getListColaboradores: async function (dataOptions?: DataOptionsType): Promise<UsuarioType[]> {
     const queryString = new URLSearchParams()
 

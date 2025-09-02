@@ -53,6 +53,7 @@ import 'moment/locale/pt-br'
 
 import CustomTextField from '@/@core/components/mui/TextField'
 import { type ComissaoType, type ComissaoTypeAction } from '@/types/ComissaoType'
+import { ComissaoFilterType } from '@/types/ComissaoFilterType'
 
 // Style Imports
 import tableStyles from '@core/styles/table.module.css'
@@ -62,6 +63,10 @@ import { valorBr, valorEmReal } from '@/utils/string'
 import FinanceiroService from '@/services/FinanceiroService'
 import { PerfilUsuarioEnum } from '@/utils/enums/PerfilUsuarioEnum'
 import type { TotaisComissaoType } from '@/types/TotaisComissaoType'
+import { useSearchParams } from 'next/navigation'
+import UsuarioService from '@/services/UsuarioService'
+import { UsuarioType } from '@/types/UsuarioType'
+import { ParceiroType } from '@/types/ParceiroType'
 
 locale('pt-br')
 
@@ -164,14 +169,21 @@ const renderSubComponent = ({ row }: { row: Row<ComissaoType> }) => {
   )
 }
 
-const ComissaoParceirosListTable = () => {
+interface Props {
+  token: string | undefined
+}
+
+const ComissaoParceirosListTable = ({ token }: Props) => {
   // Hooks
   const { data: session } = useSession()
+  const searchParams = useSearchParams()
 
   // States
   const [rowSelection, setRowSelection] = useState({})
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [data, setData] = useState<ComissaoType[]>([])
+  const [listParceiros, setListParceiros] = useState<UsuarioType[]>([])
+  const [tokenParceiroFilter, setTokenParceiroFilter] = useState(token || 'todos')
   const [totais, setTotais] = useState<TotaisComissaoType>()
   const [globalFilter, setGlobalFilter] = useState('')
   const [refreshTable, setRefreshTable] = useState<boolean>(true)
@@ -316,10 +328,12 @@ const ComissaoParceirosListTable = () => {
     }
   })
 
+
   useEffect(() => {
+
     if (refreshTable) {
       setRefreshTable(false)
-      FinanceiroService.getComissaoParceiros()
+      FinanceiroService.getComissaoParceiros(token)
         .then(respComissaoView => {
           //console.log('respListComissao', respListComissao)
           setData(respComissaoView.listComissao)
@@ -337,6 +351,30 @@ const ComissaoParceirosListTable = () => {
         })
     }
   }, [refreshTable])
+
+  useEffect(() => {
+    console.log('caregando parceiros')
+
+      UsuarioService.getListParceirosSelect()
+        .then(respUsuario => {
+          respUsuario.push({ id: 0, nome: 'Todos os parceiros', token: 'todos' } as UsuarioType);
+          setListParceiros(respUsuario)
+
+          //console.log('respUsuario', respUsuario)
+        })
+        .catch(err => {
+          if (axios.isAxiosError<ValidationError, Record<string, unknown>>(err)) {
+            console.log(err.status)
+            console.error(err.response)
+          } else {
+            console.error(err)
+          }
+        })
+        .finally(() => {
+          //setLoadingContext(false)
+        })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <>
@@ -379,15 +417,23 @@ const ComissaoParceirosListTable = () => {
             <MenuItem value='25'>25</MenuItem>
             <MenuItem value='50'>50</MenuItem>
           </CustomTextField>
-          <div className='flex flex-col sm:flex-row is-full sm:is-auto items-start sm:items-center gap-4'>
-            <DebouncedInput
-              value={globalFilter ?? ''}
-              onChange={value => setGlobalFilter(String(value))}
-              placeholder='Localizar Usuário'
-              className='is-full sm:is-auto'
-            />
+          <div className='flex flex-col sm:flex-row is-full items-start sm:items-center gap-4'>
+            <CustomTextField
+              select
+              fullWidth
+              value={tokenParceiroFilter || 'todos'}
+              onChange={e => setTokenParceiroFilter(e.target.value)}
+              //placeholder='Selecione um parceiro'
+            >
+              {listParceiros.map((parceiro, index) => (
+                <MenuItem key={index} value={parceiro.token} selected={parceiro.token === tokenParceiroFilter}>
+                  {parceiro.nome}
+                </MenuItem>
+              ))}
+            </CustomTextField>
+
             <Button
-              href='/financeiro/comissao/parceiros'
+              href={`/financeiro/comissao/parceiros/` + (tokenParceiroFilter && tokenParceiroFilter!='todos' ? tokenParceiroFilter : '')}
               variant='contained'
               startIcon={<i className='tabler-refresh' />}
               className='is-full sm:is-auto'
