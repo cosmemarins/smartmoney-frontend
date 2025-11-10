@@ -1,6 +1,8 @@
 export type ComissaoFilterType = {
-  tokenParceiro?: string;
-  tokenAgente?: string;
-  tokenCliente?: string;
-
+  token?: string
+  tokenParceiro?: string
+  tokenAgente?: string
+  tokenCliente?: string
+  mes?: string
+  ano?: string
 }

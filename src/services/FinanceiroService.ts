@@ -1,11 +1,18 @@
 import api from '@/services/api'
+import type { ComissaoType } from '@/types/ComissaoType'
 import type { ComissaoViewType } from '@/types/ComissaoView'
 
 const path = 'financeiro'
 
 const FinanceiroService = {
-  getComissaoParceiros: async function (token?: string): Promise<ComissaoViewType> {
+  getListComissaoMensalParceiros: async function (token?: string): Promise<ComissaoViewType> {
     const { data } = await api.get<ComissaoViewType>(`${path}/comissao/parceiros/${token}`)
+
+    return data
+  },
+
+  getComissaoParceiros: async function (token?: string, ano?: number, mes?: number): Promise<ComissaoType[]> {
+    const { data } = await api.get<ComissaoType[]>(`${path}/comissao/parceiros/${token}/extrato${ano}/${mes}`)
 
     return data
   },

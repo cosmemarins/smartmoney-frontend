@@ -27,25 +27,18 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  IconButton,
   styled
 } from '@mui/material'
 
 import { toast } from 'react-toastify'
 
 import ContratoService from '@/services/ContratoService'
-import type { ExtratoType } from '@/types/ExtratoType'
+import type { ComissaoType } from '@/types/ComissaoType'
 import { valorBr, valorEmReal } from '@/utils/string'
-import {
-  getStatusContratoEnumColor,
-  getStatusContratoEnumDesc,
-  StatusContratoEnum
-} from '@/utils/enums/StatusContratoEnum'
-import { getTipoExtratoEnumColor, getTipoExtratoEnumDesc, TipoExtratoEnum } from '@/utils/enums/TipoExtratoEnum'
-import ExtratoEdit from '../../extrato/ExtratoEdit'
+import { getStatusContratoEnumColor, getStatusContratoEnumDesc } from '@/utils/enums/StatusContratoEnum'
+import { getTipoExtratoEnumColor, getTipoExtratoEnumDesc } from '@/utils/enums/TipoExtratoEnum'
 import { trataErro } from '@/utils/erro'
 import type { ContratoType } from '@/types/ContratoType'
-import { TipoDocumentoEnum } from '@/utils/enums/TipoDocumentoEnum'
 import { isMaster, isParceiroMaster } from '@/utils/utils'
 
 locale('pt-br')
@@ -73,57 +66,30 @@ export default function ExtratoComissaoContrato({ token }: props) {
   const [contrato, setContrato] = useState<ContratoType>()
 
   //const [saldo, setSaldo] = useState<number>(0)
-  const [extratoEdit, setExtratoEdit] = useState<ExtratoType>({} as ExtratoType)
-  const [extratoList, setExtratoList] = useState<ExtratoType[]>([])
+  const [comissaoList, setComissaoList] = useState<ComissaoType[]>([])
   const [reload, setReload] = useState(false)
-  const [openDlgExtrato, setOpenDlgExtrato] = useState<boolean>(false)
-  const [openDlgAtivarExtrato, setOpenDlgAtivarExtrato] = useState<boolean>(false)
-
-  //const [openDlgDeleteExtrato, setOpenDlgDeleteExtrato] = useState<boolean>(false)
+  const [openDlgRefazerComissao, setOpenDlgRefazerComissao] = useState<boolean>(false)
 
   // Refs
   const initialized = useRef(false)
 
-  const handleNovoExtrato = () => {
+  const handleRefazerComissao = () => {
     if (contrato) {
-      setExtratoEdit({
-        data: new Date(),
-        contrato: { id: contrato.id, token: contrato.token },
-        tipo: TipoExtratoEnum.ADITIVO,
-        arquivo: {
-          tipoDocumento: TipoDocumentoEnum.ADITIVO
-        }
-      })
-      setOpenDlgExtrato(true)
+      setOpenDlgRefazerComissao(true)
     }
   }
 
-  const handleCloseDlgExtrato = (refresh: boolean) => {
-    setOpenDlgExtrato(false)
-
-    if (refresh) {
-      refreshListExtrato(contrato?.token)
-    }
-  }
-
-  const handleAtivarExtrato = (extrato: ExtratoType) => {
-    if (extrato.token) {
-      setExtratoEdit(extrato)
-      setOpenDlgAtivarExtrato(true)
-    }
-  }
-
-  const confirmAtivarExtrato = () => {
-    if (contrato && extratoEdit && extratoEdit.token) {
+  const confirmComissionar = () => {
+    if (contrato && contrato.token) {
       setReload(true)
-      ContratoService.ativarExtrato(extratoEdit?.token)
+      ContratoService.comissionar(contrato.token, false)
         .then(() => {
-          refreshListExtrato(contrato?.token)
-          setOpenDlgAtivarExtrato(false)
-          toast.success(`Lançamento ${extratoEdit?.token} ativado com sucesso!`)
+          refreshListComissao(contrato?.token)
+          setOpenDlgRefazerComissao(false)
+          toast.success(`Contrato de ${contrato.cliente?.nome} comissionado com sucesso!`)
         })
         .catch(err => {
-          console.log('Erro ao excluir', err)
+          console.log('Erro ao comissionar', err)
         })
         .finally(() => {
           setReload(false)
@@ -131,12 +97,12 @@ export default function ExtratoComissaoContrato({ token }: props) {
     }
   }
 
-  const refreshListExtrato = (token: string | undefined) => {
+  const refreshListComissao = (token: string | undefined) => {
     if (token) {
       setReload(true)
-      ContratoService.getExtratoComArquivos(token)
-        .then(respExtratoList => {
-          setExtratoList(respExtratoList)
+      ContratoService.getComissao(token)
+        .then(respComissaoList => {
+          setComissaoList(respComissaoList)
         })
         .catch(err => {
           toast.error(trataErro(err))
@@ -144,17 +110,6 @@ export default function ExtratoComissaoContrato({ token }: props) {
         .finally(() => {
           setReload(false)
         })
-
-      /***
-      //atualiza o saldo
-      ContratoService.getSaldo(token)
-        .then(respSaldo => {
-          setSaldo(respSaldo)
-        })
-        .catch(err => {
-          toast.error(trataErro(err))
-        })
-      ***/
     }
   }
 
@@ -167,7 +122,7 @@ export default function ExtratoComissaoContrato({ token }: props) {
         .then(contratoResp => {
           if (contratoResp) {
             setContrato(contratoResp)
-            refreshListExtrato(contratoResp.token)
+            refreshListComissao(contratoResp.token)
           }
         })
         .catch(err => {
@@ -260,50 +215,42 @@ export default function ExtratoComissaoContrato({ token }: props) {
               </TableRow>
             </TableHead>
             <TableBody>
-              {extratoList.map(extrato => (
-                <StyledTableRow key={extrato.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+              {comissaoList.map(comissao => (
+                <StyledTableRow key={comissao.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                   <TableCell component='th' scope='row' align='center'>
-                    {extrato.id}
+                    {comissao.id}
                   </TableCell>
                   <TableCell align='center'>
-                    {extrato?.data ? moment(extrato?.data).format('DD-MM-YYYY HH:mm') : ''}
+                    {comissao.extrato?.data ? moment(comissao.extrato?.data).format('DD-MM-YYYY HH:mm') : ''}
                   </TableCell>
-                  <TableCell align='center'>{extrato.token}</TableCell>
-                  <TableCell align='center'>{extrato.historico}</TableCell>
+                  <TableCell align='center'>{comissao.extrato?.token}</TableCell>
+                  <TableCell align='center'>{comissao.extrato?.historico}</TableCell>
                   <TableCell align='center'>
                     <Chip
                       size='small'
-                      label={extrato?.tipo ? getTipoExtratoEnumDesc(extrato?.tipo) : ''}
-                      color={extrato?.tipo ? getTipoExtratoEnumColor(extrato?.tipo) : 'default'}
+                      label={comissao.tipoExtrato ? getTipoExtratoEnumDesc(comissao.tipoExtrato) : ''}
+                      color={comissao.tipoExtrato ? getTipoExtratoEnumColor(comissao.tipoExtrato) : 'default'}
                       sx={{ fontSize: '12px', height: '20px' }}
                     />
                   </TableCell>
                   <TableCell align='center'>
                     <Chip
                       size='small'
-                      label={extrato?.status ? getStatusContratoEnumDesc(extrato?.status) : ''}
-                      color={extrato?.status ? getStatusContratoEnumColor(extrato?.status) : 'default'}
+                      label={comissao.extrato?.status ? getStatusContratoEnumDesc(comissao.extrato?.status) : ''}
+                      color={
+                        comissao.extrato?.status ? getStatusContratoEnumColor(comissao.extrato?.status) : 'default'
+                      }
                     />
                   </TableCell>
-                  <TableCell align='center'>{extrato?.valor ? valorBr.format(extrato?.valor) : ''}</TableCell>
+                  <TableCell align='center'>
+                    {comissao.valorReferencia ? valorBr.format(comissao?.valorReferencia) : ''}
+                  </TableCell>
                   {(isMaster(session?.user) || isParceiroMaster(session?.user)) && (
                     <TableCell align='center'>
-                      {extrato?.status != StatusContratoEnum.ATIVO && (
-                        <IconButton
-                          title='Ativar comprovante'
-                          aria-label='capture screenshot'
-                          onClick={() => {
-                            handleAtivarExtrato(extrato)
-                          }}
-                        >
-                          <i className='tabler-check' />
-                        </IconButton>
-                      )}
                       {/*
                       <IconButton
-                        aria-label='capture screenshot'
-                        onClick={() => {
-                          handleOnEditExtrato(extrato)
+                        ariaComissionarbel='capture screenshot'
+                        onClic)
                         }}
                       >
                         <i className='tabler-pencil' />
@@ -334,7 +281,7 @@ export default function ExtratoComissaoContrato({ token }: props) {
               <Button
                 variant='contained'
                 startIcon={<i className='tabler-plus' />}
-                onClick={() => handleNovoExtrato()}
+                onClick={() => handleRefazerComissao()}
                 sx={{ float: 'right' }}
               >
                 Novo Aditivo
@@ -342,40 +289,20 @@ export default function ExtratoComissaoContrato({ token }: props) {
             </caption>
           </Table>
         </TableContainer>
-        <Dialog
-          maxWidth='md'
-          open={openDlgExtrato}
-          aria-labelledby='form-dialog-title'
-          disableEscapeKeyDown
-          onClose={(event, reason) => {
-            if (reason !== 'backdropClick') {
-              handleCloseDlgExtrato(false)
-            }
-          }}
-        >
-          <DialogTitle id='form-dialog-title'>Novo Lançamento</DialogTitle>
+        <Dialog maxWidth='sm' open={openDlgRefazerComissao} aria-labelledby='form-dialog-title' disableEscapeKeyDown>
+          <DialogTitle id='form-dialog-title'>Refazer comissionamento de contrato</DialogTitle>
           <DialogContent>
-            <ExtratoEdit
-              extratoData={extratoEdit}
-              handleClose={handleCloseDlgExtrato}
-              tipoExtrato={TipoExtratoEnum.ADITIVO}
-            />
-          </DialogContent>
-        </Dialog>
-        <Dialog maxWidth='sm' open={openDlgAtivarExtrato} aria-labelledby='form-dialog-title' disableEscapeKeyDown>
-          <DialogTitle id='form-dialog-title'>Ativar comprovante do extrato</DialogTitle>
-          <DialogContent>
-            <p>Confirmar ativação deste comprovante?</p>
+            <p>Confirmar em refazer a comissão deste contrato?</p>
           </DialogContent>
           <DialogActions className='dialog-actions-dense'>
-            <Button variant='contained' onClick={() => confirmAtivarExtrato()}>
-              Ativar
+            <Button variant='contained' onClick={() => confirmComissionar()}>
+              Refazer comissão
             </Button>
             <Button
               type='reset'
               variant='contained'
               onClick={() => {
-                setOpenDlgAtivarExtrato(false)
+                setOpenDlgRefazerComissao(false)
               }}
             >
               Cancelar

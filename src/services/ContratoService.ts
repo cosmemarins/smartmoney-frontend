@@ -4,6 +4,7 @@ import type { ExtratoType } from '@/types/ExtratoType'
 import type TamanhoEquipeDTO from '@/types/TamanhoEquipe.dto'
 import type { ArquivoType } from '@/types/ArquivoType'
 import type { ResumoContratoType } from '@/types/ResumoContratoType'
+import type { ComissaoType } from '@/types/ComissaoType'
 
 const path = 'contratos'
 
@@ -122,6 +123,20 @@ const ContratoService = {
 
   getExtrato: async function getExtrato(token: string): Promise<ExtratoType[]> {
     const { data } = await api.get<ExtratoType[]>(`${path}/extrato/${token}`)
+
+    return data
+  },
+
+  getComissao: async function getComissao(token: string): Promise<ComissaoType[]> {
+    const { data } = await api.get<ComissaoType[]>(`${path}/comissao/${token}`)
+
+    return data
+  },
+
+  comissionar: async function comissionar(token: string, refazerComissao?: boolean): Promise<ComissaoType[]> {
+    const { data } = await api.post(`${path}/comissao/${token}/comissionar`, {
+      refazerComissao
+    })
 
     return data
   },

@@ -140,9 +140,11 @@ const renderSubComponent = ({ row }: { row: Row<ComissaoType> }) => {
 
 interface Props {
   token: string | undefined
+  ano: string | undefined
+  mes: string | undefined
 }
 
-const ComissaoParceirosListTable = ({ token }: Props) => {
+const ComissaoParceirosListTable = ({ token, ano, mes }: Props) => {
   // Hooks
   const { data: session } = useSession()
 
@@ -151,7 +153,13 @@ const ComissaoParceirosListTable = ({ token }: Props) => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [data, setData] = useState<ComissaoType[]>([])
   const [listParceiros, setListParceiros] = useState<UsuarioType[]>([])
-  const [tokenParceiroFilter, setTokenParceiroFilter] = useState(token || 'todos')
+
+  const [comissaoFilter, setComissaoFilter] = useState({
+    token: token || 'todos',
+    mes: mes || 'todos',
+    ano: ano || 'todos'
+  })
+
   const [totais, setTotais] = useState<TotaisComissaoType>()
   const [globalFilter, setGlobalFilter] = useState('')
   const [refreshTable, setRefreshTable] = useState<boolean>(true)
@@ -299,7 +307,7 @@ const ComissaoParceirosListTable = ({ token }: Props) => {
   useEffect(() => {
     if (refreshTable) {
       setRefreshTable(false)
-      FinanceiroService.getComissaoParceiros(token)
+      FinanceiroService.getListComissaoMensalParceiros(token)
         .then(respComissaoView => {
           console.log('respListComissao', respComissaoView)
           setData(respComissaoView.listComissao)
@@ -387,27 +395,116 @@ const ComissaoParceirosListTable = ({ token }: Props) => {
           <div className='flex flex-col sm:flex-row is-full items-start sm:items-center gap-4'>
             <CustomTextField
               select
-              fullWidth
-              value={tokenParceiroFilter || 'todos'}
-              onChange={e => setTokenParceiroFilter(e.target.value)}
+              value={comissaoFilter.token || 'todos'}
+              onChange={e => setComissaoFilter({ ...comissaoFilter, token: e.target.value })}
             >
               {listParceiros.map((parceiro, index) => (
-                <MenuItem key={index} value={parceiro.token} selected={parceiro.token === tokenParceiroFilter}>
+                <MenuItem key={index} value={parceiro.token} selected={parceiro.token === comissaoFilter.token}>
                   {parceiro.nome}
                 </MenuItem>
               ))}
+            </CustomTextField>
+            <CustomTextField
+              select
+              value={comissaoFilter.mes || 'todos'}
+              onChange={e => setComissaoFilter({ ...comissaoFilter, mes: e.target.value })}
+            >
+              <MenuItem value='todos' selected={'todos' == comissaoFilter.mes}>
+                Todos os meses
+              </MenuItem>
+              <MenuItem value='01' selected={'01' == comissaoFilter.mes}>
+                Janeiro
+              </MenuItem>
+              <MenuItem value='02' selected={'02' == comissaoFilter.mes}>
+                Fevereiro
+              </MenuItem>
+              <MenuItem value='03' selected={'03' == comissaoFilter.mes}>
+                Março
+              </MenuItem>
+              <MenuItem value='04' selected={'04' == comissaoFilter.mes}>
+                Abril
+              </MenuItem>
+              <MenuItem value='05' selected={'05' == comissaoFilter.mes}>
+                Maio
+              </MenuItem>
+              <MenuItem value='06' selected={'06' == comissaoFilter.mes}>
+                Junho
+              </MenuItem>
+              <MenuItem value='07' selected={'07' == comissaoFilter.mes}>
+                Julho
+              </MenuItem>
+              <MenuItem value='08' selected={'08' == comissaoFilter.mes}>
+                Agosto
+              </MenuItem>
+              <MenuItem value='09' selected={'09' == comissaoFilter.mes}>
+                Setembro
+              </MenuItem>
+              <MenuItem value='10' selected={'10' == comissaoFilter.mes}>
+                Outubro
+              </MenuItem>
+              <MenuItem value='11' selected={'11' == comissaoFilter.mes}>
+                Novembro
+              </MenuItem>
+              <MenuItem value='12' selected={'12' == comissaoFilter.mes}>
+                Dezembro
+              </MenuItem>
+            </CustomTextField>
+
+            <CustomTextField
+              select
+              value={comissaoFilter.ano || 'todos'}
+              onChange={e => setComissaoFilter({ ...comissaoFilter, ano: e.target.value })}
+            >
+              <MenuItem value='todos' selected={'todos' == comissaoFilter.mes}>
+                Todos os anos
+              </MenuItem>
+              <MenuItem value='2028' selected={'2028' == comissaoFilter.ano}>
+                2028
+              </MenuItem>
+              <MenuItem value='2027' selected={'2027' == comissaoFilter.ano}>
+                2027
+              </MenuItem>
+              <MenuItem value='2026' selected={'2026' == comissaoFilter.ano}>
+                2026
+              </MenuItem>
+              <MenuItem value='2025' selected={'2025' == comissaoFilter.ano}>
+                2025
+              </MenuItem>
+              <MenuItem value='2024' selected={'2024' == comissaoFilter.ano}>
+                2024
+              </MenuItem>
+              <MenuItem value='2023' selected={'2023' == comissaoFilter.ano}>
+                2023
+              </MenuItem>
             </CustomTextField>
 
             <Button
               href={
                 `/financeiro/comissao/parceiros/` +
-                (tokenParceiroFilter && tokenParceiroFilter != 'todos' ? tokenParceiroFilter : '')
+                (comissaoFilter.token != 'todos'
+                  ? comissaoFilter.ano != 'todos' && comissaoFilter.mes != 'todos'
+                    ? `${comissaoFilter.token}/${comissaoFilter.ano}/${comissaoFilter.mes}`
+                    : `${comissaoFilter.token}`
+                  : '')
               }
               variant='contained'
               startIcon={<i className='tabler-refresh' />}
               className='is-full sm:is-auto'
             >
               Atualizar
+            </Button>
+            <Button
+              href={
+                `/financeiro/comissao/parceiros/` +
+                (comissaoFilter.token != 'todos' && comissaoFilter.ano != 'todos' && comissaoFilter.mes != 'todos'
+                  ? `${comissaoFilter.token}/extrato/${comissaoFilter.ano}/${comissaoFilter.mes}`
+                  : '')
+              }
+              variant='contained'
+              startIcon={<i className='tabler-article' />}
+              className='is-full sm:is-auto'
+            >
+              Ver extrato completo
             </Button>
           </div>
         </div>
