@@ -47,7 +47,6 @@ import { rankItem } from '@tanstack/match-sorter-utils'
 
 import { toast } from 'react-toastify'
 
-import axios from 'axios'
 import moment, { locale } from 'moment'
 import 'moment/locale/pt-br'
 
@@ -57,11 +56,11 @@ import { type ComissaoType, type ComissaoTypeAction } from '@/types/ComissaoType
 // Style Imports
 import tableStyles from '@core/styles/table.module.css'
 import TablePaginationComponent from '@/components/TablePaginationComponent'
-import type { ValidationError } from '@/services/api'
-import { valorBr, valorEmReal } from '@/utils/string'
 import FinanceiroService from '@/services/FinanceiroService'
+import { trataErro } from '@/utils/erro'
 import { PerfilUsuarioEnum } from '@/utils/enums/PerfilUsuarioEnum'
 import type { TotaisComissaoType } from '@/types/TotaisComissaoType'
+import { valorBr, valorEmReal } from '@/utils/string'
 
 locale('pt-br')
 
@@ -164,8 +163,8 @@ const renderSubComponent = ({ row }: { row: Row<ComissaoType> }) => {
   )
 }
 
-const ComissaoAgentesListTable = () => {
-  //hooks
+const ComissaoAtgGestorListTable = () => {
+  // Hooks
   const { data: session } = useSession()
 
   // States
@@ -178,15 +177,29 @@ const ComissaoAgentesListTable = () => {
 
   const columns = useMemo<ColumnDef<ComissaoTypeAction, any>[]>(
     () => [
-      columnHelper.accessor('nomeGestor', {
-        header: 'Agente',
+      /*
+      columnHelper.accessor('nomeParceiro', {
+        header: 'Gestor',
+        cell: ({}) => (
+          <div className='flex items-center gap-4'>
+            <div className='flex flex-col'>
+              <Typography color='text.primary' className='font-medium'>
+                Smart Money Group
+              </Typography>
+            </div>
+          </div>
+        )
+      }),
+      */
+      columnHelper.accessor('nomeCliente', {
+        header: 'Cliente',
         cell: ({ row }) => (
           <div className='flex items-center gap-4'>
             <div className='flex flex-col'>
               <Typography color='text.primary' className='font-medium'>
-                {row.original.nomeGestor}
+                {row.original.nomeCliente}
               </Typography>
-              <Typography variant='body2'>Cliente: {row.original.nomeCliente}</Typography>
+              <Typography variant='body2'>Gestor: {row.original.nomeGestor || row.original.nomeMaster}</Typography>
               {session?.user.perfil != PerfilUsuarioEnum.AGENTE && row.original.parceiro1 && (
                 <Typography variant='body2'>
                   Parceiro: {row.original.nomeParceiro1}
@@ -321,21 +334,14 @@ const ComissaoAgentesListTable = () => {
   useEffect(() => {
     if (refreshTable) {
       setRefreshTable(false)
-      FinanceiroService.getComissaoAgentes()
+      FinanceiroService.getComissaoAtgGestor()
         .then(respComissaoView => {
-          console.log('respComissaoView', respComissaoView)
+          //console.log('respListComissao', respListComissao)
           setData(respComissaoView.listComissao)
           setTotais(respComissaoView.totaisComissao)
         })
         .catch((err: any) => {
-          if (axios.isAxiosError<ValidationError, Record<string, unknown>>(err)) {
-            console.log(err.status)
-            console.error(err.response)
-            toast.error(`Erro, ${err.status}`)
-          } else {
-            console.error(err)
-            toast.error(`Erro`, err)
-          }
+          toast.error(trataErro(err))
         })
     }
   }, [refreshTable])
@@ -343,7 +349,7 @@ const ComissaoAgentesListTable = () => {
   return (
     <>
       <Card>
-        <CardHeader title='Comissisões dos Agentes' className='pbe-4' />
+        <CardHeader title='Minhas Comissões' className='pbe-4' />
         <div className='flex justify-between flex-col items-start md:flex-row md:items-center p-6 border-bs gap-4'>
           <Table sx={{ minWidth: 650 }}>
             <TableHead>
@@ -389,7 +395,7 @@ const ComissaoAgentesListTable = () => {
               className='is-full sm:is-auto'
             />
             <Button
-              href='/financeiro/comissao/agentes'
+              href='/financeiro/comissao/gestor'
               variant='contained'
               startIcon={<i className='tabler-refresh' />}
               className='is-full sm:is-auto'
@@ -475,4 +481,4 @@ const ComissaoAgentesListTable = () => {
   )
 }
 
-export default ComissaoAgentesListTable
+export default ComissaoAtgGestorListTable

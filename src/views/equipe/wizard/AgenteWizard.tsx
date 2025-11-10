@@ -38,37 +38,37 @@ const steps = [
   {
     icon: 'tabler-arrow-big-down-lines',
     title: 'Início',
-    subtitle: 'Indentifique o agente'
+    subtitle: 'Indentifique o assessor'
   },
   {
     icon: 'tabler-building',
-    title: 'Passo 1 - Dados do agente',
-    subtitle: 'Informe os dados do agente'
+    title: 'Passo 1 - Dados do assessor',
+    subtitle: 'Informe os dados do assessor'
   },
   {
     icon: 'tabler-map',
-    title: 'Passo 2 - Endereço do agente',
-    subtitle: 'Informe o endereço do agente'
+    title: 'Passo 2 - Endereço do assessor',
+    subtitle: 'Informe o endereço do assessor'
   },
   {
     icon: 'tabler-credit-card',
-    title: 'Passo 3 - Dados bancários do agente',
-    subtitle: 'Informe os dados bancários do agente'
+    title: 'Passo 3 - Dados bancários do assessor',
+    subtitle: 'Informe os dados bancários do assessor'
   },
   {
     icon: 'tabler-id',
-    title: 'Passo 4 - Documentação do agente',
-    subtitle: 'Envie a documentação para habilitar o agente'
+    title: 'Passo 4 - Documentação do assessor',
+    subtitle: 'Envie a documentação para habilitar o assessor'
   },
   {
     icon: 'tabler-checkbox',
     title: 'Passo 5 - Configurações de taxas',
-    subtitle: 'Informe o valor da taxa de trabalho do agente'
+    subtitle: 'Informe o valor da taxa de trabalho do assessor'
   },
   {
     icon: 'tabler-send',
     title: 'Passo 6 - Finalizar cadastro',
-    subtitle: 'Defina uma senha de acesso e avise o agente'
+    subtitle: 'Defina uma senha de acesso e avise o assessor'
   }
 ]
 

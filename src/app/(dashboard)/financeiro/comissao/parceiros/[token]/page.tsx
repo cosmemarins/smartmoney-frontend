@@ -5,7 +5,7 @@ interface Props {
 }
 
 const ComissaoParceirosApp = async ({ params }: Props) => {
-  return <ComissaoParceiroList  token={params.token} />
+  return <ComissaoParceiroList token={params.token} />
 }
 
 export default ComissaoParceirosApp

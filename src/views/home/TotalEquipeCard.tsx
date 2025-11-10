@@ -95,7 +95,7 @@ const TotalEquipeCard = () => {
                 </ListItemIcon>
                 <ListItemText primary='Parceiro' />
               </MenuItem>
-              <MenuItem onClick={() => handleGoTo('/equipe/agentes/new')}>
+              <MenuItem onClick={() => handleGoTo('/equipe/assessores/new')}>
                 <ListItemIcon>
                   <i className='tabler-user-star text-xl' />
                 </ListItemIcon>

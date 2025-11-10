@@ -163,7 +163,7 @@ const renderSubComponent = ({ row }: { row: Row<ComissaoType> }) => {
   )
 }
 
-const ComissaoInvestidoresListTable = () => {
+const ComissaoAtgInvestidoresListTable = () => {
   //hooks
   const { data: session } = useSession()
 
@@ -321,7 +321,7 @@ const ComissaoInvestidoresListTable = () => {
   useEffect(() => {
     if (refreshTable) {
       setRefreshTable(false)
-      FinanceiroService.getComissaoInvestidores(session?.user.token)
+      FinanceiroService.getComissaoAtgInvestidores(session?.user.token)
         .then(respComissaoView => {
           console.log('respComissaoView', respComissaoView)
           setData(respComissaoView.listComissao)
@@ -471,4 +471,4 @@ const ComissaoInvestidoresListTable = () => {
   )
 }
 
-export default ComissaoInvestidoresListTable
+export default ComissaoAtgInvestidoresListTable

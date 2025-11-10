@@ -86,9 +86,9 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
               <MenuItem href={`/equipe/parceiros/list`}>Listar Parceiros</MenuItem>
               <MenuItem href={`/equipe/parceiros/new`}>Novo parceiro</MenuItem>
             </SubMenu>
-            <SubMenu label='Agentes' icon={<i className='tabler-user-star' />}>
-              <MenuItem href={`/equipe/agentes/list`}>Listar Agentes</MenuItem>
-              <MenuItem href={`/equipe/agentes/new`}>Novo agente</MenuItem>
+            <SubMenu label='Assessores' icon={<i className='tabler-user-star' />}>
+              <MenuItem href={`/equipe/assessores/list`}>Listar Assessores</MenuItem>
+              <MenuItem href={`/equipe/assessores/new`}>Novo Assessor</MenuItem>
             </SubMenu>
             <SubMenu label='Colaboradores' icon={<i className='tabler-user' />}>
               <MenuItem href={`/equipe/colaboradores/list`}>Listar Colaboradores</MenuItem>
@@ -111,10 +111,18 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
           <SubMenu label='Comissionamento' icon={<i className='tabler-file-dollar' />}>
             <MenuItem href={`/financeiro/comissao/investidores`}>Investidores</MenuItem>
             {session?.user.podeCriarEquipe && session?.user.perfil != PerfilUsuarioEnum.AGENTE && (
-              <MenuItem href={`/financeiro/comissao/agentes`}>Agentes</MenuItem>
+              <MenuItem href={`/financeiro/comissao/assessores`}>Assessores</MenuItem>
             )}
             {session?.user.podeCriarEquipe && <MenuItem href={`/financeiro/comissao/parceiros`}>Parceiro</MenuItem>}
             <MenuItem href={`/financeiro/comissao/gestor`}>Minhas Comissões</MenuItem>
+          </SubMenu>
+          <SubMenu label='Comissionamento ATG' icon={<i className='tabler-file-dollar' />}>
+            <MenuItem href={`/financeiro/comissao-atg/investidores`}>Investidores</MenuItem>
+            {session?.user.podeCriarEquipe && session?.user.perfil != PerfilUsuarioEnum.AGENTE && (
+              <MenuItem href={`/financeiro/comissao-atg/assessores`}>Assessores</MenuItem>
+            )}
+            {session?.user.podeCriarEquipe && <MenuItem href={`/financeiro/comissao-atg/parceiros`}>Parceiro</MenuItem>}
+            <MenuItem href={`/financeiro/comissao-atg/gestor`}>Minhas Comissões</MenuItem>
           </SubMenu>
         </SubMenu>
         {/*

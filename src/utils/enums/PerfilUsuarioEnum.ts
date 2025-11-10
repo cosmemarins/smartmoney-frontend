@@ -16,7 +16,7 @@ export function getPerfilUsuarioEnumDesc(item: string | undefined) {
     case PerfilUsuarioEnum.PARCEIRO:
       return 'Parceiro'
     case PerfilUsuarioEnum.AGENTE:
-      return 'Agente'
+      return 'Assessor'
     case PerfilUsuarioEnum.SOCIO:
       return 'Sócio'
     case PerfilUsuarioEnum.ADMINISTRATIVO:

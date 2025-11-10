@@ -6,7 +6,6 @@ import { useEffect, useMemo, useState } from 'react'
 // Type Imports
 import { useSession } from 'next-auth/react'
 
-import type { TextFieldProps } from '@mui/material'
 import {
   Button,
   Card,
@@ -47,20 +46,25 @@ import { rankItem } from '@tanstack/match-sorter-utils'
 
 import { toast } from 'react-toastify'
 
+import axios from 'axios'
 import moment, { locale } from 'moment'
 import 'moment/locale/pt-br'
 
 import CustomTextField from '@/@core/components/mui/TextField'
-import { type ComissaoType, type ComissaoTypeAction } from '@/types/ComissaoType'
+import type { ComissaoType, ComissaoTypeAction } from '@/types/ComissaoType'
 
 // Style Imports
 import tableStyles from '@core/styles/table.module.css'
 import TablePaginationComponent from '@/components/TablePaginationComponent'
-import FinanceiroService from '@/services/FinanceiroService'
-import { trataErro } from '@/utils/erro'
-import { PerfilUsuarioEnum } from '@/utils/enums/PerfilUsuarioEnum'
-import type { TotaisComissaoType } from '@/types/TotaisComissaoType'
+import type { ValidationError } from '@/services/api'
 import { valorBr, valorEmReal } from '@/utils/string'
+import FinanceiroService from '@/services/FinanceiroService'
+import { PerfilUsuarioEnum } from '@/utils/enums/PerfilUsuarioEnum'
+
+import type { TotaisComissaoType } from '@/types/TotaisComissaoType'
+
+import UsuarioService from '@/services/UsuarioService'
+import type { UsuarioType } from '@/types/UsuarioType'
 
 locale('pt-br')
 
@@ -78,35 +82,6 @@ const fuzzyFilter: FilterFn<any> = (row, columnId, value, addMeta) => {
 
   // Return if the item should be filtered in/out
   return itemRank.passed
-}
-
-const DebouncedInput = ({
-  value: initialValue,
-  onChange,
-  debounce = 500,
-  ...props
-}: {
-  value: string | number
-  onChange: (value: string | number) => void
-  debounce?: number
-} & Omit<TextFieldProps, 'onChange'>) => {
-  // States
-  const [value, setValue] = useState(initialValue)
-
-  useEffect(() => {
-    setValue(initialValue)
-  }, [initialValue])
-
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      onChange(value)
-    }, debounce)
-
-    return () => clearTimeout(timeout)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value])
-
-  return <CustomTextField {...props} value={value} onChange={e => setValue(e.target.value)} />
 }
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -163,7 +138,11 @@ const renderSubComponent = ({ row }: { row: Row<ComissaoType> }) => {
   )
 }
 
-const ComissaoGestorListTable = () => {
+interface Props {
+  token: string | undefined
+}
+
+const ComissaoAtgParceirosListTable = ({ token }: Props) => {
   // Hooks
   const { data: session } = useSession()
 
@@ -171,35 +150,19 @@ const ComissaoGestorListTable = () => {
   const [rowSelection, setRowSelection] = useState({})
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [data, setData] = useState<ComissaoType[]>([])
+  const [listParceiros, setListParceiros] = useState<UsuarioType[]>([])
+  const [tokenParceiroFilter, setTokenParceiroFilter] = useState(token || 'todos')
   const [totais, setTotais] = useState<TotaisComissaoType>()
   const [globalFilter, setGlobalFilter] = useState('')
   const [refreshTable, setRefreshTable] = useState<boolean>(true)
 
   const columns = useMemo<ColumnDef<ComissaoTypeAction, any>[]>(
     () => [
-      /*
-      columnHelper.accessor('nomeParceiro', {
-        header: 'Gestor',
-        cell: ({}) => (
-          <div className='flex items-center gap-4'>
-            <div className='flex flex-col'>
-              <Typography color='text.primary' className='font-medium'>
-                Smart Money Group
-              </Typography>
-            </div>
-          </div>
-        )
-      }),
-      */
-      columnHelper.accessor('nomeCliente', {
-        header: 'Cliente',
+      columnHelper.accessor('nomeGestor', {
+        header: 'Parceiro',
         cell: ({ row }) => (
           <div className='flex items-center gap-4'>
             <div className='flex flex-col'>
-              <Typography color='text.primary' className='font-medium'>
-                {row.original.nomeCliente}
-              </Typography>
-              <Typography variant='body2'>Gestor: {row.original.nomeGestor || row.original.nomeMaster}</Typography>
               {session?.user.perfil != PerfilUsuarioEnum.AGENTE && row.original.parceiro1 && (
                 <Typography variant='body2'>
                   Parceiro: {row.original.nomeParceiro1}
@@ -207,6 +170,8 @@ const ComissaoGestorListTable = () => {
                   {row.original.parceiro3 && row.original.parceiro3 && ` -> ${row.original.nomeParceiro3}`}
                 </Typography>
               )}
+              <Typography variant='body2'>Gestor: {row.original.nomeGestor}</Typography>
+              <Typography variant='body2'>Cliente: {row.original.nomeCliente}</Typography>
             </div>
           </div>
         )
@@ -334,22 +299,54 @@ const ComissaoGestorListTable = () => {
   useEffect(() => {
     if (refreshTable) {
       setRefreshTable(false)
-      FinanceiroService.getComissaoGestor()
+      FinanceiroService.getComissaoAtgParceiros(token)
         .then(respComissaoView => {
           //console.log('respListComissao', respListComissao)
           setData(respComissaoView.listComissao)
           setTotais(respComissaoView.totaisComissao)
         })
         .catch((err: any) => {
-          toast.error(trataErro(err))
+          if (axios.isAxiosError<ValidationError, Record<string, unknown>>(err)) {
+            console.log(err.status)
+            console.error(err.response)
+            toast.error(`Erro, ${err.status}`)
+          } else {
+            console.error(err)
+            toast.error(`Erro`, err)
+          }
         })
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshTable])
+
+  useEffect(() => {
+    console.log('caregando parceiros')
+
+    UsuarioService.getListParceirosSelect()
+      .then(respUsuario => {
+        respUsuario.push({ id: 0, nome: 'Todos os parceiros', token: 'todos' } as UsuarioType)
+        setListParceiros(respUsuario)
+
+        //console.log('respUsuario', respUsuario)
+      })
+      .catch(err => {
+        if (axios.isAxiosError<ValidationError, Record<string, unknown>>(err)) {
+          console.log(err.status)
+          console.error(err.response)
+        } else {
+          console.error(err)
+        }
+      })
+      .finally(() => {
+        //setLoadingContext(false)
+      })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <>
       <Card>
-        <CardHeader title='Minhas Comissões' className='pbe-4' />
+        <CardHeader title='Comissisões dos Parceiros' className='pbe-4' />
         <div className='flex justify-between flex-col items-start md:flex-row md:items-center p-6 border-bs gap-4'>
           <Table sx={{ minWidth: 650 }}>
             <TableHead>
@@ -387,15 +384,25 @@ const ComissaoGestorListTable = () => {
             <MenuItem value='25'>25</MenuItem>
             <MenuItem value='50'>50</MenuItem>
           </CustomTextField>
-          <div className='flex flex-col sm:flex-row is-full sm:is-auto items-start sm:items-center gap-4'>
-            <DebouncedInput
-              value={globalFilter ?? ''}
-              onChange={value => setGlobalFilter(String(value))}
-              placeholder='Localizar Usuário'
-              className='is-full sm:is-auto'
-            />
+          <div className='flex flex-col sm:flex-row is-full items-start sm:items-center gap-4'>
+            <CustomTextField
+              select
+              fullWidth
+              value={tokenParceiroFilter || 'todos'}
+              onChange={e => setTokenParceiroFilter(e.target.value)}
+            >
+              {listParceiros.map((parceiro, index) => (
+                <MenuItem key={index} value={parceiro.token} selected={parceiro.token === tokenParceiroFilter}>
+                  {parceiro.nome}
+                </MenuItem>
+              ))}
+            </CustomTextField>
+
             <Button
-              href='/financeiro/comissao/gestor'
+              href={
+                `/financeiro/comissao/parceiros/` +
+                (tokenParceiroFilter && tokenParceiroFilter != 'todos' ? tokenParceiroFilter : '')
+              }
               variant='contained'
               startIcon={<i className='tabler-refresh' />}
               className='is-full sm:is-auto'
@@ -481,4 +488,4 @@ const ComissaoGestorListTable = () => {
   )
 }
 
-export default ComissaoGestorListTable
+export default ComissaoAtgParceirosListTable

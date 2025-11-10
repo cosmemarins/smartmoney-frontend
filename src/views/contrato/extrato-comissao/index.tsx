@@ -1,0 +1,388 @@
+'use client'
+
+import { useEffect, useRef, useState } from 'react'
+
+// Type Imports
+import { useSession } from 'next-auth/react'
+
+import moment, { locale } from 'moment'
+import 'moment/locale/pt-br'
+
+import Table from '@mui/material/Table'
+import TableBody from '@mui/material/TableBody'
+import TableCell from '@mui/material/TableCell'
+import TableContainer from '@mui/material/TableContainer'
+import TableHead from '@mui/material/TableHead'
+import TableRow from '@mui/material/TableRow'
+import Paper from '@mui/material/Paper'
+import {
+  Backdrop,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  Chip,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  styled
+} from '@mui/material'
+
+import { toast } from 'react-toastify'
+
+import ContratoService from '@/services/ContratoService'
+import type { ExtratoType } from '@/types/ExtratoType'
+import { valorBr, valorEmReal } from '@/utils/string'
+import {
+  getStatusContratoEnumColor,
+  getStatusContratoEnumDesc,
+  StatusContratoEnum
+} from '@/utils/enums/StatusContratoEnum'
+import { getTipoExtratoEnumColor, getTipoExtratoEnumDesc, TipoExtratoEnum } from '@/utils/enums/TipoExtratoEnum'
+import ExtratoEdit from '../../extrato/ExtratoEdit'
+import { trataErro } from '@/utils/erro'
+import type { ContratoType } from '@/types/ContratoType'
+import { TipoDocumentoEnum } from '@/utils/enums/TipoDocumentoEnum'
+import { isMaster, isParceiroMaster } from '@/utils/utils'
+
+locale('pt-br')
+
+const StyledTableRow = styled(TableRow)(({ theme }) => ({
+  '&:nth-of-type(odd)': {
+    backgroundColor: theme.palette.action.hover
+  },
+
+  // hide last border
+  '&:last-child td, &:last-child th': {
+    border: 0
+  }
+}))
+
+interface props {
+  token: string
+}
+
+export default function ExtratoComissaoContrato({ token }: props) {
+  // context
+  const { data: session } = useSession()
+
+  // States
+  const [contrato, setContrato] = useState<ContratoType>()
+
+  //const [saldo, setSaldo] = useState<number>(0)
+  const [extratoEdit, setExtratoEdit] = useState<ExtratoType>({} as ExtratoType)
+  const [extratoList, setExtratoList] = useState<ExtratoType[]>([])
+  const [reload, setReload] = useState(false)
+  const [openDlgExtrato, setOpenDlgExtrato] = useState<boolean>(false)
+  const [openDlgAtivarExtrato, setOpenDlgAtivarExtrato] = useState<boolean>(false)
+
+  //const [openDlgDeleteExtrato, setOpenDlgDeleteExtrato] = useState<boolean>(false)
+
+  // Refs
+  const initialized = useRef(false)
+
+  const handleNovoExtrato = () => {
+    if (contrato) {
+      setExtratoEdit({
+        data: new Date(),
+        contrato: { id: contrato.id, token: contrato.token },
+        tipo: TipoExtratoEnum.ADITIVO,
+        arquivo: {
+          tipoDocumento: TipoDocumentoEnum.ADITIVO
+        }
+      })
+      setOpenDlgExtrato(true)
+    }
+  }
+
+  const handleCloseDlgExtrato = (refresh: boolean) => {
+    setOpenDlgExtrato(false)
+
+    if (refresh) {
+      refreshListExtrato(contrato?.token)
+    }
+  }
+
+  const handleAtivarExtrato = (extrato: ExtratoType) => {
+    if (extrato.token) {
+      setExtratoEdit(extrato)
+      setOpenDlgAtivarExtrato(true)
+    }
+  }
+
+  const confirmAtivarExtrato = () => {
+    if (contrato && extratoEdit && extratoEdit.token) {
+      setReload(true)
+      ContratoService.ativarExtrato(extratoEdit?.token)
+        .then(() => {
+          refreshListExtrato(contrato?.token)
+          setOpenDlgAtivarExtrato(false)
+          toast.success(`Lançamento ${extratoEdit?.token} ativado com sucesso!`)
+        })
+        .catch(err => {
+          console.log('Erro ao excluir', err)
+        })
+        .finally(() => {
+          setReload(false)
+        })
+    }
+  }
+
+  const refreshListExtrato = (token: string | undefined) => {
+    if (token) {
+      setReload(true)
+      ContratoService.getExtratoComArquivos(token)
+        .then(respExtratoList => {
+          setExtratoList(respExtratoList)
+        })
+        .catch(err => {
+          toast.error(trataErro(err))
+        })
+        .finally(() => {
+          setReload(false)
+        })
+
+      /***
+      //atualiza o saldo
+      ContratoService.getSaldo(token)
+        .then(respSaldo => {
+          setSaldo(respSaldo)
+        })
+        .catch(err => {
+          toast.error(trataErro(err))
+        })
+      ***/
+    }
+  }
+
+  //componenteInit
+  useEffect(() => {
+    if (!initialized.current) {
+      initialized.current = true
+
+      ContratoService.get(token)
+        .then(contratoResp => {
+          if (contratoResp) {
+            setContrato(contratoResp)
+            refreshListExtrato(contratoResp.token)
+          }
+        })
+        .catch(err => {
+          const msg = trataErro(err)
+
+          toast.error(msg)
+        })
+        .finally(() => {})
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  return (
+    contrato?.token && (
+      <>
+        <Card sx={{ mb: 2.5 }}>
+          <CardHeader
+            title={
+              <>
+                <span>
+                  Extrato de comissão: {contrato.cliente?.nome} -{' '}
+                  {moment(contrato?.data).utcOffset('+0300').format('DD/MM/YYYY')} - {contrato.token}
+                </span>
+                <Chip
+                  size='small'
+                  variant='tonal'
+                  label={contrato.status ? getStatusContratoEnumDesc(contrato.status) : ''}
+                  color={contrato.status ? getStatusContratoEnumColor(contrato.status) : 'default'}
+                  sx={{ float: 'right' }}
+                />
+              </>
+            }
+          />
+          <CardContent sx={{ p: theme => `${theme.spacing(3, 5.25, 4)} !important` }}>
+            <Chip
+              size='small'
+              variant='tonal'
+              label={`${contrato.prazo} meses`}
+              color='primary'
+              icon={<i className='tabler-calendar-repeat' />}
+              sx={{ mr: 2.5 }}
+            />
+            <Chip
+              size='small'
+              variant='tonal'
+              label={contrato?.taxaCliente ? valorBr.format(contrato?.taxaCliente) : ''}
+              color='primary'
+              icon={<i className='tabler-percentage' />}
+              sx={{ mr: 2.5 }}
+            />
+            <Chip
+              size='small'
+              variant='tonal'
+              label={contrato?.valor ? valorBr.format(contrato?.valor) : ''}
+              color='primary'
+              icon={<i className='tabler-currency-dollar' />}
+              sx={{ mr: 2.5 }}
+            />
+            <span style={{ float: 'right', paddingRight: '10px', fontWeight: 'bolder' }}>
+              Saldo: {contrato?.saldo ? valorEmReal.format(contrato.saldo) : '0,00'}
+            </span>
+            {contrato.saldoPendente && (
+              <>
+                <br />
+                <small style={{ float: 'right', paddingRight: '10px', fontWeight: 'bolder' }}>
+                  ( Pendente: {valorEmReal.format(contrato.saldoPendente)} )
+                </small>
+              </>
+            )}
+          </CardContent>
+          <Backdrop open={reload} className='absolute text-white z-[cal(var(--mui-zIndex-mobileStepper)-1)]'>
+            <CircularProgress color='inherit' />
+          </Backdrop>
+        </Card>
+
+        <TableContainer component={Paper}>
+          <Table sx={{ minWidth: 650 }} aria-label='extrato contrato'>
+            <TableHead>
+              <TableRow>
+                <TableCell align='center'>ID</TableCell>
+                <TableCell align='center'>Data</TableCell>
+                <TableCell align='center'>Token</TableCell>
+                <TableCell align='center'>Histórico</TableCell>
+                <TableCell align='center'>Tipo</TableCell>
+                <TableCell align='center'>Status</TableCell>
+                <TableCell align='center'>Valor</TableCell>
+                {(isMaster(session?.user) || isParceiroMaster(session?.user)) && (
+                  <TableCell align='center'>Ações</TableCell>
+                )}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {extratoList.map(extrato => (
+                <StyledTableRow key={extrato.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                  <TableCell component='th' scope='row' align='center'>
+                    {extrato.id}
+                  </TableCell>
+                  <TableCell align='center'>
+                    {extrato?.data ? moment(extrato?.data).format('DD-MM-YYYY HH:mm') : ''}
+                  </TableCell>
+                  <TableCell align='center'>{extrato.token}</TableCell>
+                  <TableCell align='center'>{extrato.historico}</TableCell>
+                  <TableCell align='center'>
+                    <Chip
+                      size='small'
+                      label={extrato?.tipo ? getTipoExtratoEnumDesc(extrato?.tipo) : ''}
+                      color={extrato?.tipo ? getTipoExtratoEnumColor(extrato?.tipo) : 'default'}
+                      sx={{ fontSize: '12px', height: '20px' }}
+                    />
+                  </TableCell>
+                  <TableCell align='center'>
+                    <Chip
+                      size='small'
+                      label={extrato?.status ? getStatusContratoEnumDesc(extrato?.status) : ''}
+                      color={extrato?.status ? getStatusContratoEnumColor(extrato?.status) : 'default'}
+                    />
+                  </TableCell>
+                  <TableCell align='center'>{extrato?.valor ? valorBr.format(extrato?.valor) : ''}</TableCell>
+                  {(isMaster(session?.user) || isParceiroMaster(session?.user)) && (
+                    <TableCell align='center'>
+                      {extrato?.status != StatusContratoEnum.ATIVO && (
+                        <IconButton
+                          title='Ativar comprovante'
+                          aria-label='capture screenshot'
+                          onClick={() => {
+                            handleAtivarExtrato(extrato)
+                          }}
+                        >
+                          <i className='tabler-check' />
+                        </IconButton>
+                      )}
+                      {/*
+                      <IconButton
+                        aria-label='capture screenshot'
+                        onClick={() => {
+                          handleOnEditExtrato(extrato)
+                        }}
+                      >
+                        <i className='tabler-pencil' />
+                      </IconButton>
+                      <IconButton
+                        aria-label='capture screenshot'
+                        onClick={() => {
+                          handleOnDeleteExtrato(extrato.token)
+                        }}
+                      >
+                        <i className='tabler-trash' />
+                      </IconButton>
+                      */}
+                    </TableCell>
+                  )}
+                </StyledTableRow>
+              ))}
+            </TableBody>
+            <caption>
+              <Button
+                variant='contained'
+                startIcon={<i className='tabler-arrow-back-up' />}
+                onClick={() => window.history.back()}
+                sx={{ float: 'left' }}
+              >
+                Voltar para a listagem
+              </Button>
+              <Button
+                variant='contained'
+                startIcon={<i className='tabler-plus' />}
+                onClick={() => handleNovoExtrato()}
+                sx={{ float: 'right' }}
+              >
+                Novo Aditivo
+              </Button>
+            </caption>
+          </Table>
+        </TableContainer>
+        <Dialog
+          maxWidth='md'
+          open={openDlgExtrato}
+          aria-labelledby='form-dialog-title'
+          disableEscapeKeyDown
+          onClose={(event, reason) => {
+            if (reason !== 'backdropClick') {
+              handleCloseDlgExtrato(false)
+            }
+          }}
+        >
+          <DialogTitle id='form-dialog-title'>Novo Lançamento</DialogTitle>
+          <DialogContent>
+            <ExtratoEdit
+              extratoData={extratoEdit}
+              handleClose={handleCloseDlgExtrato}
+              tipoExtrato={TipoExtratoEnum.ADITIVO}
+            />
+          </DialogContent>
+        </Dialog>
+        <Dialog maxWidth='sm' open={openDlgAtivarExtrato} aria-labelledby='form-dialog-title' disableEscapeKeyDown>
+          <DialogTitle id='form-dialog-title'>Ativar comprovante do extrato</DialogTitle>
+          <DialogContent>
+            <p>Confirmar ativação deste comprovante?</p>
+          </DialogContent>
+          <DialogActions className='dialog-actions-dense'>
+            <Button variant='contained' onClick={() => confirmAtivarExtrato()}>
+              Ativar
+            </Button>
+            <Button
+              type='reset'
+              variant='contained'
+              onClick={() => {
+                setOpenDlgAtivarExtrato(false)
+              }}
+            >
+              Cancelar
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </>
+    )
+  )
+}
