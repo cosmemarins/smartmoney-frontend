@@ -5,4 +5,6 @@ export type ComissaoFilterType = {
   tokenCliente?: string
   mes?: string
   ano?: string
+  primeiroAno?: number
+  ultimoAno?: number
 }

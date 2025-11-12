@@ -116,14 +116,14 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
             {session?.user.podeCriarEquipe && <MenuItem href={`/financeiro/comissao/parceiros`}>Parceiro</MenuItem>}
             <MenuItem href={`/financeiro/comissao/gestor`}>Minhas Comissões</MenuItem>
           </SubMenu>
-          <SubMenu label='Comissionamento ATG' icon={<i className='tabler-file-dollar' />}>
+          {/* <SubMenu label='Comissionamento ATG' icon={<i className='tabler-file-dollar' />}>
             <MenuItem href={`/financeiro/comissao-atg/investidores`}>Investidores</MenuItem>
             {session?.user.podeCriarEquipe && session?.user.perfil != PerfilUsuarioEnum.AGENTE && (
               <MenuItem href={`/financeiro/comissao-atg/assessores`}>Assessores</MenuItem>
             )}
             {session?.user.podeCriarEquipe && <MenuItem href={`/financeiro/comissao-atg/parceiros`}>Parceiro</MenuItem>}
             <MenuItem href={`/financeiro/comissao-atg/gestor`}>Minhas Comissões</MenuItem>
-          </SubMenu>
+          </SubMenu> */}
         </SubMenu>
         {/*
         <MenuItem href='/about' icon={<i className='tabler-info-circle' />}>

@@ -44,15 +44,14 @@ interface props {
   mes: string | undefined
 }
 
-export default function ExtratoComissaoParceiro({ token, ano, mes }: props) {
+export default function ExtratoComissaoInvestidor({ token, ano, mes }: props) {
   //const [saldo, setSaldo] = useState<number>(0)
-  const [parceiro, setParceiro] = useState<UsuarioType>()
+  const [cliente, setCliente] = useState<UsuarioType>()
   const [comissaoList, setComissaoList] = useState<ComissaoType[]>([])
-  const [dataCreditoEquipe, setDataCreditoEquipe] = useState<string>()
-  const [listParceiros, setListParceiros] = useState<UsuarioType[]>([])
+  const [dataCreditoCliente, setDataCreditoCliente] = useState<string>()
 
   const [comissaoFilter, setComissaoFilter] = useState({
-    token: token || 'todos',
+    token: token || 'all',
     mes: mes || moment().add(1, 'month').month().toString(),
     ano: ano || moment().year().toString(),
     primeiroAno: 2024,
@@ -74,14 +73,14 @@ export default function ExtratoComissaoParceiro({ token, ano, mes }: props) {
 
     // Cabeçalhos da planilha
     // Linha de totais
-    const linhaCabecalho = `<thead><tr><th colspan="12">Extrato de comissão: ${parceiro?.nome} - ${moment({
+    const linhaCabecalho = `<thead><tr><th colspan="12">Extrato de comissão: ${cliente?.nome} - ${moment({
       year: Number(ano),
       month: Number(mes),
       day: 1
     })
       .subtract(1, 'month')
       .format('MMMM/YYYY')
-      .toUpperCase()} - Data do crédito: ${dataCreditoEquipe}</th></tr></thead>`
+      .toUpperCase()} - Data do crédito: ${dataCreditoCliente}</th></tr></thead>`
 
     const headers = [
       '#',
@@ -113,17 +112,17 @@ export default function ExtratoComissaoParceiro({ token, ano, mes }: props) {
       const tipo = c.tipoExtrato ? getTipoExtratoEnumDesc(c.tipoExtrato) : ''
       const dataEntrada = c.extrato?.data ? moment(c.extrato.data).format('DD-MM-YYYY') : ''
       const dataCredito = c.dataCreditoCliente ? moment(c.dataCreditoCliente).format('DD-MM-YYYY') : ''
-      const taxa = c.taxaGestor != null ? `${c.taxaGestor}%` : ''
-      const dias = c.diasProrataEquipe && c.diasProrataEquipe > 0 ? String(c.diasProrataEquipe) : '-'
-      const valorGestor = c.valorGestor ? valorBr.format(c.valorGestor) : ''
-      const irPercent = c.IRGestor != null ? `${c.IRGestor}%` : ''
-      const valorIR = c.valorIRGestor ? valorBr.format(c.valorIRGestor) : ''
-      const valorLiquidoNum = c.valorGestor && c.valorIRGestor ? c.valorGestor - c.valorIRGestor : 0
+      const taxa = c.taxaCliente != null ? `${c.taxaCliente}%` : ''
+      const dias = c.diasProrataCliente && c.diasProrataCliente > 0 ? String(c.diasProrataCliente) : '-'
+      const valorCliente = c.valorCliente ? valorBr.format(c.valorCliente) : ''
+      const irPercent = c.IRCliente != null ? `${c.IRCliente}%` : ''
+      const valorIR = c.valorIRCliente ? valorBr.format(c.valorIRCliente) : ''
+      const valorLiquidoNum = c.valorCliente && c.valorIRCliente ? c.valorCliente - c.valorIRCliente : 0
       const valorLiquido = valorBr.format(valorLiquidoNum)
 
       totalAporte += c.valorReferencia || 0
-      totalBruto += c.valorGestor || 0
-      totalIR += c.valorIRGestor || 0
+      totalBruto += c.valorCliente || 0
+      totalIR += c.valorIRCliente || 0
       totalLiquido += valorLiquidoNum
 
       const cols = [
@@ -135,7 +134,7 @@ export default function ExtratoComissaoParceiro({ token, ano, mes }: props) {
         dataCredito,
         taxa,
         dias,
-        valorGestor,
+        valorCliente,
         irPercent,
         valorIR,
         valorLiquido
@@ -172,7 +171,7 @@ export default function ExtratoComissaoParceiro({ token, ano, mes }: props) {
     try {
       const blob = new Blob(['\ufeff', html], { type: 'application/vnd.ms-excel;charset=utf-8;' })
 
-      const fileName = `extrato_comissao_paceiro_${parceiro?.nome?.replace(/\s+/g, '_') || 'parceiro'}_${ano || ''}_${
+      const fileName = `extrato_comissao_${cliente?.nome?.replace(/\s+/g, '_') || 'parceiro'}_${ano || ''}_${
         mes || ''
       }.xls`
 
@@ -196,12 +195,8 @@ export default function ExtratoComissaoParceiro({ token, ano, mes }: props) {
     if (token) {
       UsuarioService.get(token)
         .then(usuario => {
-          setParceiro(usuario)
-          FinanceiroService.getComissaoParceiros(
-            comissaoFilter.token != 'todos' ? comissaoFilter.token : undefined,
-            comissaoFilter.ano != 'todos' ? comissaoFilter.ano : undefined,
-            comissaoFilter.mes != 'todos' ? comissaoFilter.mes : undefined
-          )
+          setCliente(usuario)
+          FinanceiroService.getComissaoInvestidores(comissaoFilter.token, comissaoFilter.ano, comissaoFilter.mes)
             .then(respComissaoList => {
               console.log(respComissaoList)
               setComissaoList(respComissaoList)
@@ -219,23 +214,6 @@ export default function ExtratoComissaoParceiro({ token, ano, mes }: props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  useEffect(() => {
-    //console.log('caregando parceiros')
-
-    UsuarioService.getListParceirosSelect()
-      .then(respUsuario => {
-        //respUsuario.push({ id: 0, nome: 'Todos os parceiros', token: 'todos' } as UsuarioType)
-        setListParceiros(respUsuario)
-
-        //console.log('respUsuario', respUsuario)
-      })
-      .catch(err => {
-        toast.error(trataErro(err))
-      })
-      .finally(() => {})
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
   return (
     <>
       <Card sx={{ mb: 2.5 }}>
@@ -243,13 +221,15 @@ export default function ExtratoComissaoParceiro({ token, ano, mes }: props) {
           title={
             <>
               <span>
-                Extrato de comissão: {parceiro?.nome} -{' '}
+                Extrato de comissão: {cliente?.nome}
+                <br />
+                Referência:{' '}
                 {moment({ year: Number(ano), month: Number(mes), day: 1 })
                   .subtract(1, 'month')
                   .format('MMMM/YYYY')
-                  .toUpperCase()}{' '}
-                <br />
-                Data do crédito: {dataCreditoEquipe}
+                  .toUpperCase()}
+                {' - '}
+                Data do crédito: {dataCreditoCliente}
               </span>
             </>
           }
@@ -257,17 +237,6 @@ export default function ExtratoComissaoParceiro({ token, ano, mes }: props) {
           sx={{ '& .MuiCardHeader-action': { m: 0 }, '& .MuiInputBase-root': { mr: 3 } }}
           action={
             <>
-              <CustomTextField
-                select
-                value={comissaoFilter.token || 'todos'}
-                onChange={e => setComissaoFilter({ ...comissaoFilter, token: e.target.value })}
-              >
-                {listParceiros.map((parceiro, index) => (
-                  <MenuItem key={index} value={parceiro.token} selected={parceiro.token === comissaoFilter.token}>
-                    {parceiro.nome}
-                  </MenuItem>
-                ))}
-              </CustomTextField>
               <CustomTextField
                 select
                 value={comissaoFilter.mes || 'todos'}
@@ -328,7 +297,7 @@ export default function ExtratoComissaoParceiro({ token, ano, mes }: props) {
 
               <Button
                 variant='contained'
-                href={`/financeiro/comissao/parceiros/extrato/${comissaoFilter.token}/${comissaoFilter.ano}/${comissaoFilter.mes}`}
+                href={`/financeiro/comissao/investidores/extrato/${comissaoFilter.token}/${comissaoFilter.ano}/${comissaoFilter.mes}`}
                 onClick={e => {
                   if (
                     comissaoFilter.token == 'todos' ||
@@ -336,7 +305,7 @@ export default function ExtratoComissaoParceiro({ token, ano, mes }: props) {
                     (comissaoFilter.ano == 'todos' && comissaoFilter.mes != 'todos')
                   ) {
                     e.preventDefault()
-                    alert('Favor informar um parceiro o mes e ano')
+                    alert('Favor informar um cliente, o mes e ano')
                   }
 
                   return false
@@ -371,17 +340,20 @@ export default function ExtratoComissaoParceiro({ token, ano, mes }: props) {
               </TableHead>
               <TableBody>
                 {comissaoList.map(comissao => {
-                  if (!dataCreditoEquipe)
-                    setDataCreditoEquipe(
-                      comissao.dataCreditoEquipe ? moment(comissao.dataCreditoEquipe).format('DD-MM-YYYY') : ''
+                  if (!cliente) setCliente(comissao.cliente)
+                  if (!dataCreditoCliente)
+                    setDataCreditoCliente(
+                      comissao.dataCreditoCliente ? moment(comissao.dataCreditoCliente).format('DD-MM-YYYY') : ''
                     )
                   countItens++
                   totalAporte += comissao?.valorReferencia ? comissao?.valorReferencia : 0
-                  totalBruto += comissao?.valorGestor ? comissao?.valorGestor : 0
-                  totalIR += comissao?.valorIRGestor ? comissao?.valorIRGestor : 0
+                  totalBruto += comissao?.valorCliente ? comissao?.valorCliente : 0
+                  totalIR += comissao?.valorIRCliente ? comissao?.valorIRCliente : 0
 
                   const valorLiquido =
-                    comissao.valorGestor && comissao.valorIRGestor ? comissao.valorGestor - comissao.valorIRGestor : 0
+                    comissao.valorCliente && comissao.valorIRCliente
+                      ? comissao.valorCliente - comissao.valorIRCliente
+                      : 0
 
                   totalLiquido += valorLiquido
 
@@ -408,16 +380,16 @@ export default function ExtratoComissaoParceiro({ token, ano, mes }: props) {
                       </TableCell>
                       <TableCell align='center'>{comissao.taxaGestor}%</TableCell>
                       <TableCell align='center'>
-                        {comissao.diasProrataEquipe && comissao.diasProrataEquipe > 0
-                          ? comissao.diasProrataEquipe
+                        {comissao.diasProrataCliente && comissao.diasProrataCliente > 0
+                          ? comissao.diasProrataCliente
                           : '-'}
                       </TableCell>
                       <TableCell align='center'>
-                        {comissao.valorGestor ? valorBr.format(comissao.valorGestor) : ''}
+                        {comissao.valorCliente ? valorBr.format(comissao.valorCliente) : ''}
                       </TableCell>
                       <TableCell align='center'>{comissao.IRGestor}%</TableCell>
                       <TableCell align='center'>
-                        {comissao.valorIRGestor ? valorBr.format(comissao.valorIRGestor) : ''}
+                        {comissao.valorIRCliente ? valorBr.format(comissao.valorIRCliente) : ''}
                       </TableCell>
                       <TableCell align='center'>{valorBr.format(valorLiquido)}</TableCell>
                     </StyledTableRow>

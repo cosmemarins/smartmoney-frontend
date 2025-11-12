@@ -72,12 +72,14 @@ export type ComissaoType = {
   dataUltimaModificacao?: Date
 
   //DEPRECATED
+  token?: string
   proratas?: ComissaoProrataType[]
   nomeGestor?: string
   nomeParceiro1?: string
   nomeParceiro2?: string
   nomeParceiro3?: string
   nomeCliente?: string
+  nomeMaster?: string
   dataAporte?: Date
   dataCredito?: Date
   dataVencimento?: Date
@@ -85,6 +87,7 @@ export type ComissaoType = {
   valor?: number
   valorRepasse?: number
   valorRepasseGestor?: number
+  valorRepasseCliente?: number
   taxa?: number
 }
 

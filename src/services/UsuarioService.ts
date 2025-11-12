@@ -41,6 +41,12 @@ const UsuarioService = {
     return data
   },
 
+  getListAgentesSelect: async function (): Promise<UsuarioType[]> {
+    const { data } = await api.get<UsuarioType[]>(`${path}/agentes/select`)
+
+    return data
+  },
+
   getListParceiros: async function (dataOptions?: DataOptionsType): Promise<UsuarioType[]> {
     const queryString = new URLSearchParams()
 
@@ -55,7 +61,7 @@ const UsuarioService = {
 
     return data
   },
-  
+
   getListColaboradores: async function (dataOptions?: DataOptionsType): Promise<UsuarioType[]> {
     const queryString = new URLSearchParams()
 

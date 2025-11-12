@@ -44,7 +44,7 @@ interface props {
   mes: string | undefined
 }
 
-export default function ExtratoComissaoParceiro({ token, ano, mes }: props) {
+export default function ExtratoComissaoGestor({ token, ano, mes }: props) {
   //const [saldo, setSaldo] = useState<number>(0)
   const [parceiro, setParceiro] = useState<UsuarioType>()
   const [comissaoList, setComissaoList] = useState<ComissaoType[]>([])

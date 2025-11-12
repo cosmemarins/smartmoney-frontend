@@ -1,7 +1,7 @@
 // React Imports
 import { Grid } from '@mui/material'
 
-import ComissaoParceirosListTable from './ComissaoParceirosListTable'
+import ComissaoGestorListTable from './ComissaoGestorListTable'
 
 interface Props {
   token: string | undefined
@@ -9,15 +9,15 @@ interface Props {
   mes?: string | undefined
 }
 
-const ComissaoParceirosList = ({ token, ano, mes }: Props) => {
+const ComissaoGestorList = ({ token, ano, mes }: Props) => {
   // States
   return (
     <Grid container spacing={6}>
       <Grid item xs={12}>
-        <ComissaoParceirosListTable token={token} ano={ano} mes={mes} />
+        <ComissaoGestorListTable token={token} ano={ano} mes={mes} />
       </Grid>
     </Grid>
   )
 }
 
-export default ComissaoParceirosList
+export default ComissaoGestorList

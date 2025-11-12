@@ -241,7 +241,7 @@ const ComissaoAtgParceirosListTable = ({ token }: Props) => {
         cell: ({ row }) => (
           <>
             <div className='text-center'>
-              <Typography color='text.primary'>{valorBr.format(row.original.totalRepasse || 0)}</Typography>
+              <Typography color='text.primary'>{valorBr.format(row.original.valorRepasse || 0)}</Typography>
               {row.original.proratas && row.original.proratas.length > 0 && (
                 <small>
                   saldo: {valorBr.format(row.original.valorRepasse || 0)}

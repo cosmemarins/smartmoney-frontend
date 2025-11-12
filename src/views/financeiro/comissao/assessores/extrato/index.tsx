@@ -44,15 +44,15 @@ interface props {
   mes: string | undefined
 }
 
-export default function ExtratoComissaoParceiro({ token, ano, mes }: props) {
+export default function ExtratoComissaoAgente({ token, ano, mes }: props) {
   //const [saldo, setSaldo] = useState<number>(0)
-  const [parceiro, setParceiro] = useState<UsuarioType>()
+  const [agente, setAgente] = useState<UsuarioType>()
   const [comissaoList, setComissaoList] = useState<ComissaoType[]>([])
   const [dataCreditoEquipe, setDataCreditoEquipe] = useState<string>()
-  const [listParceiros, setListParceiros] = useState<UsuarioType[]>([])
+  const [listAgentes, setListAgentes] = useState<UsuarioType[]>([])
 
   const [comissaoFilter, setComissaoFilter] = useState({
-    token: token || 'todos',
+    token: token || 'all',
     mes: mes || moment().add(1, 'month').month().toString(),
     ano: ano || moment().year().toString(),
     primeiroAno: 2024,
@@ -74,7 +74,7 @@ export default function ExtratoComissaoParceiro({ token, ano, mes }: props) {
 
     // Cabeçalhos da planilha
     // Linha de totais
-    const linhaCabecalho = `<thead><tr><th colspan="12">Extrato de comissão: ${parceiro?.nome} - ${moment({
+    const linhaCabecalho = `<thead><tr><th colspan="12">Extrato de comissão: ${agente?.nome} - ${moment({
       year: Number(ano),
       month: Number(mes),
       day: 1
@@ -172,7 +172,7 @@ export default function ExtratoComissaoParceiro({ token, ano, mes }: props) {
     try {
       const blob = new Blob(['\ufeff', html], { type: 'application/vnd.ms-excel;charset=utf-8;' })
 
-      const fileName = `extrato_comissao_paceiro_${parceiro?.nome?.replace(/\s+/g, '_') || 'parceiro'}_${ano || ''}_${
+      const fileName = `extrato_comissao_assessor_${agente?.nome?.replace(/\s+/g, '_') || 'agente'}_${ano || ''}_${
         mes || ''
       }.xls`
 
@@ -196,11 +196,11 @@ export default function ExtratoComissaoParceiro({ token, ano, mes }: props) {
     if (token) {
       UsuarioService.get(token)
         .then(usuario => {
-          setParceiro(usuario)
-          FinanceiroService.getComissaoParceiros(
-            comissaoFilter.token != 'todos' ? comissaoFilter.token : undefined,
-            comissaoFilter.ano != 'todos' ? comissaoFilter.ano : undefined,
-            comissaoFilter.mes != 'todos' ? comissaoFilter.mes : undefined
+          setAgente(usuario)
+          FinanceiroService.getComissaoAgentes(
+            comissaoFilter.token != 'all' ? comissaoFilter.token : undefined,
+            comissaoFilter.ano != 'all' ? comissaoFilter.ano : undefined,
+            comissaoFilter.mes != 'all' ? comissaoFilter.mes : undefined
           )
             .then(respComissaoList => {
               console.log(respComissaoList)
@@ -220,12 +220,12 @@ export default function ExtratoComissaoParceiro({ token, ano, mes }: props) {
   }, [])
 
   useEffect(() => {
-    //console.log('caregando parceiros')
+    //console.log('caregando agentes')
 
-    UsuarioService.getListParceirosSelect()
+    UsuarioService.getListAgentesSelect()
       .then(respUsuario => {
-        //respUsuario.push({ id: 0, nome: 'Todos os parceiros', token: 'todos' } as UsuarioType)
-        setListParceiros(respUsuario)
+        //respUsuario.push({ id: 0, nome: 'Todos os assessores', token: 'all' } as UsuarioType)
+        setListAgentes(respUsuario)
 
         //console.log('respUsuario', respUsuario)
       })
@@ -243,7 +243,7 @@ export default function ExtratoComissaoParceiro({ token, ano, mes }: props) {
           title={
             <>
               <span>
-                Extrato de comissão: {parceiro?.nome} -{' '}
+                Extrato de comissão: {agente?.nome} -{' '}
                 {moment({ year: Number(ano), month: Number(mes), day: 1 })
                   .subtract(1, 'month')
                   .format('MMMM/YYYY')
@@ -259,18 +259,18 @@ export default function ExtratoComissaoParceiro({ token, ano, mes }: props) {
             <>
               <CustomTextField
                 select
-                value={comissaoFilter.token || 'todos'}
+                value={comissaoFilter.token || 'all'}
                 onChange={e => setComissaoFilter({ ...comissaoFilter, token: e.target.value })}
               >
-                {listParceiros.map((parceiro, index) => (
-                  <MenuItem key={index} value={parceiro.token} selected={parceiro.token === comissaoFilter.token}>
-                    {parceiro.nome}
+                {listAgentes.map((agente, index) => (
+                  <MenuItem key={index} value={agente.token} selected={agente.token === comissaoFilter.token}>
+                    {agente.nome}
                   </MenuItem>
                 ))}
               </CustomTextField>
               <CustomTextField
                 select
-                value={comissaoFilter.mes || 'todos'}
+                value={comissaoFilter.mes || 'all'}
                 onChange={e => setComissaoFilter({ ...comissaoFilter, mes: e.target.value })}
               >
                 <MenuItem value='01' selected={'01' == comissaoFilter.mes}>
@@ -313,7 +313,7 @@ export default function ExtratoComissaoParceiro({ token, ano, mes }: props) {
 
               <CustomTextField
                 select
-                value={comissaoFilter.ano || 'todos'}
+                value={comissaoFilter.ano || 'all'}
                 onChange={e => setComissaoFilter({ ...comissaoFilter, ano: e.target.value })}
               >
                 {Array.from(
@@ -328,15 +328,15 @@ export default function ExtratoComissaoParceiro({ token, ano, mes }: props) {
 
               <Button
                 variant='contained'
-                href={`/financeiro/comissao/parceiros/extrato/${comissaoFilter.token}/${comissaoFilter.ano}/${comissaoFilter.mes}`}
+                href={`/financeiro/comissao/assessores/extrato/${comissaoFilter.token}/${comissaoFilter.ano}/${comissaoFilter.mes}`}
                 onClick={e => {
                   if (
-                    comissaoFilter.token == 'todos' ||
-                    (comissaoFilter.ano != 'todos' && comissaoFilter.mes == 'todos') ||
-                    (comissaoFilter.ano == 'todos' && comissaoFilter.mes != 'todos')
+                    comissaoFilter.token == 'all' ||
+                    (comissaoFilter.ano != 'all' && comissaoFilter.mes == 'all') ||
+                    (comissaoFilter.ano == 'all' && comissaoFilter.mes != 'all')
                   ) {
                     e.preventDefault()
-                    alert('Favor informar um parceiro o mes e ano')
+                    alert('Favor informar um assessor, o mes e ano')
                   }
 
                   return false

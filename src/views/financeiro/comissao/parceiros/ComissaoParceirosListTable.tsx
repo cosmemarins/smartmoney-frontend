@@ -12,6 +12,7 @@ import {
   CardHeader,
   Grid,
   IconButton,
+  Link,
   MenuItem,
   Paper,
   styled,
@@ -46,7 +47,6 @@ import { rankItem } from '@tanstack/match-sorter-utils'
 
 import { toast } from 'react-toastify'
 
-import axios from 'axios'
 import moment, { locale } from 'moment'
 import 'moment/locale/pt-br'
 
@@ -56,7 +56,6 @@ import type { ComissaoType, ComissaoTypeAction } from '@/types/ComissaoType'
 // Style Imports
 import tableStyles from '@core/styles/table.module.css'
 import TablePaginationComponent from '@/components/TablePaginationComponent'
-import type { ValidationError } from '@/services/api'
 import { valorBr, valorEmReal } from '@/utils/string'
 import FinanceiroService from '@/services/FinanceiroService'
 import { PerfilUsuarioEnum } from '@/utils/enums/PerfilUsuarioEnum'
@@ -65,6 +64,7 @@ import type { TotaisComissaoType } from '@/types/TotaisComissaoType'
 
 import UsuarioService from '@/services/UsuarioService'
 import type { UsuarioType } from '@/types/UsuarioType'
+import { trataErro } from '@/utils/erro'
 
 locale('pt-br')
 
@@ -157,7 +157,9 @@ const ComissaoParceirosListTable = ({ token, ano, mes }: Props) => {
   const [comissaoFilter, setComissaoFilter] = useState({
     token: token || 'todos',
     mes: mes || 'todos',
-    ano: ano || 'todos'
+    ano: ano || 'todos',
+    primeiroAno: 2024,
+    ultimoAno: moment().add(3, 'year').year()
   })
 
   const [totais, setTotais] = useState<TotaisComissaoType>()
@@ -265,6 +267,21 @@ const ComissaoParceirosListTable = ({ token, ano, mes }: Props) => {
             </div>
           </>
         )
+      }),
+      columnHelper.accessor('contrato', {
+        header: '',
+        cell: ({ row }) => (
+          <div className='text-center'>
+            <IconButton>
+              <Link
+                href={`/financeiro/comissao/investidores/extrato/${row.original.token}/${comissaoFilter.ano != 'all' && comissaoFilter.mes != 'all' ? comissaoFilter.ano + '/' + comissaoFilter.mes : ''}`}
+                title='Extrato'
+              >
+                <i className='tabler-file-description text-[22px] text-textSecondary' />
+              </Link>
+            </IconButton>
+          </div>
+        )
       })
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -307,22 +324,20 @@ const ComissaoParceirosListTable = ({ token, ano, mes }: Props) => {
   useEffect(() => {
     if (refreshTable) {
       setRefreshTable(false)
-      FinanceiroService.getListComissaoMensalParceiros(token)
+      FinanceiroService.getListComissaoMensalParceiros(
+        comissaoFilter.token != 'todos' ? comissaoFilter.token : undefined,
+        comissaoFilter.ano != 'todos' ? comissaoFilter.ano : undefined,
+        comissaoFilter.mes != 'todos' ? comissaoFilter.mes : undefined
+      )
         .then(respComissaoView => {
           console.log('respListComissao', respComissaoView)
           setData(respComissaoView.listComissao)
           setTotais(respComissaoView.totaisComissao)
         })
-        .catch((err: any) => {
-          if (axios.isAxiosError<ValidationError, Record<string, unknown>>(err)) {
-            console.log(err.status)
-            console.error(err.response)
-            toast.error(`Erro, ${err.status}`)
-          } else {
-            console.error(err)
-            toast.error(`Erro`, err)
-          }
+        .catch(err => {
+          toast.error(trataErro(err))
         })
+        .finally(() => {})
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshTable])
@@ -332,55 +347,40 @@ const ComissaoParceirosListTable = ({ token, ano, mes }: Props) => {
 
     UsuarioService.getListParceirosSelect()
       .then(respUsuario => {
-        respUsuario.push({ id: 0, nome: 'Todos os parceiros', token: 'todos' } as UsuarioType)
+        respUsuario.unshift({ id: 0, nome: 'Todos os parceiros', token: 'todos' } as UsuarioType)
         setListParceiros(respUsuario)
 
         //console.log('respUsuario', respUsuario)
       })
       .catch(err => {
-        if (axios.isAxiosError<ValidationError, Record<string, unknown>>(err)) {
-          console.log(err.status)
-          console.error(err.response)
-        } else {
-          console.error(err)
-        }
+        toast.error(trataErro(err))
       })
-      .finally(() => {
-        //setLoadingContext(false)
-      })
+      .finally(() => {})
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (
     <>
       <Card>
-        <CardHeader title='Comissisões dos Parceiros' className='pbe-4' />
-        <div className='flex justify-between flex-col items-start md:flex-row md:items-center p-6 border-bs gap-4'>
-          <Table sx={{ minWidth: 650 }}>
-            <TableHead>
-              <TableRow>
-                <TableCell align='center'>Qtd Contratos</TableCell>
-                <TableCell align='center'>Maior Taxa</TableCell>
-                <TableCell align='center'>Menor Taxa</TableCell>
-                <TableCell align='center'>Valor Médio</TableCell>
-                <TableCell align='center'>Valor Total</TableCell>
-                <TableCell align='center'>Repasse Médio</TableCell>
-                <TableCell align='center'>Total Repasse</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              <TableRow>
-                <TableCell align='center'>{totais?.totalRegistros}</TableCell>
-                <TableCell align='center'>{valorBr.format(totais?.maiorTaxa || 0)}%</TableCell>
-                <TableCell align='center'>{valorBr.format(totais?.menorTaxa || 0)}%</TableCell>
-                <TableCell align='center'>{valorBr.format(totais?.valorMedio || 0)}</TableCell>
-                <TableCell align='center'>{valorBr.format(totais?.valorTotal || 0)}</TableCell>
-                <TableCell align='center'>{valorBr.format(totais?.repasseMedio || 0)}</TableCell>
-                <TableCell align='center'>{valorBr.format(totais?.totalRepasse || 0)}</TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        </div>
+        <CardHeader
+          title='Comissisões dos Parceiros - Resumo Mensal'
+          className='pbe-4'
+          action={
+            <Button
+              href={
+                `/financeiro/comissao/parceiros/extrato/` +
+                (comissaoFilter.token != 'todos' && comissaoFilter.ano != 'todos' && comissaoFilter.mes != 'todos'
+                  ? `${comissaoFilter.token}/${comissaoFilter.ano}/${comissaoFilter.mes}`
+                  : '')
+              }
+              variant='contained'
+              startIcon={<i className='tabler-article' />}
+              className='is-full sm:is-auto'
+            >
+              Ver extrato completo das comissões
+            </Button>
+          }
+        />
         <div className='flex justify-between flex-col items-start md:flex-row md:items-center p-6 border-bs gap-4'>
           <CustomTextField
             select
@@ -458,24 +458,14 @@ const ComissaoParceirosListTable = ({ token, ano, mes }: Props) => {
               <MenuItem value='todos' selected={'todos' == comissaoFilter.mes}>
                 Todos os anos
               </MenuItem>
-              <MenuItem value='2028' selected={'2028' == comissaoFilter.ano}>
-                2028
-              </MenuItem>
-              <MenuItem value='2027' selected={'2027' == comissaoFilter.ano}>
-                2027
-              </MenuItem>
-              <MenuItem value='2026' selected={'2026' == comissaoFilter.ano}>
-                2026
-              </MenuItem>
-              <MenuItem value='2025' selected={'2025' == comissaoFilter.ano}>
-                2025
-              </MenuItem>
-              <MenuItem value='2024' selected={'2024' == comissaoFilter.ano}>
-                2024
-              </MenuItem>
-              <MenuItem value='2023' selected={'2023' == comissaoFilter.ano}>
-                2023
-              </MenuItem>
+              {Array.from(
+                { length: comissaoFilter.ultimoAno - comissaoFilter.primeiroAno + 1 },
+                (_, i) => comissaoFilter.ultimoAno - i
+              ).map(year => (
+                <MenuItem key={year} value={String(year)} selected={String(year) === comissaoFilter.ano}>
+                  {year}
+                </MenuItem>
+              ))}
             </CustomTextField>
 
             <Button
@@ -490,23 +480,47 @@ const ComissaoParceirosListTable = ({ token, ano, mes }: Props) => {
               variant='contained'
               startIcon={<i className='tabler-refresh' />}
               className='is-full sm:is-auto'
+              onClick={e => {
+                if (
+                  (comissaoFilter.ano != 'todos' && comissaoFilter.mes == 'todos') ||
+                  (comissaoFilter.ano == 'todos' && comissaoFilter.mes != 'todos')
+                ) {
+                  e.preventDefault()
+                  alert('Favor informar mes e ano')
+                }
+
+                return false
+              }}
             >
               Atualizar
             </Button>
-            <Button
-              href={
-                `/financeiro/comissao/parceiros/` +
-                (comissaoFilter.token != 'todos' && comissaoFilter.ano != 'todos' && comissaoFilter.mes != 'todos'
-                  ? `${comissaoFilter.token}/extrato/${comissaoFilter.ano}/${comissaoFilter.mes}`
-                  : '')
-              }
-              variant='contained'
-              startIcon={<i className='tabler-article' />}
-              className='is-full sm:is-auto'
-            >
-              Ver extrato completo
-            </Button>
           </div>
+        </div>
+        <div className='flex justify-between flex-col items-start md:flex-row md:items-center p-6 border-bs gap-4'>
+          <Table sx={{ minWidth: 650 }}>
+            <TableHead>
+              <TableRow>
+                <TableCell align='center'>Qtd Contratos</TableCell>
+                <TableCell align='center'>Maior Taxa</TableCell>
+                <TableCell align='center'>Menor Taxa</TableCell>
+                <TableCell align='center'>Valor Médio</TableCell>
+                <TableCell align='center'>Valor Total</TableCell>
+                <TableCell align='center'>Repasse Médio</TableCell>
+                <TableCell align='center'>Total Repasse</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              <TableRow>
+                <TableCell align='center'>{totais?.totalRegistros}</TableCell>
+                <TableCell align='center'>{valorBr.format(totais?.maiorTaxa || 0)}%</TableCell>
+                <TableCell align='center'>{valorBr.format(totais?.menorTaxa || 0)}%</TableCell>
+                <TableCell align='center'>{valorBr.format(totais?.valorMedio || 0)}</TableCell>
+                <TableCell align='center'>{valorBr.format(totais?.valorTotal || 0)}</TableCell>
+                <TableCell align='center'>{valorBr.format(totais?.repasseMedio || 0)}</TableCell>
+                <TableCell align='center'>{valorBr.format(totais?.totalRepasse || 0)}</TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
         </div>
         <div className='overflow-x-auto'>
           <table className={tableStyles.table}>
