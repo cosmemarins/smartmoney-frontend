@@ -343,9 +343,9 @@ const ComissaoInvestidoresListTable = ({ token, ano, mes }: Props) => {
   useEffect(() => {
     //console.log('caregando parceiros')
 
-    UsuarioService.getListParceirosSelect()
+    UsuarioService.getListComissionadosSelect()
       .then(respUsuario => {
-        respUsuario.unshift({ id: 0, nome: 'Todos os parceiros', token: 'all' } as UsuarioType)
+        respUsuario.unshift({ id: 0, nome: 'Todos os comissionados', token: 'all' } as UsuarioType)
         setListParceiros(respUsuario)
 
         //console.log('respUsuario', respUsuario)
@@ -360,7 +360,7 @@ const ComissaoInvestidoresListTable = ({ token, ano, mes }: Props) => {
   return (
     <>
       <Card>
-        <CardHeader title='Comissões dos Investidores - Resumo Mensal' className='pbe-4' action='Resumo Mensal' />
+        <CardHeader title='Comissões dos Clientes Investidores' className='pbe-4' action='Resumo Mensal' />
         <div className='flex justify-between flex-col items-start md:flex-row md:items-center p-6 border-bs gap-4'>
           <CustomTextField
             select

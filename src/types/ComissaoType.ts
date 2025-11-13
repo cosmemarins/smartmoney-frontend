@@ -11,7 +11,8 @@ export type ComissaoType = {
   extrato?: ExtratoType
   parcela?: number
   dataParcela?: Date
-  valorReferencia?: number
+  mesReferencia?: Date
+  valorExtrato?: number
   tipoExtrato?: TipoExtratoEnum
 
   cliente?: ClienteType

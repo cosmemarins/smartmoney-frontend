@@ -243,7 +243,7 @@ export default function ExtratoComissaoContrato({ token }: props) {
                     />
                   </TableCell>
                   <TableCell align='center'>
-                    {comissao.valorReferencia ? valorBr.format(comissao?.valorReferencia) : ''}
+                    {comissao.valorExtrato ? valorBr.format(comissao?.valorExtrato) : ''}
                   </TableCell>
                   {(isMaster(session?.user) || isParceiroMaster(session?.user)) && (
                     <TableCell align='center'>

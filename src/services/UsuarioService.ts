@@ -62,6 +62,12 @@ const UsuarioService = {
     return data
   },
 
+  getListComissionadosSelect: async function (): Promise<UsuarioType[]> {
+    const { data } = await api.get<UsuarioType[]>(`${path}/comissionados/select`)
+
+    return data
+  },
+
   getListColaboradores: async function (dataOptions?: DataOptionsType): Promise<UsuarioType[]> {
     const queryString = new URLSearchParams()
 

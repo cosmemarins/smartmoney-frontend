@@ -108,7 +108,7 @@ export default function ExtratoComissaoInvestidor({ token, ano, mes }: props) {
     comissaoList.forEach(c => {
       count++
       const cliente = c.cliente?.nome || ''
-      const valorReferencia = c.valorReferencia ? valorBr.format(c.valorReferencia) : ''
+      const valorExtrato = c.valorExtrato ? valorBr.format(c.valorExtrato) : ''
       const tipo = c.tipoExtrato ? getTipoExtratoEnumDesc(c.tipoExtrato) : ''
       const dataEntrada = c.extrato?.data ? moment(c.extrato.data).format('DD-MM-YYYY') : ''
       const dataCredito = c.dataCreditoCliente ? moment(c.dataCreditoCliente).format('DD-MM-YYYY') : ''
@@ -120,7 +120,7 @@ export default function ExtratoComissaoInvestidor({ token, ano, mes }: props) {
       const valorLiquidoNum = c.valorCliente && c.valorIRCliente ? c.valorCliente - c.valorIRCliente : 0
       const valorLiquido = valorBr.format(valorLiquidoNum)
 
-      totalAporte += c.valorReferencia || 0
+      totalAporte += c.valorExtrato || 0
       totalBruto += c.valorCliente || 0
       totalIR += c.valorIRCliente || 0
       totalLiquido += valorLiquidoNum
@@ -128,7 +128,7 @@ export default function ExtratoComissaoInvestidor({ token, ano, mes }: props) {
       const cols = [
         String(count),
         cliente,
-        valorReferencia,
+        valorExtrato,
         tipo,
         dataEntrada,
         dataCredito,
@@ -346,7 +346,7 @@ export default function ExtratoComissaoInvestidor({ token, ano, mes }: props) {
                       comissao.dataCreditoCliente ? moment(comissao.dataCreditoCliente).format('DD-MM-YYYY') : ''
                     )
                   countItens++
-                  totalAporte += comissao?.valorReferencia ? comissao?.valorReferencia : 0
+                  totalAporte += comissao?.valorExtrato ? comissao?.valorExtrato : 0
                   totalBruto += comissao?.valorCliente ? comissao?.valorCliente : 0
                   totalIR += comissao?.valorIRCliente ? comissao?.valorIRCliente : 0
 
@@ -362,7 +362,7 @@ export default function ExtratoComissaoInvestidor({ token, ano, mes }: props) {
                       <TableCell align='center'>{countItens}</TableCell>
                       <TableCell align='center'>{comissao.cliente?.nome}</TableCell>
                       <TableCell align='center'>
-                        {comissao.valorReferencia ? valorBr.format(comissao?.valorReferencia) : ''}
+                        {comissao.valorExtrato ? valorBr.format(comissao?.valorExtrato) : ''}
                       </TableCell>
                       <TableCell align='center'>
                         <Chip
