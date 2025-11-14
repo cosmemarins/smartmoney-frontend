@@ -109,9 +109,9 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
         </SubMenu>
         <SubMenu label='Financeiro' icon={<i className='tabler-currency-dollar' />}>
           <SubMenu label='Comissionamento' icon={<i className='tabler-file-dollar' />}>
-            <MenuItem href={`/financeiro/comissao/investidores`}>Investidores</MenuItem>
+            <MenuItem href={`/financeiro/comissao/mensal/investidores`}>Investidores</MenuItem>
             {session?.user.podeCriarEquipe && session?.user.perfil != PerfilUsuarioEnum.AGENTE && (
-              <MenuItem href={`/financeiro/comissao/assessores`}>Assessores</MenuItem>
+              <MenuItem href={`/financeiro/comissao/mensal/assessores`}>Assessores</MenuItem>
             )}
             {session?.user.podeCriarEquipe && (
               <MenuItem href={`/financeiro/comissao/mensal/parceiros`}>Parceiro</MenuItem>

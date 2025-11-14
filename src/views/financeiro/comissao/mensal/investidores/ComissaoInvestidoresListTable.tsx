@@ -275,7 +275,7 @@ const ComissaoInvestidoresListTable = ({ token, ano, mes }: Props) => {
           <div className='text-center'>
             <IconButton>
               <Link
-                href={`/financeiro/comissao/investidores/extrato/${row.original.token}/${comissaoFilter.ano != 'all' && comissaoFilter.mes != 'all' ? comissaoFilter.ano + '/' + comissaoFilter.mes : ''}`}
+                href={`/financeiro/comissao/mensal/investidores/extrato/${row.original.token}/${comissaoFilter.ano != 'all' && comissaoFilter.mes != 'all' ? comissaoFilter.ano + '/' + comissaoFilter.mes : ''}`}
                 title='Extrato'
               >
                 <i className='tabler-file-description text-[22px] text-textSecondary' />
@@ -372,7 +372,7 @@ const ComissaoInvestidoresListTable = ({ token, ano, mes }: Props) => {
             <MenuItem value='25'>25</MenuItem>
             <MenuItem value='50'>50</MenuItem>
           </CustomTextField>
-          <div className='flex flex-col sm:flex-row is-full items-start sm:items-center gap-4'>
+          <div className='flex justify-end flex-col sm:flex-row is-full items-start sm:items-center gap-4'>
             <CustomTextField
               select
               value={comissaoFilter.token || 'all'}
@@ -449,7 +449,7 @@ const ComissaoInvestidoresListTable = ({ token, ano, mes }: Props) => {
             </CustomTextField>
 
             <Button
-              href={`/financeiro/comissao/investidores/${comissaoFilter.token || 'all'}/${
+              href={`/financeiro/comissao/mensal/investidores/${comissaoFilter.token || 'all'}/${
                 comissaoFilter.ano != 'all' && comissaoFilter.mes != 'all'
                   ? `/${comissaoFilter.ano}/${comissaoFilter.mes}`
                   : ''

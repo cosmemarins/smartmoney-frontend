@@ -276,7 +276,7 @@ const ComissaoParceirosListTable = ({ token, ano, mes }: Props) => {
           <div className='text-center'>
             <IconButton>
               <Link
-                href={`/financeiro/comissao/investidores/extrato/${row.original.token}/${comissaoFilter.ano != 'all' && comissaoFilter.mes != 'all' ? comissaoFilter.ano + '/' + comissaoFilter.mes : ''}`}
+                href={`/financeiro/comissao/mensal/investidores/extrato/${row.original.token}/${comissaoFilter.ano != 'all' && comissaoFilter.mes != 'all' ? comissaoFilter.ano + '/' + comissaoFilter.mes : ''}`}
                 title='Extrato'
               >
                 <i className='tabler-file-description text-[22px] text-textSecondary' />

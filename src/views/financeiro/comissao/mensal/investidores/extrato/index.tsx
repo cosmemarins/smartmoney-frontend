@@ -218,21 +218,7 @@ export default function ExtratoComissaoInvestidor({ token, ano, mes }: props) {
     <>
       <Card sx={{ mb: 2.5 }}>
         <CardHeader
-          title={
-            <>
-              <span>
-                Extrato de comissão: {cliente?.nome}
-                <br />
-                Referência:{' '}
-                {moment({ year: Number(ano), month: Number(mes), day: 1 })
-                  .subtract(1, 'month')
-                  .format('MMMM/YYYY')
-                  .toUpperCase()}
-                {' - '}
-                Data do crédito: {dataCreditoCliente}
-              </span>
-            </>
-          }
+          title='Extrato de comissão de Investidores'
           className='gap-2 flex-col items-start sm:flex-row sm:items-center'
           sx={{ '& .MuiCardHeader-action': { m: 0 }, '& .MuiInputBase-root': { mr: 3 } }}
           action={
@@ -297,7 +283,7 @@ export default function ExtratoComissaoInvestidor({ token, ano, mes }: props) {
 
               <Button
                 variant='contained'
-                href={`/financeiro/comissao/investidores/extrato/${comissaoFilter.token}/${comissaoFilter.ano}/${comissaoFilter.mes}`}
+                href={`/financeiro/comissao/mensal/investidores/extrato/${comissaoFilter.token}/${comissaoFilter.ano}/${comissaoFilter.mes}`}
                 onClick={e => {
                   if (
                     comissaoFilter.token == 'todos' ||
@@ -316,6 +302,17 @@ export default function ExtratoComissaoInvestidor({ token, ano, mes }: props) {
             </>
           }
         />
+        <div className='container flex justify-between  border-bs '>
+          <div className='p-6 gap-4'>{cliente?.nome}</div>
+          <div className='text-center p-6 gap-4'>
+            {moment({ year: Number(comissaoFilter.ano), month: Number(comissaoFilter.mes), day: 1 })
+              .subtract(1, 'month')
+              .format('MMMM/YYYY')
+              .toUpperCase()}{' '}
+            <br />
+            {dataCreditoCliente ? `Data do crédito: ${dataCreditoCliente}` : ''}
+          </div>
+        </div>
       </Card>
 
       <TableContainer component={Paper}>
@@ -419,12 +416,14 @@ export default function ExtratoComissaoInvestidor({ token, ano, mes }: props) {
           )}
           <caption>
             <Button
+              href={`/financeiro/comissao/mensal/investidores/all/${comissaoFilter.ano}/${comissaoFilter.mes}`}
               variant='contained'
               startIcon={<i className='tabler-arrow-back-up' />}
-              onClick={() => window.history.back()}
               sx={{ float: 'left' }}
+
+              //onClick={() => window.history.back()}
             >
-              Voltar para a listagem
+              Voltar para a listagem mensal
             </Button>
             {token && (
               <Button

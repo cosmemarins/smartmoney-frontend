@@ -3,8 +3,7 @@
 // React Imports
 import { useEffect, useMemo, useState } from 'react'
 
-// Type Imports
-import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 
 import {
   Button,
@@ -51,25 +50,26 @@ import moment, { locale } from 'moment'
 import 'moment/locale/pt-br'
 
 import CustomTextField from '@/@core/components/mui/TextField'
-import type { ComissaoType, ComissaoTypeAction } from '@/types/ComissaoType'
+import type { ComissaoType } from '@/types/ComissaoType'
 
 // Style Imports
 import tableStyles from '@core/styles/table.module.css'
 import TablePaginationComponent from '@/components/TablePaginationComponent'
 import { valorBr, valorEmReal } from '@/utils/string'
 import FinanceiroService from '@/services/FinanceiroService'
-import { PerfilUsuarioEnum } from '@/utils/enums/PerfilUsuarioEnum'
 
 import type { TotaisComissaoType } from '@/types/TotaisComissaoType'
 
 import UsuarioService from '@/services/UsuarioService'
 import type { UsuarioType } from '@/types/UsuarioType'
 import { trataErro } from '@/utils/erro'
+import type ComissaoAgrupadaType from '@/types/ComissaoAgrupadaType'
+import type { ComissaoAgrupadaTypeAction } from '@/types/ComissaoAgrupadaType'
 
 locale('pt-br')
 
 // Column Definitions
-const columnHelper = createColumnHelper<ComissaoTypeAction>()
+const columnHelper = createColumnHelper<ComissaoAgrupadaType>()
 
 const fuzzyFilter: FilterFn<any> = (row, columnId, value, addMeta) => {
   // Rank the item
@@ -146,137 +146,103 @@ interface Props {
 
 const ComissaoAgentesListTable = ({ token, ano, mes }: Props) => {
   // Hooks
-  const { data: session } = useSession()
+  const router = useRouter()
 
   // States
   const [rowSelection, setRowSelection] = useState({})
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [data, setData] = useState<ComissaoType[]>([])
+  const [data, setData] = useState<ComissaoAgrupadaType[]>([])
   const [listAgentes, setListAgentes] = useState<UsuarioType[]>([])
+  const [globalFilter, setGlobalFilter] = useState('')
+  const [refreshTable, setRefreshTable] = useState<boolean>(true)
 
   const [comissaoFilter, setComissaoFilter] = useState({
     token: token || 'all',
-    mes: mes || 'all',
-    ano: ano || 'all',
+    mes: mes || moment().add(1, 'month').month().toString(),
+    ano: ano || moment().year().toString(),
     primeiroAno: 2024,
     ultimoAno: moment().add(3, 'year').year()
   })
 
-  const [totais, setTotais] = useState<TotaisComissaoType>()
-  const [globalFilter, setGlobalFilter] = useState('')
-  const [refreshTable, setRefreshTable] = useState<boolean>(true)
+  const [totais, setTotais] = useState<TotaisComissaoType>({
+    totalRegistros: 0,
+    valorTotal: 0,
+    valorMedio: 0,
+    maiorTaxa: 0,
+    menorTaxa: 0,
+    totalRepasse: 0,
+    repasseMedio: 0
+  })
 
-  const columns = useMemo<ColumnDef<ComissaoTypeAction, any>[]>(
+  const columns = useMemo<ColumnDef<ComissaoAgrupadaTypeAction, any>[]>(
     () => [
-      columnHelper.accessor('nomeGestor', {
-        header: 'Assessor',
+      columnHelper.accessor('gestor', {
+        header: 'Agente',
         cell: ({ row }) => (
           <div className='flex items-center gap-4'>
-            <div className='flex flex-col'>
-              <Typography color='text.primary' className='font-medium'>
-                {row.original.nomeGestor}
-              </Typography>
-              <Typography variant='body2'>Cliente: {row.original.nomeCliente}</Typography>
-              {session?.user.perfil != PerfilUsuarioEnum.AGENTE && row.original.parceiro1 && (
-                <Typography variant='body2'>
-                  Parceiro: {row.original.nomeParceiro1}
-                  {row.original.parceiro2 && row.original.parceiro2 && ` -> ${row.original.nomeParceiro2}`}
-                  {row.original.parceiro3 && row.original.parceiro3 && ` -> ${row.original.nomeParceiro3}`}
-                </Typography>
-              )}
-            </div>
+            <div className='flex flex-col'>{row.original.gestor?.nome}</div>
           </div>
         )
       }),
-      columnHelper.accessor('dataAporte', {
-        header: 'Data Aporte',
+      columnHelper.accessor('mesReferencia', {
+        header: () => <div className='text-center'>Mês Referência</div>,
         cell: ({ row }) => (
-          <Typography color='text.primary'>
-            {moment(row.original.dataAporte).utcOffset('+0300').format('DD/MM/YYYY')}
-          </Typography>
+          <div className='text-center'>
+            <Typography color='text.primary'>
+              {moment(row.original.mesReferencia).format('MMM/YYYY').toUpperCase()}
+            </Typography>
+          </div>
         )
       }),
       columnHelper.accessor('dataCredito', {
-        header: 'Data Crédito',
+        header: () => <div className='text-center'>Data Crédito</div>,
         cell: ({ row }) => (
-          <Typography color='text.primary'>
-            {moment(row.original.dataCredito).utcOffset('+0300').format('DD/MM/YYYY')}
-          </Typography>
+          <div className='text-center'>
+            <Typography color='text.primary'>
+              {moment(row.original.dataCredito).utcOffset('+0300').format('DD/MM/YYYY')}
+            </Typography>
+          </div>
         )
       }),
-      columnHelper.accessor('dataVencimento', {
-        header: 'Data Vencimento',
+      columnHelper.accessor('qtdLancamentos', {
+        header: () => <div className='text-center'>Num. Lançamentos</div>,
         cell: ({ row }) => (
-          <Typography color='text.primary'>
-            {moment(row.original.dataVencimento).utcOffset('+0300').format('DD/MM/YYYY')}
-          </Typography>
+          <div className='text-center'>
+            <Typography color='text.primary'>{row.original.qtdLancamentos || 0}</Typography>
+          </div>
         )
       }),
-      columnHelper.accessor('saldo', {
-        header: 'Saldo',
+      columnHelper.accessor('totalDepositos', {
+        header: () => <div className='text-center'>Total Depósitos</div>,
         cell: ({ row }) => (
-          <>
-            <div className='text-center'>
-              <Typography color='text.primary'>{valorBr.format(row.original.saldo || 0)}</Typography>
-              {row.original.proratas && row.original.proratas.length > 0 && (
-                <small>
-                  saldo: {valorBr.format(row.original.valor || 0)}
-                  <br />
-                  prorata:{' '}
-                  {valorBr.format(
-                    row.original.proratas.reduce(function (total, item) {
-                      return total + (item?.valor || 0)
-                    }, 0)
-                  )}
-                </small>
-              )}
-
-              {row.getCanExpand() && (
-                <IconButton size='small' onClick={() => row.toggleExpanded()}>
-                  {row.getIsExpanded() ? (
-                    <i className='tabler-arrow-big-up-filled' />
-                  ) : (
-                    <i className='tabler-arrow-big-down-filled' />
-                  )}
-                </IconButton>
-              )}
-            </div>
-          </>
+          <div className='text-center'>
+            <Typography color='text.primary'>{valorBr.format(row.original.totalDepositos || 0)}</Typography>
+          </div>
         )
       }),
-      columnHelper.accessor('taxa', {
-        header: 'Taxa',
-        cell: ({ row }) => <Typography color='text.primary'>{valorBr.format(row.original.taxa || 0)}%</Typography>
-      }),
-      columnHelper.accessor('valorRepasse', {
-        header: 'Valor Repasse',
+      columnHelper.accessor('taxaMedia', {
+        header: () => <div className='text-center'>Taxa Média</div>,
         cell: ({ row }) => (
-          <>
-            <div className='text-center'>
-              <Typography color='text.primary'>{valorBr.format(row.original.valorRepasseGestor || 0)}</Typography>
-              {row.original.proratas && row.original.proratas.length > 0 && (
-                <small>
-                  saldo: {valorBr.format(row.original.valorRepasseGestor || 0)}
-                  <br />
-                  prorata:{' '}
-                  {valorBr.format(
-                    row.original.proratas.reduce(function (total, item) {
-                      return total + (item?.valorRepasseGestor || 0)
-                    }, 0)
-                  )}
-                </small>
-              )}
-            </div>
-          </>
+          <div className='text-center'>
+            <Typography color='text.primary'>{valorBr.format(row.original.taxaMedia || 0)}%</Typography>
+          </div>
         )
       }),
-      columnHelper.accessor('contrato', {
+      columnHelper.accessor('totalLiquido', {
+        header: () => <div className='text-center'>Valor Repasse</div>,
+        cell: ({ row }) => (
+          <div className='text-center'>
+            <Typography color='text.primary'>{valorBr.format(row.original.totalLiquido || 0)}</Typography>
+          </div>
+        )
+      }),
+      columnHelper.accessor('gestor.id', {
         header: '',
         cell: ({ row }) => (
           <div className='text-center'>
             <IconButton>
               <Link
-                href={`/financeiro/comissao/investidores/extrato/${row.original.token}/${comissaoFilter.ano != 'all' && comissaoFilter.mes != 'all' ? comissaoFilter.ano + '/' + comissaoFilter.mes : ''}`}
+                href={`/financeiro/comissao/mensal/assessores/extrato/${row.original.gestor?.token}/${comissaoFilter.ano != 'all' && comissaoFilter.mes != 'all' ? comissaoFilter.ano + '/' + comissaoFilter.mes : ''}`}
                 title='Extrato'
               >
                 <i className='tabler-file-description text-[22px] text-textSecondary' />
@@ -291,7 +257,7 @@ const ComissaoAgentesListTable = ({ token, ano, mes }: Props) => {
   )
 
   const table = useReactTable({
-    data: data as ComissaoType[],
+    data: data as ComissaoAgrupadaType[],
     columns,
     filterFns: {
       fuzzy: fuzzyFilter
@@ -317,24 +283,40 @@ const ComissaoAgentesListTable = ({ token, ano, mes }: Props) => {
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
     getFacetedMinMaxValues: getFacetedMinMaxValues(),
-    getExpandedRowModel: getExpandedRowModel(),
-    getRowCanExpand: row => {
-      return row.original.proratas.length > 0 ? true : false
-    }
+    getExpandedRowModel: getExpandedRowModel()
   })
+
+  const onClickReload = () => {
+    let reloadURL = `/financeiro/comissao/mensal/assessores/${comissaoFilter.token}`
+
+    //XOR de comissaoFilter.ano == 'all' com comissaoFilter.mes == 'all'
+    if (
+      (comissaoFilter.ano == 'all' && !(comissaoFilter.mes == 'all')) ||
+      (!(comissaoFilter.ano == 'all') && comissaoFilter.mes == 'all')
+    ) {
+      alert('Favor selecione um mês e um ano')
+
+      return false
+    } else if (comissaoFilter.ano != 'all' && comissaoFilter.mes != 'all') {
+      reloadURL += `/${comissaoFilter.ano}/${comissaoFilter.mes}`
+    }
+
+    //console.log('reloadURL ', reloadURL)
+    router.push(reloadURL)
+  }
 
   useEffect(() => {
     if (refreshTable) {
       setRefreshTable(false)
-      FinanceiroService.getListComissaoMensalAgentes(
+      FinanceiroService.getListComissaoAgentesAgrupadaMesAno(
         comissaoFilter.token != 'all' ? comissaoFilter.token : undefined,
         comissaoFilter.ano != 'all' ? comissaoFilter.ano : undefined,
         comissaoFilter.mes != 'all' ? comissaoFilter.mes : undefined
       )
-        .then(respComissaoView => {
-          console.log('respListComissao', respComissaoView)
-          setData(respComissaoView.listComissao)
-          setTotais(respComissaoView.totaisComissao)
+        .then(respComissaoAgrupada => {
+          console.log('respComissaoAgrupada', respComissaoAgrupada)
+          setData(respComissaoAgrupada.listComissaoAgrupada)
+          if (respComissaoAgrupada.totaisComissao) setTotais(respComissaoAgrupada.totaisComissao)
         })
         .catch(err => {
           toast.error(trataErro(err))
@@ -345,7 +327,7 @@ const ComissaoAgentesListTable = ({ token, ano, mes }: Props) => {
   }, [refreshTable])
 
   useEffect(() => {
-    //console.log('caregando parceiros')
+    //console.log('caregando assessores')
 
     UsuarioService.getListAgentesSelect()
       .then(respUsuario => {
@@ -364,25 +346,7 @@ const ComissaoAgentesListTable = ({ token, ano, mes }: Props) => {
   return (
     <>
       <Card>
-        <CardHeader
-          title='Comissisões dos Assessores - Resumo Mensal'
-          className='pbe-4'
-          action={
-            <Button
-              href={
-                `/financeiro/comissao/assessores/extrato/` +
-                (comissaoFilter.token != 'all' && comissaoFilter.ano != 'all' && comissaoFilter.mes != 'all'
-                  ? `${comissaoFilter.token}/${comissaoFilter.ano}/${comissaoFilter.mes}`
-                  : '')
-              }
-              variant='contained'
-              startIcon={<i className='tabler-article' />}
-              className='is-full sm:is-auto'
-            >
-              Ver extrato completo das comissões
-            </Button>
-          }
-        />
+        <CardHeader title='Comissisões dos Assessores' className='pbe-4' action='Resumo Mensal' />
         <div className='flex justify-between flex-col items-start md:flex-row md:items-center p-6 border-bs gap-4'>
           <CustomTextField
             select
@@ -394,15 +358,15 @@ const ComissaoAgentesListTable = ({ token, ano, mes }: Props) => {
             <MenuItem value='25'>25</MenuItem>
             <MenuItem value='50'>50</MenuItem>
           </CustomTextField>
-          <div className='flex flex-col sm:flex-row is-full items-start sm:items-center gap-4'>
+          <div className='flex flex-col sm:flex-row items-start sm:items-center gap-4'>
             <CustomTextField
               select
               value={comissaoFilter.token || 'all'}
               onChange={e => setComissaoFilter({ ...comissaoFilter, token: e.target.value })}
             >
-              {listAgentes.map((agente, index) => (
-                <MenuItem key={index} value={agente.token} selected={agente.token === comissaoFilter.token}>
-                  {agente.nome}
+              {listAgentes.map((parceiro, index) => (
+                <MenuItem key={index} value={parceiro.token} selected={parceiro.token === comissaoFilter.token}>
+                  {parceiro.nome}
                 </MenuItem>
               ))}
             </CustomTextField>
@@ -471,28 +435,10 @@ const ComissaoAgentesListTable = ({ token, ano, mes }: Props) => {
             </CustomTextField>
 
             <Button
-              href={
-                `/financeiro/comissao/assessores/` +
-                (comissaoFilter.token != 'all'
-                  ? comissaoFilter.ano != 'all' && comissaoFilter.mes != 'all'
-                    ? `${comissaoFilter.token}/${comissaoFilter.ano}/${comissaoFilter.mes}`
-                    : `${comissaoFilter.token}`
-                  : '')
-              }
               variant='contained'
               startIcon={<i className='tabler-refresh' />}
               className='is-full sm:is-auto'
-              onClick={e => {
-                if (
-                  (comissaoFilter.ano != 'all' && comissaoFilter.mes == 'all') ||
-                  (comissaoFilter.ano == 'all' && comissaoFilter.mes != 'all')
-                ) {
-                  e.preventDefault()
-                  alert('Favor informar mes e ano')
-                }
-
-                return false
-              }}
+              onClick={() => onClickReload()}
             >
               Atualizar
             </Button>
@@ -502,7 +448,7 @@ const ComissaoAgentesListTable = ({ token, ano, mes }: Props) => {
           <Table sx={{ minWidth: 650 }}>
             <TableHead>
               <TableRow>
-                <TableCell align='center'>Qtd Contratos</TableCell>
+                <TableCell align='center'>Qtd Lançamentos</TableCell>
                 <TableCell align='center'>Maior Taxa</TableCell>
                 <TableCell align='center'>Menor Taxa</TableCell>
                 <TableCell align='center'>Valor Médio</TableCell>
