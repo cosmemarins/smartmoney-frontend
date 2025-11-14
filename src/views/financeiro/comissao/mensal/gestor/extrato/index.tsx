@@ -197,7 +197,7 @@ export default function ExtratoComissaoGestor({ token, ano, mes }: props) {
       UsuarioService.get(token)
         .then(usuario => {
           setParceiro(usuario)
-          FinanceiroService.getComissaoParceiros(
+          FinanceiroService.getComissaoGestor(
             comissaoFilter.token != 'todos' ? comissaoFilter.token : undefined,
             comissaoFilter.ano != 'todos' ? comissaoFilter.ano : undefined,
             comissaoFilter.mes != 'todos' ? comissaoFilter.mes : undefined
