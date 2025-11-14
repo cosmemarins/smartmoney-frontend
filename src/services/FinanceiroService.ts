@@ -1,4 +1,5 @@
 import api from '@/services/api'
+import type { ComissaoAgrupadaFront } from '@/types/ComissaoAgrupadaFront'
 import type { ComissaoType } from '@/types/ComissaoType'
 import type { ComissaoViewType } from '@/types/ComissaoView'
 
@@ -51,14 +52,32 @@ const FinanceiroService = {
     return data
   },
 
+  getListComissaoParceirosAgrupadaMesAno: async function (
+    token?: string,
+    ano?: string,
+    mes?: string
+  ): Promise<ComissaoAgrupadaFront> {
+    let urlMesAno = ''
+
+    const tokenConsulta = !token || token == 'undefined' ? 'all' : token
+
+    if (ano && mes && ano != undefined && mes != undefined && ano != 'all' && mes != 'all') {
+      urlMesAno = `${ano}/${mes}`
+    }
+
+    const { data } = await api.get<ComissaoAgrupadaFront>(
+      `${path}/comissao/mensal/parceiros/${tokenConsulta}/${urlMesAno}`
+    )
+
+    return data
+  },
+
   getListComissaoMensalInvestidores: async function (
     token: string,
     ano?: string,
     mes?: string
   ): Promise<ComissaoViewType> {
     let url = ''
-
-    console.log(`${path}/comissao/investidores/${token}/${ano}/${mes}`)
 
     if (ano && mes && ano != undefined && mes != undefined && ano != 'all' && mes != 'all') {
       url = `${ano}/${mes}`

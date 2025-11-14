@@ -3,8 +3,7 @@
 // React Imports
 import { useEffect, useMemo, useState } from 'react'
 
-// Type Imports
-import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 
 import {
   Button,
@@ -12,6 +11,7 @@ import {
   CardHeader,
   Grid,
   IconButton,
+  Link,
   MenuItem,
   Paper,
   styled,
@@ -46,30 +46,30 @@ import { rankItem } from '@tanstack/match-sorter-utils'
 
 import { toast } from 'react-toastify'
 
-import axios from 'axios'
 import moment, { locale } from 'moment'
 import 'moment/locale/pt-br'
 
 import CustomTextField from '@/@core/components/mui/TextField'
-import type { ComissaoType, ComissaoTypeAction } from '@/types/ComissaoType'
+import type { ComissaoType } from '@/types/ComissaoType'
 
 // Style Imports
 import tableStyles from '@core/styles/table.module.css'
 import TablePaginationComponent from '@/components/TablePaginationComponent'
-import type { ValidationError } from '@/services/api'
 import { valorBr, valorEmReal } from '@/utils/string'
 import FinanceiroService from '@/services/FinanceiroService'
-import { PerfilUsuarioEnum } from '@/utils/enums/PerfilUsuarioEnum'
 
 import type { TotaisComissaoType } from '@/types/TotaisComissaoType'
 
 import UsuarioService from '@/services/UsuarioService'
 import type { UsuarioType } from '@/types/UsuarioType'
+import { trataErro } from '@/utils/erro'
+import type ComissaoAgrupadaType from '@/types/ComissaoAgrupadaType'
+import type { ComissaoAgrupadaTypeAction } from '@/types/ComissaoAgrupadaType'
 
 locale('pt-br')
 
 // Column Definitions
-const columnHelper = createColumnHelper<ComissaoTypeAction>()
+const columnHelper = createColumnHelper<ComissaoAgrupadaType>()
 
 const fuzzyFilter: FilterFn<any> = (row, columnId, value, addMeta) => {
   // Rank the item
@@ -140,122 +140,115 @@ const renderSubComponent = ({ row }: { row: Row<ComissaoType> }) => {
 
 interface Props {
   token: string | undefined
+  ano: string | undefined
+  mes: string | undefined
 }
 
-const ComissaoAtgParceirosListTable = ({ token }: Props) => {
+const ComissaoParceirosListTable = ({ token, ano, mes }: Props) => {
   // Hooks
-  const { data: session } = useSession()
+  const router = useRouter()
 
   // States
   const [rowSelection, setRowSelection] = useState({})
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [data, setData] = useState<ComissaoType[]>([])
+  const [data, setData] = useState<ComissaoAgrupadaType[]>([])
   const [listParceiros, setListParceiros] = useState<UsuarioType[]>([])
-  const [tokenParceiroFilter, setTokenParceiroFilter] = useState(token || 'todos')
-  const [totais, setTotais] = useState<TotaisComissaoType>()
   const [globalFilter, setGlobalFilter] = useState('')
   const [refreshTable, setRefreshTable] = useState<boolean>(true)
 
-  const columns = useMemo<ColumnDef<ComissaoTypeAction, any>[]>(
+  const [comissaoFilter, setComissaoFilter] = useState({
+    token: token || 'all',
+    mes: mes || moment().add(1, 'month').month().toString(),
+    ano: ano || moment().year().toString(),
+    primeiroAno: 2024,
+    ultimoAno: moment().add(3, 'year').year()
+  })
+
+  const [totais, setTotais] = useState<TotaisComissaoType>({
+    totalRegistros: 0,
+    valorTotal: 0,
+    valorMedio: 0,
+    maiorTaxa: 0,
+    menorTaxa: 0,
+    totalRepasse: 0,
+    repasseMedio: 0
+  })
+
+  const columns = useMemo<ColumnDef<ComissaoAgrupadaTypeAction, any>[]>(
     () => [
-      columnHelper.accessor('nomeGestor', {
+      columnHelper.accessor('gestor', {
         header: 'Parceiro',
         cell: ({ row }) => (
           <div className='flex items-center gap-4'>
-            <div className='flex flex-col'>
-              {session?.user.perfil != PerfilUsuarioEnum.AGENTE && row.original.parceiro1 && (
-                <Typography variant='body2'>
-                  Parceiro: {row.original.nomeParceiro1}
-                  {row.original.parceiro2 && row.original.parceiro2 && ` -> ${row.original.nomeParceiro2}`}
-                  {row.original.parceiro3 && row.original.parceiro3 && ` -> ${row.original.nomeParceiro3}`}
-                </Typography>
-              )}
-              <Typography variant='body2'>Gestor: {row.original.nomeGestor}</Typography>
-              <Typography variant='body2'>Cliente: {row.original.nomeCliente}</Typography>
-            </div>
+            <div className='flex flex-col'>{row.original.gestor?.nome}</div>
           </div>
         )
       }),
-      columnHelper.accessor('dataAporte', {
-        header: 'Data Aporte',
+      columnHelper.accessor('mesReferencia', {
+        header: () => <div className='text-center'>Mês Referência</div>,
         cell: ({ row }) => (
-          <Typography color='text.primary'>
-            {moment(row.original.dataAporte).utcOffset('+0300').format('DD/MM/YYYY')}
-          </Typography>
+          <div className='text-center'>
+            <Typography color='text.primary'>
+              {moment(row.original.mesReferencia).format('MMM/YYYY').toUpperCase()}
+            </Typography>
+          </div>
         )
       }),
       columnHelper.accessor('dataCredito', {
-        header: 'Data Crédito',
+        header: () => <div className='text-center'>Data Crédito</div>,
         cell: ({ row }) => (
-          <Typography color='text.primary'>
-            {moment(row.original.dataCredito).utcOffset('+0300').format('DD/MM/YYYY')}
-          </Typography>
+          <div className='text-center'>
+            <Typography color='text.primary'>
+              {moment(row.original.dataCredito).utcOffset('+0300').format('DD/MM/YYYY')}
+            </Typography>
+          </div>
         )
       }),
-      columnHelper.accessor('dataVencimento', {
-        header: 'Data Vencimento',
+      columnHelper.accessor('qtdLancamentos', {
+        header: () => <div className='text-center'>Num. Lançamentos</div>,
         cell: ({ row }) => (
-          <Typography color='text.primary'>
-            {moment(row.original.dataVencimento).utcOffset('+0300').format('DD/MM/YYYY')}
-          </Typography>
+          <div className='text-center'>
+            <Typography color='text.primary'>{row.original.qtdLancamentos || 0}</Typography>
+          </div>
         )
       }),
-      columnHelper.accessor('saldo', {
-        header: 'Saldo',
+      columnHelper.accessor('totalDepositos', {
+        header: () => <div className='text-center'>Total Depósitos</div>,
         cell: ({ row }) => (
-          <>
-            <div className='text-center'>
-              <Typography color='text.primary'>{valorBr.format(row.original.saldo || 0)}</Typography>
-              {row.original.proratas && row.original.proratas.length > 0 && (
-                <small>
-                  saldo: {valorBr.format(row.original.valor || 0)}
-                  <br />
-                  prorata:{' '}
-                  {valorBr.format(
-                    row.original.proratas.reduce(function (total, item) {
-                      return total + (item?.valor || 0)
-                    }, 0)
-                  )}
-                </small>
-              )}
-
-              {row.getCanExpand() && (
-                <IconButton size='small' onClick={() => row.toggleExpanded()}>
-                  {row.getIsExpanded() ? (
-                    <i className='tabler-arrow-big-up-filled' />
-                  ) : (
-                    <i className='tabler-arrow-big-down-filled' />
-                  )}
-                </IconButton>
-              )}
-            </div>
-          </>
+          <div className='text-center'>
+            <Typography color='text.primary'>{valorBr.format(row.original.totalDepositos || 0)}</Typography>
+          </div>
         )
       }),
-      columnHelper.accessor('taxa', {
-        header: 'Taxa',
-        cell: ({ row }) => <Typography color='text.primary'>{valorBr.format(row.original.taxa || 0)}%</Typography>
-      }),
-      columnHelper.accessor('valorRepasse', {
-        header: 'Valor Repasse',
+      columnHelper.accessor('taxaMedia', {
+        header: () => <div className='text-center'>Taxa Média</div>,
         cell: ({ row }) => (
-          <>
-            <div className='text-center'>
-              <Typography color='text.primary'>{valorBr.format(row.original.valorRepasse || 0)}</Typography>
-              {row.original.proratas && row.original.proratas.length > 0 && (
-                <small>
-                  saldo: {valorBr.format(row.original.valorRepasse || 0)}
-                  <br />
-                  prorata:{' '}
-                  {valorBr.format(
-                    row.original.proratas.reduce(function (total, item) {
-                      return total + (item?.valorRepasse || 0)
-                    }, 0)
-                  )}
-                </small>
-              )}
-            </div>
-          </>
+          <div className='text-center'>
+            <Typography color='text.primary'>{valorBr.format(row.original.taxaMedia || 0)}%</Typography>
+          </div>
+        )
+      }),
+      columnHelper.accessor('totalLiquido', {
+        header: () => <div className='text-center'>Valor Repasse</div>,
+        cell: ({ row }) => (
+          <div className='text-center'>
+            <Typography color='text.primary'>{valorBr.format(row.original.totalLiquido || 0)}</Typography>
+          </div>
+        )
+      }),
+      columnHelper.accessor('gestor.id', {
+        header: '',
+        cell: ({ row }) => (
+          <div className='text-center'>
+            <IconButton>
+              <Link
+                href={`/financeiro/comissao/mensal/parceiros/extrato/${row.original.gestor?.token}/${comissaoFilter.ano != 'all' && comissaoFilter.mes != 'all' ? comissaoFilter.ano + '/' + comissaoFilter.mes : ''}`}
+                title='Extrato'
+              >
+                <i className='tabler-file-description text-[22px] text-textSecondary' />
+              </Link>
+            </IconButton>
+          </div>
         )
       })
     ],
@@ -264,7 +257,7 @@ const ComissaoAtgParceirosListTable = ({ token }: Props) => {
   )
 
   const table = useReactTable({
-    data: data as ComissaoType[],
+    data: data as ComissaoAgrupadaType[],
     columns,
     filterFns: {
       fuzzy: fuzzyFilter
@@ -290,68 +283,172 @@ const ComissaoAtgParceirosListTable = ({ token }: Props) => {
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
     getFacetedMinMaxValues: getFacetedMinMaxValues(),
-    getExpandedRowModel: getExpandedRowModel(),
-    getRowCanExpand: row => {
-      return row.original.proratas.length > 0 ? true : false
-    }
+    getExpandedRowModel: getExpandedRowModel()
   })
+
+  const onClickReload = () => {
+    let reloadURL = `/financeiro/comissao/mensal/parceiros/${comissaoFilter.token}`
+
+    //XOR de comissaoFilter.ano == 'all' com comissaoFilter.mes == 'all'
+    if (
+      (comissaoFilter.ano == 'all' && !(comissaoFilter.mes == 'all')) ||
+      (!(comissaoFilter.ano == 'all') && comissaoFilter.mes == 'all')
+    ) {
+      alert('Favor selecione um mês e um ano')
+
+      return false
+    } else if (comissaoFilter.ano != 'all' && comissaoFilter.mes != 'all') {
+      reloadURL += `/${comissaoFilter.ano}/${comissaoFilter.mes}`
+    }
+
+    //console.log('reloadURL ', reloadURL)
+    router.push(reloadURL)
+  }
 
   useEffect(() => {
     if (refreshTable) {
       setRefreshTable(false)
-      FinanceiroService.getComissaoAtgParceiros(token)
-        .then(respComissaoView => {
-          //console.log('respListComissao', respListComissao)
-          setData(respComissaoView.listComissao)
-          setTotais(respComissaoView.totaisComissao)
+      FinanceiroService.getListComissaoParceirosAgrupadaMesAno(
+        comissaoFilter.token != 'all' ? comissaoFilter.token : undefined,
+        comissaoFilter.ano != 'all' ? comissaoFilter.ano : undefined,
+        comissaoFilter.mes != 'all' ? comissaoFilter.mes : undefined
+      )
+        .then(respComissaoAgrupada => {
+          console.log('respComissaoAgrupada', respComissaoAgrupada)
+          setData(respComissaoAgrupada.listComissaoAgrupada)
+          if (respComissaoAgrupada.totaisComissao) setTotais(respComissaoAgrupada.totaisComissao)
         })
-        .catch((err: any) => {
-          if (axios.isAxiosError<ValidationError, Record<string, unknown>>(err)) {
-            console.log(err.status)
-            console.error(err.response)
-            toast.error(`Erro, ${err.status}`)
-          } else {
-            console.error(err)
-            toast.error(`Erro`, err)
-          }
+        .catch(err => {
+          toast.error(trataErro(err))
         })
+        .finally(() => {})
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshTable])
 
   useEffect(() => {
-    console.log('caregando parceiros')
+    //console.log('caregando parceiros')
 
     UsuarioService.getListParceirosSelect()
       .then(respUsuario => {
-        respUsuario.push({ id: 0, nome: 'Todos os parceiros', token: 'todos' } as UsuarioType)
+        respUsuario.unshift({ id: 0, nome: 'Todos os parceiros', token: 'all' } as UsuarioType)
         setListParceiros(respUsuario)
 
         //console.log('respUsuario', respUsuario)
       })
       .catch(err => {
-        if (axios.isAxiosError<ValidationError, Record<string, unknown>>(err)) {
-          console.log(err.status)
-          console.error(err.response)
-        } else {
-          console.error(err)
-        }
+        toast.error(trataErro(err))
       })
-      .finally(() => {
-        //setLoadingContext(false)
-      })
+      .finally(() => {})
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (
     <>
       <Card>
-        <CardHeader title='Comissisões dos Parceiros' className='pbe-4' />
+        <CardHeader title='Comissisões dos Parceiros' className='pbe-4' action='Resumo Mensal' />
+        <div className='flex justify-between flex-col items-start md:flex-row md:items-center p-6 border-bs gap-4'>
+          <CustomTextField
+            select
+            value={table.getState().pagination.pageSize}
+            onChange={e => table.setPageSize(Number(e.target.value))}
+            className='is-[70px]'
+          >
+            <MenuItem value='10'>10</MenuItem>
+            <MenuItem value='25'>25</MenuItem>
+            <MenuItem value='50'>50</MenuItem>
+          </CustomTextField>
+          <div className='flex flex-col sm:flex-row items-start sm:items-center gap-4'>
+            <CustomTextField
+              select
+              value={comissaoFilter.token || 'all'}
+              onChange={e => setComissaoFilter({ ...comissaoFilter, token: e.target.value })}
+            >
+              {listParceiros.map((parceiro, index) => (
+                <MenuItem key={index} value={parceiro.token} selected={parceiro.token === comissaoFilter.token}>
+                  {parceiro.nome}
+                </MenuItem>
+              ))}
+            </CustomTextField>
+            <CustomTextField
+              select
+              value={comissaoFilter.mes || 'all'}
+              onChange={e => setComissaoFilter({ ...comissaoFilter, mes: e.target.value })}
+            >
+              <MenuItem value='all' selected={'all' == comissaoFilter.mes}>
+                Todos os meses
+              </MenuItem>
+              <MenuItem value='01' selected={'01' == comissaoFilter.mes}>
+                Janeiro
+              </MenuItem>
+              <MenuItem value='02' selected={'02' == comissaoFilter.mes}>
+                Fevereiro
+              </MenuItem>
+              <MenuItem value='03' selected={'03' == comissaoFilter.mes}>
+                Março
+              </MenuItem>
+              <MenuItem value='04' selected={'04' == comissaoFilter.mes}>
+                Abril
+              </MenuItem>
+              <MenuItem value='05' selected={'05' == comissaoFilter.mes}>
+                Maio
+              </MenuItem>
+              <MenuItem value='06' selected={'06' == comissaoFilter.mes}>
+                Junho
+              </MenuItem>
+              <MenuItem value='07' selected={'07' == comissaoFilter.mes}>
+                Julho
+              </MenuItem>
+              <MenuItem value='08' selected={'08' == comissaoFilter.mes}>
+                Agosto
+              </MenuItem>
+              <MenuItem value='09' selected={'09' == comissaoFilter.mes}>
+                Setembro
+              </MenuItem>
+              <MenuItem value='10' selected={'10' == comissaoFilter.mes}>
+                Outubro
+              </MenuItem>
+              <MenuItem value='11' selected={'11' == comissaoFilter.mes}>
+                Novembro
+              </MenuItem>
+              <MenuItem value='12' selected={'12' == comissaoFilter.mes}>
+                Dezembro
+              </MenuItem>
+            </CustomTextField>
+
+            <CustomTextField
+              select
+              value={comissaoFilter.ano || 'all'}
+              onChange={e => setComissaoFilter({ ...comissaoFilter, ano: e.target.value })}
+            >
+              <MenuItem value='all' selected={'all' == comissaoFilter.mes}>
+                Todos os anos
+              </MenuItem>
+              {Array.from(
+                { length: comissaoFilter.ultimoAno - comissaoFilter.primeiroAno + 1 },
+                (_, i) => comissaoFilter.ultimoAno - i
+              ).map(year => (
+                <MenuItem key={year} value={String(year)} selected={String(year) === comissaoFilter.ano}>
+                  {year}
+                </MenuItem>
+              ))}
+            </CustomTextField>
+
+            <Button
+              variant='contained'
+              startIcon={<i className='tabler-refresh' />}
+              className='is-full sm:is-auto'
+              onClick={() => onClickReload()}
+            >
+              Atualizar
+            </Button>
+          </div>
+        </div>
         <div className='flex justify-between flex-col items-start md:flex-row md:items-center p-6 border-bs gap-4'>
           <Table sx={{ minWidth: 650 }}>
             <TableHead>
               <TableRow>
-                <TableCell align='center'>Qtd Contratos</TableCell>
+                <TableCell align='center'>Qtd Lançamentos</TableCell>
                 <TableCell align='center'>Maior Taxa</TableCell>
                 <TableCell align='center'>Menor Taxa</TableCell>
                 <TableCell align='center'>Valor Médio</TableCell>
@@ -372,44 +469,6 @@ const ComissaoAtgParceirosListTable = ({ token }: Props) => {
               </TableRow>
             </TableBody>
           </Table>
-        </div>
-        <div className='flex justify-between flex-col items-start md:flex-row md:items-center p-6 border-bs gap-4'>
-          <CustomTextField
-            select
-            value={table.getState().pagination.pageSize}
-            onChange={e => table.setPageSize(Number(e.target.value))}
-            className='is-[70px]'
-          >
-            <MenuItem value='10'>10</MenuItem>
-            <MenuItem value='25'>25</MenuItem>
-            <MenuItem value='50'>50</MenuItem>
-          </CustomTextField>
-          <div className='flex flex-col sm:flex-row is-full items-start sm:items-center gap-4'>
-            <CustomTextField
-              select
-              fullWidth
-              value={tokenParceiroFilter || 'todos'}
-              onChange={e => setTokenParceiroFilter(e.target.value)}
-            >
-              {listParceiros.map((parceiro, index) => (
-                <MenuItem key={index} value={parceiro.token} selected={parceiro.token === tokenParceiroFilter}>
-                  {parceiro.nome}
-                </MenuItem>
-              ))}
-            </CustomTextField>
-
-            <Button
-              href={
-                `/financeiro/comissao/mensal/parceiros/` +
-                (tokenParceiroFilter && tokenParceiroFilter != 'todos' ? tokenParceiroFilter : '')
-              }
-              variant='contained'
-              startIcon={<i className='tabler-refresh' />}
-              className='is-full sm:is-auto'
-            >
-              Atualizar
-            </Button>
-          </div>
         </div>
         <div className='overflow-x-auto'>
           <table className={tableStyles.table}>
@@ -488,4 +547,4 @@ const ComissaoAtgParceirosListTable = ({ token }: Props) => {
   )
 }
 
-export default ComissaoAtgParceirosListTable
+export default ComissaoParceirosListTable
