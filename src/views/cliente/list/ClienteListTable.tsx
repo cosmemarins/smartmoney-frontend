@@ -8,6 +8,7 @@ import { useSession } from 'next-auth/react'
 
 import type { TextFieldProps } from '@mui/material'
 import {
+  Button,
   Card,
   CardHeader,
   Checkbox,
@@ -53,6 +54,7 @@ import { excluirCliente, getListCliente } from '@/services/ClienteService'
 import { cpfCnpjMask } from '@/utils/string'
 import { trataErro } from '@/utils/erro'
 import { PerfilUsuarioEnum } from '@/utils/enums/PerfilUsuarioEnum'
+import { useClienteContext } from '@/contexts/ClienteContext'
 
 // Column Definitions
 const columnHelper = createColumnHelper<ClienteTypeWithAction>()
@@ -102,15 +104,18 @@ const DebouncedInput = ({
 const ClienteListTable = () => {
   //hooks
   const { data: session } = useSession()
+  const { globalFilter, setGlobalFilterContext } = useClienteContext()
 
   // States
   const [rowSelection, setRowSelection] = useState({})
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [data, setData] = useState<ClienteType[]>([])
-  const [globalFilter, setGlobalFilter] = useState('')
   const [dialogConfirma, setDialogConfirma] = useState<DialogConfirmaType>({ open: false })
   const [clienteExcluir, setClienteExcluir] = useState<ClienteType | undefined>()
   const [refreshTable, setRefreshTable] = useState<boolean>(true)
+  const handleLimparFiltros = () => {
+    setGlobalFilterContext('')
+  }
 
   const handleOpenDlgConfirmaExcluir = (cliente: ClienteType) => {
     setClienteExcluir(cliente)
@@ -142,7 +147,6 @@ const ClienteListTable = () => {
           setClienteExcluir(undefined)
           setRefreshTable(true)
 
-          //console.log('respContrato', respContrato)
           toast.success(`Cliente ${clienteExcluir?.nome} excluído!`)
         })
         .catch((err: any) => {
@@ -284,12 +288,11 @@ const ClienteListTable = () => {
         pageSize: 10
       }
     },
-    enableRowSelection: true, //enable row selection for all rows
-    // enableRowSelection: row => row.original.age > 18, // or enable row selection conditionally per row
+    enableRowSelection: true,
     globalFilterFn: fuzzyFilter,
     onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
-    onGlobalFilterChange: setGlobalFilter,
+    onGlobalFilterChange: setGlobalFilterContext,
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -329,20 +332,19 @@ const ClienteListTable = () => {
           <div className='flex flex-col sm:flex-row is-full sm:is-auto items-start sm:items-center gap-4'>
             <DebouncedInput
               value={globalFilter ?? ''}
-              onChange={value => setGlobalFilter(String(value))}
+              onChange={value => setGlobalFilterContext(String(value))} // <-- Ligado ao contexto
               placeholder='Localizar cliente'
               className='is-full sm:is-auto'
             />
-            {/*
             <Button
-              href='/cliente/new'
-              variant='contained'
-              startIcon={<i className='tabler-plus' />}
-              className='is-full sm:is-auto'
+              variant='outlined'
+              color='secondary'
+              onClick={handleLimparFiltros}
+              startIcon={<i className='tabler-filter-off' />}
+              sx={{ whiteSpace: 'nowrap', height: '100%', minHeight: '40px' }}
             >
-              Adicionar Cliente
+              Limpar
             </Button>
-            */}
           </div>
         </div>
         <div className='overflow-x-auto'>

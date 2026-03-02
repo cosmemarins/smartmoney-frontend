@@ -12,6 +12,6 @@ const ClienteApp = async () => {
       </Grid>
     </Grid>
   )
-}
+} 
 
 export default ClienteApp

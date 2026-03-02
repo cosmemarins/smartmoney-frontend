@@ -68,6 +68,7 @@ import { TipoArquivoRegistroEnum } from '@/utils/enums/TipoArquivoRegistroEnum'
 import { TipoDocumentoEnum } from '@/utils/enums/TipoDocumentoEnum'
 import { PerfilUsuarioEnum } from '@/utils/enums/PerfilUsuarioEnum'
 import { isMaster, isParceiroMaster } from '@/utils/utils'
+import { useContratoContext } from '@/contexts/ContratoContext'
 
 locale('pt-br')
 
@@ -126,13 +127,21 @@ const DebouncedInput = ({
 const ContratoListTable = () => {
   //hooks
   const { data: session } = useSession()
+  const { contratoFilter, setContratoFilterContext, globalFilter, setGlobalFilterContext } = useContratoContext()
+
+  const handleLimparFiltros = () => {
+    setContratoFilterContext({
+      status: 'TODOS',
+      tipoSaldo: 'TODOS',
+      options: { page: 1, orderDirection: 'ASC' }
+    })
+    setGlobalFilterContext('')
+  }
 
   // States
   const [rowSelection, setRowSelection] = useState({})
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [data, setData] = useState<ContratoType[]>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([{ id: 'status', value: 'NOVO' }])
-  const [globalFilter, setGlobalFilter] = useState('')
   const [dialogConfirma, setDialogConfirma] = useState<DialogConfirmaType>({ open: false })
   const [contratoExcluir, setContratoExcluir] = useState<ContratoType | undefined>()
   const [contratoEdit, setContratoEdit] = useState<ContratoType>()
@@ -140,7 +149,6 @@ const ContratoListTable = () => {
   const [openDlgContrato, setOpenDlgContrato] = useState<boolean>(false)
   const [openDlgDocumentacao, setOpenDlgDocumentacao] = useState<boolean>(false)
   const [openDlgArquivo, setOpenDlgArquivo] = useState<boolean>(false)
-  const [contratoFilter, setContratoFilter] = useState<ContratoFilterType>()
 
   const handleOpenDlgContrato = (contrato: ContratoType) => {
     setContratoEdit(contrato)
@@ -223,13 +231,10 @@ const ContratoListTable = () => {
         .then(() => {
           setContratoExcluir(undefined)
           setRefreshTable(true)
-
-          //console.log('respContrato', respContrato)
           toast.success(`Contrato ${contratoExcluir?.token} excluído!`)
         })
         .catch((err: any) => {
           const erro = trataErro(err)
-
           console.error(erro)
           toast.error(trataErro(erro))
         })
@@ -416,7 +421,6 @@ const ContratoListTable = () => {
     globalFilterFn: fuzzyFilter,
     onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
-    onGlobalFilterChange: setGlobalFilter,
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -426,15 +430,6 @@ const ContratoListTable = () => {
     getFacetedMinMaxValues: getFacetedMinMaxValues(),
     debugColumns: false
   })
-
-  useEffect(() => {
-    setContratoFilter({
-      options: {
-        page: 1,
-        orderDirection: 'ASC'
-      }
-    })
-  }, [])
 
   useEffect(() => {
     const filters = []
@@ -481,7 +476,6 @@ const ContratoListTable = () => {
       setRefreshTable(false)
       ContratoService.getList()
         .then(respListContrato => {
-          //console.log('respListContrato', respListContrato)
           setData(respListContrato)
         })
         .catch(err => {
@@ -528,7 +522,7 @@ const ContratoListTable = () => {
               select
               label='Tipo saldo'
               value={contratoFilter?.tipoSaldo || 'TODOS'}
-              onChange={e => setContratoFilter({ ...contratoFilter, tipoSaldo: e.target.value })}
+              onChange={e => setContratoFilterContext({ ...contratoFilter, tipoSaldo: e.target.value })}
               sx={{ width: '170px' }}
             >
               <MenuItem value='TODOS' selected={contratoFilter?.tipoSaldo === 'TODOS'}>
@@ -545,7 +539,7 @@ const ContratoListTable = () => {
               select
               label='Status'
               value={contratoFilter?.status || 'TODOS'}
-              onChange={e => setContratoFilter({ ...contratoFilter, status: e.target.value })}
+              onChange={e => setContratoFilterContext({ ...contratoFilter, status: e.target.value })}
               sx={{ width: '150px' }}
             >
               <MenuItem value='TODOS' selected={contratoFilter?.status === 'TODOS'}>
@@ -560,10 +554,19 @@ const ContratoListTable = () => {
             <DebouncedInput
               label='Localizar'
               value={globalFilter ?? ''}
-              onChange={value => setGlobalFilter(String(value))}
+              onChange={value => setGlobalFilterContext(String(value))}
               placeholder='Digite um texto...'
               className='is-full sm:is-auto'
             />
+            <Button
+              variant='outlined'
+              color='secondary'
+              onClick={handleLimparFiltros}
+              startIcon={<i className='tabler-filter-off' />}
+              sx={{ whiteSpace: 'nowrap', height: '100%', minHeight: '40px' }}
+            >
+              Limpar
+            </Button>
           </div>
         </div>
 
@@ -703,7 +706,7 @@ const ContratoListTable = () => {
         onClose={(event, reason) => {
           if (reason !== 'backdropClick') {
             handleCloseDlgArquivo()
-
+            
             //qunado for para dar oção de reenvio do contrato ao incluir um aditivo
             //handleCloseDlgArquivo(false)
           }

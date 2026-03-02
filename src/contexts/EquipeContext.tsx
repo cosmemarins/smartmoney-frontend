@@ -1,4 +1,6 @@
-import { createContext, useContext, useState, type ReactNode } from 'react'
+'use client'
+
+import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
 
 import type { UsuarioType } from '@/types/UsuarioType'
 import isCPF from '@/utils/cpf'
@@ -14,6 +16,8 @@ interface EquipeContextData {
   setLoadingContext: (loading: boolean) => void
   isCpf: boolean
   isCnpj: boolean
+  globalFilter: string
+  setGlobalFilterContext: (filter: string) => void
 }
 
 interface Props {
@@ -28,6 +32,14 @@ export function EquipeProvider({ children }: Props) {
   const [loading, setLoading] = useState<boolean>(false)
   const [isCpf, setIsCpf] = useState<boolean>(false)
   const [isCnpj, setIsCnpj] = useState<boolean>(false)
+  const [globalFilter, setGlobalFilter] = useState<string>('')
+
+  useEffect(() => {
+    const savedGlobalFilter = sessionStorage.getItem('equipe_global_filter')
+    if (savedGlobalFilter) {
+      setGlobalFilter(savedGlobalFilter)
+    }
+  }, [])
 
   const setUsuarioEquipeContext = (usuarioEquipe: UsuarioType) => {
     if (usuarioEquipe && usuarioEquipe.cpfCnpj) {
@@ -54,6 +66,15 @@ export function EquipeProvider({ children }: Props) {
     setLoading(loading)
   }
 
+  const setGlobalFilterContext = (filter: string) => {
+    setGlobalFilter(filter)
+    if (filter) {
+      sessionStorage.setItem('equipe_global_filter', filter)
+    } else {
+      sessionStorage.removeItem('equipe_global_filter')
+    }
+  }
+
   return (
     <EquipeContext.Provider
       value={{
@@ -64,10 +85,11 @@ export function EquipeProvider({ children }: Props) {
         loading,
         setLoadingContext,
         isCpf,
-        isCnpj
+        isCnpj,
+        globalFilter,
+        setGlobalFilterContext
       }}
     >
-      {' '}
       {children}
     </EquipeContext.Provider>
   )
