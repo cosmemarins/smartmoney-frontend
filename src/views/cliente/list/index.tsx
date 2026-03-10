@@ -1,16 +1,17 @@
-// React Imports
 import { Grid } from '@mui/material'
-
 import ClienteListTable from './ClienteListTable'
+import { ClienteProvider } from '@/contexts/ClienteContext'
 
 const ClienteList = () => {
   // States
   return (
-    <Grid container spacing={6}>
-      <Grid item xs={12}>
-        <ClienteListTable />
+    <ClienteProvider>
+      <Grid container spacing={6}>
+        <Grid item xs={12}>
+          <ClienteListTable />
+        </Grid>
       </Grid>
-    </Grid>
+    </ClienteProvider>
   )
 }
 

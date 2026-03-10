@@ -7,7 +7,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useSession } from 'next-auth/react'
 
 import type { TextFieldProps } from '@mui/material'
-import { Card, CardHeader, Chip, IconButton, Link, MenuItem, TablePagination, Typography } from '@mui/material'
+import { Button, Card, CardHeader, Chip, IconButton, Link, MenuItem, TablePagination, Typography } from '@mui/material'
 
 import type { ColumnDef, ColumnFiltersState, FilterFn } from '@tanstack/react-table'
 import {
@@ -46,6 +46,7 @@ import { cpfCnpjMask, valorBr } from '@/utils/string'
 import { PerfilUsuarioEnum } from '@/utils/enums/PerfilUsuarioEnum'
 import { isMaster, isParceiroMaster } from '@/utils/utils'
 import { getTipoExtratoEnumColor } from '@/utils/enums/TipoExtratoEnum'
+import { useExtratoContext } from '@/contexts/ExtratoContext'
 
 locale('pt-br')
 
@@ -97,17 +98,25 @@ const DebouncedInput = ({
 const ExtratoListTable = () => {
   //hooks
   const { data: session } = useSession()
+  const { ExtratoFilter, setExtratoFilterContext, globalFilter, setGlobalFilterContext } = useExtratoContext()
 
   // States
   const [rowSelection, setRowSelection] = useState({})
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [data, setData] = useState<ExtratoType[]>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-  const [globalFilter, setGlobalFilter] = useState('')
   const [dialogConfirma, setDialogConfirma] = useState<DialogConfirmaType>({ open: false })
   const [extratoExcluir, setextratoExcluir] = useState<ExtratoType | undefined>()
   const [refreshTable, setRefreshTable] = useState<boolean>(true)
-  const [ExtratoFilter, setExtratoFilter] = useState<ExtratoFilterType>()
+
+  const handleLimparFiltros = () => {
+    setExtratoFilterContext({
+      status: 'TODOS',
+      tipo: 'TODOS',
+      options: { page: 1, orderDirection: 'ASC' }
+    })
+    setGlobalFilterContext('')
+  }
 
   const handleOpenDlgConfirmaExcluir = (extrato: ExtratoType) => {
     setextratoExcluir(extrato)
@@ -120,7 +129,6 @@ const ExtratoListTable = () => {
           setextratoExcluir(undefined)
           setRefreshTable(true)
 
-          //console.log('respContrato', respContrato)
           toast.success(`Lançamento ${extratoExcluir?.token} excluído!`)
         })
         .catch((err: any) => {
@@ -263,12 +271,11 @@ const ExtratoListTable = () => {
         pageSize: 10
       }
     },
-    enableRowSelection: true, //enable row selection for all rows
-    // enableRowSelection: row => row.original.age > 18, // or enable row selection conditionally per row
+    enableRowSelection: true,
     globalFilterFn: fuzzyFilter,
     onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
-    onGlobalFilterChange: setGlobalFilter,
+    onGlobalFilterChange: setGlobalFilterContext,
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -278,15 +285,6 @@ const ExtratoListTable = () => {
     getFacetedMinMaxValues: getFacetedMinMaxValues(),
     debugColumns: false
   })
-
-  useEffect(() => {
-    setExtratoFilter({
-      options: {
-        page: 1,
-        orderDirection: 'ASC'
-      }
-    })
-  }, [])
 
   useEffect(() => {
     const filters = []
@@ -333,7 +331,6 @@ const ExtratoListTable = () => {
       setRefreshTable(false)
       ExtratoService.list()
         .then(respListExtrato => {
-          //console.log('respListContrato', respListContrato)
           setData(respListExtrato)
         })
         .catch(err => {
@@ -364,7 +361,7 @@ const ExtratoListTable = () => {
               select
               label='Tipo Lançamento'
               value={ExtratoFilter?.tipo || 'TODOS'}
-              onChange={e => setExtratoFilter({ ...ExtratoFilter, tipo: e.target.value })}
+              onChange={e => setExtratoFilterContext({ ...ExtratoFilter, tipo: e.target.value })}
               sx={{ width: '170px' }}
             >
               <MenuItem value='TODOS' selected={ExtratoFilter?.tipo === 'TODOS'}>
@@ -381,7 +378,7 @@ const ExtratoListTable = () => {
               select
               label='Status'
               value={ExtratoFilter?.status || 'TODOS'}
-              onChange={e => setExtratoFilter({ ...ExtratoFilter, status: e.target.value })}
+              onChange={e => setExtratoFilterContext({ ...ExtratoFilter, status: e.target.value })}
               sx={{ width: '150px' }}
             >
               <MenuItem value='TODOS' selected={ExtratoFilter?.status === 'TODOS'}>
@@ -396,10 +393,19 @@ const ExtratoListTable = () => {
             <DebouncedInput
               label='Localizar'
               value={globalFilter ?? ''}
-              onChange={value => setGlobalFilter(String(value))}
+              onChange={value => setGlobalFilterContext(String(value))}
               placeholder='Digite um texto...'
               className='is-full sm:is-auto'
             />
+            <Button
+              variant='outlined'
+              color='secondary'
+              onClick={handleLimparFiltros}
+              startIcon={<i className='tabler-filter-off' />}
+              sx={{ whiteSpace: 'nowrap', height: '100%', minHeight: '40px' }}
+            >
+              Limpar
+            </Button>
           </div>
         </div>
 

@@ -41,6 +41,7 @@ import { cpfCnpjMask } from '@/utils/string'
 import { trataErro } from '@/utils/erro'
 import { getPerfilUsuarioEnumDesc, PerfilUsuarioEnum } from '@/utils/enums/PerfilUsuarioEnum'
 import { StatusUsuarioEnum } from '@/utils/enums/StatusUsuarioEnum'
+import { useEquipeContext } from '@/contexts/EquipeContext'
 
 // Column Definitions
 const columnHelper = createColumnHelper<UsuarioTypeWithAction>()
@@ -92,15 +93,19 @@ interface Props {
 }
 
 const UsuarioListTable = ({ perfil }: Props) => {
+  const { globalFilter, setGlobalFilterContext } = useEquipeContext()
   // States
   const [rowSelection, setRowSelection] = useState({})
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [data, setData] = useState<UsuarioType[]>([])
-  const [globalFilter, setGlobalFilter] = useState('')
   const [dialogConfirma, setDialogConfirma] = useState<DialogConfirmaType>({ open: false })
   const [usuarioExcluir, setUsuarioExcluir] = useState<UsuarioType | undefined>()
   const [usuarioEdit, setUsuarioEdit] = useState<UsuarioType | undefined>()
   const [refreshTable, setRefreshTable] = useState<boolean>(true)
+
+  const handleLimparFiltros = () => {
+    setGlobalFilterContext('')
+  }
 
   const handleOpenDlgConfirmaExcluir = (usuario: UsuarioType) => {
     setUsuarioExcluir(usuario)
@@ -166,15 +171,12 @@ const UsuarioListTable = ({ perfil }: Props) => {
   }, [usuarioExcluir])
 
   const handleExcluirUsuario = () => {
-    //console.log('handleExcluirUsuario usuarioExcluir', usuarioExcluir)
-
     if (usuarioExcluir?.token) {
       UsuarioService.excluir(usuarioExcluir.token)
         .then(() => {
           setUsuarioExcluir(undefined)
           setRefreshTable(true)
 
-          //console.log('respContrato', respContrato)
           toast.success(`Usuário ${usuarioExcluir.nome} excluído!`)
         })
         .catch((err: any) => {
@@ -297,12 +299,11 @@ const UsuarioListTable = ({ perfil }: Props) => {
         pageSize: 10
       }
     },
-    enableRowSelection: true, //enable row selection for all rows
-    // enableRowSelection: row => row.original.age > 18, // or enable row selection conditionally per row
+    enableRowSelection: true,
     globalFilterFn: fuzzyFilter,
     onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
-    onGlobalFilterChange: setGlobalFilter,
+    onGlobalFilterChange: setGlobalFilterContext,
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -316,7 +317,6 @@ const UsuarioListTable = ({ perfil }: Props) => {
       setRefreshTable(false)
       UsuarioService.getList(perfil)
         .then(respListUsuario => {
-          //console.log(respListUsuario)
           setData(respListUsuario)
         })
         .catch((err: any) => {
@@ -344,10 +344,19 @@ const UsuarioListTable = ({ perfil }: Props) => {
           <div className='flex flex-col sm:flex-row is-full sm:is-auto items-start sm:items-center gap-4'>
             <DebouncedInput
               value={globalFilter ?? ''}
-              onChange={value => setGlobalFilter(String(value))}
+              onChange={value => setGlobalFilterContext(String(value))}
               placeholder='Localizar Usuário'
               className='is-full sm:is-auto'
             />
+            <Button
+              variant='outlined'
+              color='secondary'
+              onClick={handleLimparFiltros}
+              startIcon={<i className='tabler-filter-off' />}
+              sx={{ whiteSpace: 'nowrap', height: '100%', minHeight: '40px' }}
+            >
+              Limpar
+            </Button>
             <Button
               href={`/equipe/${perfil === PerfilUsuarioEnum.AGENTE ? 'agentes' : perfil === PerfilUsuarioEnum.PARCEIRO ? 'parceiros' : 'colaboradores'}/new`}
               variant='contained'

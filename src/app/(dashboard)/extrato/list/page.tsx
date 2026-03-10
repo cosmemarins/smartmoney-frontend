@@ -1,16 +1,16 @@
-// MUI Imports
 import Grid from '@mui/material/Grid'
-
-// Component Imports
 import ExtratoList from '@views/extrato/list'
+import { ExtratoProvider } from '@/contexts/ExtratoContext'
 
 const ExtratoApp = async () => {
   return (
-    <Grid container spacing={6}>
-      <Grid item xs={12} lg={12} md={12}>
-        <ExtratoList />
+    <ExtratoProvider>
+      <Grid container spacing={6}>
+        <Grid item xs={12} lg={12} md={12}>
+          <ExtratoList />
+        </Grid>
       </Grid>
-    </Grid>
+    </ExtratoProvider>
   )
 }
 
