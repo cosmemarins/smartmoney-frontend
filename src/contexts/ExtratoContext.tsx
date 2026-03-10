@@ -1,6 +1,7 @@
 'use client'
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
+
 import type { ExtratoFilterType } from '@/types/ExtratoType'
 
 interface ExtratoContextData {
@@ -22,6 +23,7 @@ export function ExtratoProvider({ children }: Props) {
 
   useEffect(() => {
     const savedFilters = sessionStorage.getItem('extrato_filters')
+
     if (savedFilters) {
       setExtratoFilter(JSON.parse(savedFilters))
     } else {
@@ -33,6 +35,7 @@ export function ExtratoProvider({ children }: Props) {
     }
 
     const savedGlobalFilter = sessionStorage.getItem('extrato_global_filter')
+
     if (savedGlobalFilter) {
       setGlobalFilter(savedGlobalFilter)
     }
@@ -40,6 +43,7 @@ export function ExtratoProvider({ children }: Props) {
 
   const setExtratoFilterContext = (filter: ExtratoFilterType | undefined) => {
     setExtratoFilter(filter)
+
     if (filter) {
       sessionStorage.setItem('extrato_filters', JSON.stringify(filter))
     } else {
@@ -49,6 +53,7 @@ export function ExtratoProvider({ children }: Props) {
 
   const setGlobalFilterContext = (filter: string) => {
     setGlobalFilter(filter)
+
     if (filter) {
       sessionStorage.setItem('extrato_global_filter', filter)
     } else {

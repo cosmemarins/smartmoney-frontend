@@ -1,4 +1,5 @@
 import { Grid } from '@mui/material'
+
 import UsuarioListTable from './UsuarioListTable'
 import { EquipeProvider } from '@/contexts/EquipeContext'
 

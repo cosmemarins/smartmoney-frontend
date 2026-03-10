@@ -32,7 +32,7 @@ import { toast } from 'react-toastify'
 import moment, { locale } from 'moment'
 
 import CustomTextField from '@/@core/components/mui/TextField'
-import type { ExtratoFilterType, ExtratoType, ExtratoTypeWithAction } from '@/types/ExtratoType'
+import type { ExtratoType, ExtratoTypeWithAction } from '@/types/ExtratoType'
 
 // Style Imports
 import tableStyles from '@core/styles/table.module.css'

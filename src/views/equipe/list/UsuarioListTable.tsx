@@ -94,6 +94,7 @@ interface Props {
 
 const UsuarioListTable = ({ perfil }: Props) => {
   const { globalFilter, setGlobalFilterContext } = useEquipeContext()
+
   // States
   const [rowSelection, setRowSelection] = useState({})
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

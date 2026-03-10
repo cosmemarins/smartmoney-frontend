@@ -113,6 +113,7 @@ const ClienteListTable = () => {
   const [dialogConfirma, setDialogConfirma] = useState<DialogConfirmaType>({ open: false })
   const [clienteExcluir, setClienteExcluir] = useState<ClienteType | undefined>()
   const [refreshTable, setRefreshTable] = useState<boolean>(true)
+
   const handleLimparFiltros = () => {
     setGlobalFilterContext('')
   }

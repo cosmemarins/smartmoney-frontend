@@ -46,7 +46,7 @@ import { toast } from 'react-toastify'
 import moment, { locale } from 'moment'
 
 import CustomTextField from '@/@core/components/mui/TextField'
-import type { ContratoFilterType, ContratoType, ContratoTypeWithAction } from '@/types/ContratoType'
+import type { ContratoType, ContratoTypeWithAction } from '@/types/ContratoType'
 
 // Style Imports
 import tableStyles from '@core/styles/table.module.css'
@@ -235,6 +235,7 @@ const ContratoListTable = () => {
         })
         .catch((err: any) => {
           const erro = trataErro(err)
+
           console.error(erro)
           toast.error(trataErro(erro))
         })
@@ -706,7 +707,7 @@ const ContratoListTable = () => {
         onClose={(event, reason) => {
           if (reason !== 'backdropClick') {
             handleCloseDlgArquivo()
-            
+
             //qunado for para dar oção de reenvio do contrato ao incluir um aditivo
             //handleCloseDlgArquivo(false)
           }

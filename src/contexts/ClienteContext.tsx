@@ -34,6 +34,7 @@ export function ClienteProvider({ children }: Props) {
 
   useEffect(() => {
     const savedGlobalFilter = sessionStorage.getItem('cliente_global_filter')
+
     if (savedGlobalFilter) {
       setGlobalFilter(savedGlobalFilter)
     }
@@ -62,6 +63,7 @@ export function ClienteProvider({ children }: Props) {
 
   const setGlobalFilterContext = (filter: string) => {
     setGlobalFilter(filter)
+
     if (filter) {
       sessionStorage.setItem('cliente_global_filter', filter)
     } else {
@@ -70,13 +72,13 @@ export function ClienteProvider({ children }: Props) {
   }
 
   return (
-    <ClienteContext.Provider 
-      value={{ 
-        cliente, 
-        setClienteContext, 
-        loading, 
-        setLoadingContext, 
-        isCpf, 
+    <ClienteContext.Provider
+      value={{
+        cliente,
+        setClienteContext,
+        loading,
+        setLoadingContext,
+        isCpf,
         isCnpj,
         globalFilter,
         setGlobalFilterContext

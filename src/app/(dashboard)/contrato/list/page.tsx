@@ -1,4 +1,5 @@
 import Grid from '@mui/material/Grid'
+
 import ContratoList from '@views/contrato/list'
 import { ContratoProvider } from '@/contexts/ContratoContext'
 

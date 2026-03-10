@@ -12,10 +12,10 @@ interface ContratoContextData {
   setResumoContratoContext: (resumoContrato: ResumoContratoType | undefined) => void
   refresh: boolean
   setRefreshContext: (refresh: boolean) => void
-  
+
   contratoFilter?: ContratoFilterType
   setContratoFilterContext: (filter: ContratoFilterType | undefined) => void
-  
+
   globalFilter: string
   setGlobalFilterContext: (filter: string) => void
 }
@@ -30,12 +30,13 @@ export function ContratoProvider({ children }: Props) {
   const [contrato, setContrato] = useState<ContratoType>()
   const [resumoContrato, setResumoContrato] = useState<ResumoContratoType>()
   const [refresh, setRefresh] = useState<boolean>(false)
-  
+
   const [contratoFilter, setContratoFilter] = useState<ContratoFilterType>()
   const [globalFilter, setGlobalFilter] = useState<string>('') // Estado para a pesquisa
 
   useEffect(() => {
     const savedFilters = sessionStorage.getItem('contrato_filters')
+
     if (savedFilters) {
       setContratoFilter(JSON.parse(savedFilters))
     } else {
@@ -47,6 +48,7 @@ export function ContratoProvider({ children }: Props) {
     }
 
     const savedGlobalFilter = sessionStorage.getItem('contrato_global_filter')
+
     if (savedGlobalFilter) {
       setGlobalFilter(savedGlobalFilter)
     }
@@ -66,6 +68,7 @@ export function ContratoProvider({ children }: Props) {
 
   const setContratoFilterContext = (filter: ContratoFilterType | undefined) => {
     setContratoFilter(filter)
+
     if (filter) {
       sessionStorage.setItem('contrato_filters', JSON.stringify(filter))
     } else {
@@ -75,6 +78,7 @@ export function ContratoProvider({ children }: Props) {
 
   const setGlobalFilterContext = (filter: string) => {
     setGlobalFilter(filter)
+
     if (filter) {
       sessionStorage.setItem('contrato_global_filter', filter)
     } else {

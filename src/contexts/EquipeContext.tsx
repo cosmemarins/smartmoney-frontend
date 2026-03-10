@@ -36,6 +36,7 @@ export function EquipeProvider({ children }: Props) {
 
   useEffect(() => {
     const savedGlobalFilter = sessionStorage.getItem('equipe_global_filter')
+
     if (savedGlobalFilter) {
       setGlobalFilter(savedGlobalFilter)
     }
@@ -68,6 +69,7 @@ export function EquipeProvider({ children }: Props) {
 
   const setGlobalFilterContext = (filter: string) => {
     setGlobalFilter(filter)
+
     if (filter) {
       sessionStorage.setItem('equipe_global_filter', filter)
     } else {
